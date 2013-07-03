@@ -162,13 +162,13 @@ void imu_aspirin2_event(void)
 #else
 #ifdef LISA_M_VERTICAL_X
     RATES_ASSIGN(imu.gyro_unscaled,
-                 imu_aspirin2.mpu.data_rates.rates.r,
-                 -imu_aspirin2.mpu.data_rates.rates.q,
-                 imu_aspirin2.mpu.data_rates.rates.p);
+                 imu_aspirin2.mpu.data_rates.rates.r,//r
+                 -imu_aspirin2.mpu.data_rates.rates.q,//q
+                 imu_aspirin2.mpu.data_rates.rates.p);//p
     VECT3_ASSIGN(imu.accel_unscaled,
-                 imu_aspirin2.mpu.data_accel.vect.z,
-                 imu_aspirin2.mpu.data_accel.vect.y,
-                 imu_aspirin2.mpu.data_accel.vect.x);
+                 imu_aspirin2.mpu.data_accel.vect.z,//z
+                 imu_aspirin2.mpu.data_accel.vect.y,//y
+                 imu_aspirin2.mpu.data_accel.vect.x);//x
     VECT3_ASSIGN(imu.mag_unscaled, -mag.x, -mag.z, mag.y);
 #else
     RATES_COPY(imu.gyro_unscaled, imu_aspirin2.mpu.data_rates.rates);
