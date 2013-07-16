@@ -103,7 +103,6 @@
   </command_laws>
 
   <section name="IMU" prefix="IMU_">
--->
     <!-- replace this with your own calibration -->
     <define name="MAG_X_NEUTRAL" value="-179"/>
     <define name="MAG_Y_NEUTRAL" value="-21"/>
