@@ -39,9 +39,6 @@
 #define MIN_ABS_CODE      ABS_X
 #define MAX_ABS_CODE      ABS_MAX+1
 
-#define ABS_MAX_VALUE     254
-#define ABS_MID_VALUE     127
-
 #define BUTTON_COUNT      STICK_BUTTON_COUNT
 #define AXIS_COUNT        STICK_AXIS_COUNT
 
@@ -49,15 +46,12 @@
 SDL_Joystick *sdl_joystick;
 SDL_Event sdl_event;
 
-int8_t stick_axis_values[AXIS_COUNT] = {0, 0, 0, 0, 0, 0};
+int16_t stick_axis_values[AXIS_COUNT] = {0, 0, 0, 0, 0, 0};
 uint8_t stick_hat_value = 0;
 int32_t stick_button_values = 0;
 
 int stick_axis_count = 0;
 int stick_button_count = 0;
-
-
-int32_t axis_min[AXIS_COUNT], axis_max[AXIS_COUNT];
 
 int min(int x, int y);
 
@@ -97,17 +91,6 @@ int init_sdl_device(int device_index)
   dbgprintf(stderr,"Available axes: %d (0x%x)\n",stick_axis_count,stick_axis_count);
   if (stick_button_count < 2) {
     dbgprintf(stderr,"ERROR: not enough suitable axes found [%s:%d]\n",__FILE__,__LINE__);
-  }
-
-  /* Axis param */
-  for (cnt = 0; cnt < stick_axis_count; cnt++)
-  {
-    // with joystick interface, all axes are signed 16 bit with full range
-    axis_min[cnt]=-32768;
-    axis_max[cnt]=32768;
-
-    dbgprintf(stderr,"Axis %d : parameters = [%d,%d]\n",
-        cnt,axis_min[cnt],axis_max[cnt]);
   }
 
   /* Get the device name */
@@ -154,7 +137,7 @@ int stick_read( void ) {
       case SDL_JOYAXISMOTION:
         for (cnt = 0; cnt < stick_axis_count; cnt++) {
           if (sdl_event.jaxis.axis == cnt) {
-            stick_axis_values[cnt] = (( (sdl_event.jaxis.value - axis_min[cnt]) * ABS_MAX_VALUE ) / (axis_max[cnt] - axis_min[cnt])) - ABS_MID_VALUE;
+            stick_axis_values[cnt] = sdl_event.jaxis.value;
             break;
           }
         }
