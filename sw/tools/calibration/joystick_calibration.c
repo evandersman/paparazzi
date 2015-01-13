@@ -36,6 +36,7 @@
 
 int32_t axis_min[AXIS_COUNT], axis_max[AXIS_COUNT];
 int32_t axis_center[AXIS_COUNT];
+int8_t already_read[AXIS_COUNT];
 int axis;
 char answer;
 char y;
@@ -46,11 +47,7 @@ int yaw;
 int throttle;
 int mode;
 int rev;
-char *r0;
-char *r1;
-char *r2;
-char *r3;
-char *r4;
+char r[AXIS_COUNT];
 
 
 void *find_max_min(void* data)
@@ -96,24 +93,35 @@ void *calibrate_axis(void* data)
       stick_read();
       for (n = 0; n < stick_axis_count; n++)
       {
-        if (stick_axis_values[n] > 0.8*axis_max[n] && stick_axis_values[n] > 0){
-          axis = n;
-          rev = 0;
-        }
-        if (-stick_axis_values[n] > -0.8*axis_min[n] && 0 > stick_axis_values[n]){
-          axis = n;
-          rev = 1;
+        if (n != already_read[n]){
+          if (stick_axis_values[n] > 0.8*axis_max[n] && stick_axis_values[n] > 0){
+            already_read[n] = n;
+            //printf("axis %i has already been read: %d \n", n, already_read[n]);
+            axis = n;
+            rev = 0;
+          }
+          if (-stick_axis_values[n] > -0.8*axis_min[n] && 0 > stick_axis_values[n]){
+            already_read[n] = n;
+            //printf("axis %i has already been read: %d \n", n, already_read[n]);
+            axis = n;
+            rev = 1;
+          }
         }
         if(done)
           return;
       }
     }
 }
+void axis_sign(void)
+{
+  if (rev == 1){r[axis] = "-";}
+  if (rev == 0){r[axis] = " ";}
+}
 
 int main(void)
 {  
   int cnt;
-  printf("Would you like to start the joystick calibration? Enter (y/n) \n");
+  printf("Would you like to start the joystick calibration? Enter (Y/n) \n");
   scanf("%s", &answer);
 
   if (answer == 'y'){
@@ -133,114 +141,104 @@ int main(void)
       axis_center[cnt] = 0;
       axis_min[cnt] = 0;
       axis_max[cnt] = 0;
+      already_read[cnt] = -1;
     }
-
-    //find center position
-    printf("Move all axis to the center position.\n");
-    done = 0;
-    //start thread find_center()
-    pthread_t thread1;
-    pthread_create( &thread1, NULL, find_center, NULL);
-    //stop thread find_max_min
-    printf("Done? Press any key to continue\n");
-    scanf("%s", &answer);
-    done = 1;
 
     //find max and min position
     printf("Move all axis from max to min.\n");
     done = 0;
     //start thread find_max_min()
-    pthread_t thread2;
-    pthread_create( &thread2, NULL, find_max_min, NULL);
+    pthread_t thread_max_min;
+    pthread_create( &thread_max_min, NULL, find_max_min, NULL);
     //stop thread find_max_min
     printf("Done? Press any key to continue\n");
     scanf("%s", &answer);
     done = 1;
 
-    fprintf(fp, "<joystick>\n");
-    fprintf(fp, "  <input>\n");
+    //find center position
+    printf("Move all axis to the center position.\n");
+    done = 0;
+    //start thread find_center()
+    pthread_t thread_center;
+    pthread_create( &thread_center, NULL, find_center, NULL);
+    //stop thread find_max_min
+    printf("Done? Press any key to continue\n");
+    scanf("%s", &answer);
+    done = 1;
+
     for (cnt = 0; cnt < stick_axis_count; cnt++)
     {
+      //print max and min and center
+      printf("(min, center, max) (%d, %d, %d)\n", axis_min[cnt], axis_center[cnt], axis_max[cnt]);
+    }
+
+    fprintf(fp, "<joystick>\n");
+    fprintf(fp, "  <input>\n");
+    for (cnt = 0; cnt < 5; cnt++)
+    {
+      done = 0;
+      rev = 0;
+      pthread_t thread_axis;
       //calibrate one axis at the time
       switch(cnt)
       {
       case 0 :
         printf("Start calibrating the roll axis. Move the roll axis to the right only. \n");
-        done = 0;
-        rev = 0;
         //start thread
-        pthread_t thread3;
-        pthread_create( &thread3, NULL, calibrate_axis, NULL);
+        pthread_create( &thread_axis, NULL, calibrate_axis, NULL);
         //stop thread
         printf("Done? Press any key to continue\n");
         scanf("%s", &answer);
         done = 1;
         roll = axis;
-        if (rev == 1){r0 = "-";}
-        if (rev == 0){r0 = " ";}
+        axis_sign();
         fprintf(fp, "    <axis index=\"%i\" name=\"roll\"/>\n", axis);
         break;
       case 1 :
         printf("Start calibrating the pitch axis.  Move the pitch axis towards you (pitch up). \n");
-        done = 0;
-        rev = 0;
         //start thread
-        pthread_t thread4;
-        pthread_create( &thread4, NULL, calibrate_axis, NULL);
+        pthread_create( &thread_axis, NULL, calibrate_axis, NULL);
         //stop thread
         printf("Done? Press any key to continue\n");
         scanf("%s", &answer);
         done = 1;
         pitch = axis;
-        if (rev == 1){r1 = "-";}
-        if (rev == 0){r1 = " ";}
+        axis_sign();
         fprintf(fp, "    <axis index=\"%i\" name=\"pitch\"/>\n", axis);
         break;
       case 2 :
         printf("Start calibrating the yaw axis.  Move the yaw axis to the right only.\n");
-        done = 0;
-        rev = 0;
         //start thread
-        pthread_t thread5;
-        pthread_create( &thread5, NULL, calibrate_axis, NULL);
+        pthread_create( &thread_axis, NULL, calibrate_axis, NULL);
         //stop thread
         printf("Done? Press any key to continue\n");
         scanf("%s", &answer);
         done = 1;
-        if (rev == 1){r2 = "-";}
-        if (rev == 0){r2 = " ";}
+        axis_sign();
         yaw = axis;
         fprintf(fp, "    <axis index=\"%i\" name=\"yaw\"/>\n", axis);
         break;
       case 3 :
         printf("Start calibrating the throttle axis.  Move the throttle axis to up only (away from you). \n");
-        done = 0;
-        rev = 0;
         //start thread
-        pthread_t thread6;
-        pthread_create( &thread6, NULL, calibrate_axis, NULL);
+        pthread_create( &thread_axis, NULL, calibrate_axis, NULL);
         //stop thread
         printf("Done? Press any key to continue\n");
         scanf("%s", &answer);
         done = 1;
-        if (rev == 1){r3 = "-";}
-        if (rev == 0){r3 = " ";}
+        axis_sign();
         throttle = axis;
         fprintf(fp, "    <axis index=\"%i\" name=\"throttle\"/>\n", axis);
         break;
       case 4 :
         printf("Start calibrating the mode axis. switch to manual mode only. \n");
-        done = 0;
-        rev = 0;
         //start thread
-        pthread_t thread7;
-        pthread_create( &thread7, NULL, calibrate_axis, NULL);
+        pthread_create( &thread_axis, NULL, calibrate_axis, NULL);
         //stop thread
         printf("Done? Press any key to continue\n");
         scanf("%s", &answer);
         done = 1;
-        if (rev == 1){r4 = "-";}
-        if (rev == 0){r4 = " ";}
+        axis_sign();
         mode = axis;
         fprintf(fp, "    <axis index=\"%i\" name=\"mode\"/>\n", axis);
         break;
@@ -251,11 +249,11 @@ int main(void)
     fprintf(fp, "  <input/>\n");
     fprintf(fp, "  <messages period=\"0.025\">\n");
     fprintf(fp, "    <message class=\"datalink\" name=\"RC_4CH\" send_always=\"true\">\n");
-    fprintf(fp, "      <field name=\"roll\" value=\"Fit(%croll,%i,%i,-127,127)\"/>\n", *r0, axis_min[roll], axis_max[roll]);
-    fprintf(fp, "      <field name=\"pitch\" value=\"Fit(%cpitch,%i,%i,-127,127)\"/>\n", *r1, axis_min[pitch], axis_max[pitch]);
-    fprintf(fp, "      <field name=\"yaw\" value=\"Fit(%cyaw,%i,%i,-127,127)\"/>\n", *r2, axis_min[yaw], axis_max[yaw]);
-    fprintf(fp, "      <field name=\"throttle\" value=\"Fit(%cthrottle,%i,%i,0,127)\"/>\n", *r3, axis_min[throttle], axis_max[throttle]);
-    fprintf(fp, "      <field name=\"mode\" value=\"Fit(%cmode,%i,%i,-127,127)\"/>\n", *r4, axis_min[mode], axis_max[mode]);
+    fprintf(fp, "      <field name=\"roll\" value=\"Fit(roll,%i,%i,-127,127)\"/>\n", axis_min[roll], axis_max[roll]);
+    fprintf(fp, "      <field name=\"pitch\" value=\"Fit(pitch,%i,%i,-127,127)\"/>\n", axis_min[pitch], axis_max[pitch]);
+    fprintf(fp, "      <field name=\"yaw\" value=\"Fit(yaw,%i,%i,-127,127)\"/>\n", axis_min[yaw], axis_max[yaw]);
+    fprintf(fp, "      <field name=\"throttle\" value=\"Fit(throttle,%i,%i,0,127)\"/>\n", axis_min[throttle], axis_max[throttle]);
+    fprintf(fp, "      <field name=\"mode\" value=\"Fit(mode,%i,%i,-127,127)\"/>\n", axis_min[mode], axis_max[mode]);
     fprintf(fp, "    </message>\n");
     fprintf(fp, "  </messages>\n");
     fprintf(fp, "<joystick/>\n");
