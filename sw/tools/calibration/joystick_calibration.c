@@ -46,6 +46,7 @@ struct joystick_axis{
 struct output_axis{
   char name[10];
   int index;
+  int16_t min, center, max;
   char convention[164];
 };
 
@@ -61,26 +62,41 @@ struct output_axis axis_output[5] = {
 {
   .name = "roll",
   .index = -1,
+  .max = -127,
+  .center= 0,
+  .min = 127,
   .convention = "Move ROLL axis to the right"
 },
 {
   .name = "pitch",
   .index = -1,
+  .max = -127,
+  .center= 0,
+  .min = 127,
   .convention = "Move PITCH axis towards you (pitch up)"
 },
 {
   .name = "yaw",
   .index = -1,
+  .max = -127,
+  .center= 0,
+  .min = 127,
   .convention = "Move YAW axis to the right"
 },
 {
   .name = "throttle",
   .index = -1,
+  .max = 0,
+  .center= 64,
+  .min = 127,
   .convention = "Move THROTTLE axis up"
 },
 {
   .name = "mode",
   .index = -1,
+  .max = 0,
+  .center= 1,
+  .min = 2,
   .convention = "Move MODE axis to navigation"
 },
 }; 
@@ -205,34 +221,18 @@ void print_to_file(void)
   fprintf(fp, "  </input>\n");
   fprintf(fp, "  <messages period=\"0.025\">\n");
   fprintf(fp, "    <message class=\"datalink\" name=\"RC_4CH\" send_always=\"true\">\n");
-  for (cnt = 0; cnt < 3; cnt++)
+  for (cnt = 0; cnt < 5; cnt++)
   {
-    // if reversed: max = -min and min = -max; this is necessary as the range is not equal on both sides. In OCAML the axis values are not known to be revesed to the process should be done over here
+    // if reversed: max = -min and min = -max; this is necessary as the range is not equal on both sides.
     if(axis[axis_output[cnt].index].reverse == 0)
     {
-      fprintf(fp, "      <field name=\"%s\" value=\"Fitcenter(%s,%d,%d,%d,-127,0,127)\"/>\n", axis_output[cnt].name, axis_output[cnt].name, axis[axis_output[cnt].index].min, axis[axis_output[cnt].index].center, axis[axis_output[cnt].index].max);
+      fprintf(fp, "      <field name=\"%s\" value=\"Fitcenter(%s,%d,%d,%d,%d,%d,%d)\"/>\n", axis_output[cnt].name, axis_output[cnt].name, axis[axis_output[cnt].index].min, axis[axis_output[cnt].index].center, axis[axis_output[cnt].index].max, axis_output[cnt].max, axis_output[cnt].center, axis_output[cnt].min);
     }
     if(axis[axis_output[cnt].index].reverse == 1)
     {
-        fprintf(fp, "      <field name=\"%s\" value=\"Fitcenter(%s,%d,%d,%d,-127,0,127)\"/>\n", axis_output[cnt].name, axis_output[cnt].name, -axis[axis_output[cnt].index].max, axis[axis_output[cnt].index].center, - axis[axis_output[cnt].index].min);
+        fprintf(fp, "      <field name=\"%s\" value=\"Fitcenter(-%s,%d,%d,%d,%d,%d,%d)\"/>\n", axis_output[cnt].name, axis_output[cnt].name, -axis[axis_output[cnt].index].max, axis[axis_output[cnt].index].center, - axis[axis_output[cnt].index].min, axis_output[cnt].max, axis_output[cnt].center, axis_output[cnt].min);
     }
   }
-  if(axis[axis_output[3].index].reverse == 0)
-  {
-    fprintf(fp, "      <field name=\"%s\" value=\"Fitcenter(%s,%d,%d,%d,0,64,127)\"/>\n", axis_output[3].name, axis_output[3].name, axis[axis_output[3].index].min, axis[axis_output[cnt].index].center, axis[axis_output[3].index].max);
-    }
-  if(axis[axis_output[3].index].reverse == 1)
-  {
-    fprintf(fp, "      <field name=\"%s\" value=\"Fitcenter(%s,%d,%d,%d,0,64,127)\"/>\n", axis_output[3].name, axis_output[3].name, -axis[axis_output[3].index].max, axis[axis_output[cnt].index].center, - axis[axis_output[3].index].min);
-    }
-  if(axis[axis_output[4].index].reverse == 0)
-  {
-    fprintf(fp, "      <field name=\"%s\" value=\"Fitcenter(%s,%d,%d,%d,0,1,2)\"/>\n", axis_output[4].name, axis_output[4].name, axis[axis_output[4].index].min, axis[axis_output[cnt].index].center, axis[axis_output[4].index].max);
-    }
-  if(axis[axis_output[4].index].reverse == 1)
-  {
-    fprintf(fp, "      <field name=\"%s\" value=\"Fitcenter(%s,%d,%d,%d,0,1,2)\"/>\n", axis_output[4].name, axis_output[4].name, -axis[axis_output[4].index].max, axis[axis_output[cnt].index].center, - axis[axis_output[4].index].min);
-    }
   fprintf(fp, "    </message>\n");
   fprintf(fp, "  </messages>\n");
   fprintf(fp, "</joystick>\n");
