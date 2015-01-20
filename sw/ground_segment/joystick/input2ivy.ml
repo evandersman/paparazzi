@@ -71,8 +71,8 @@ external stick_read : unit -> int * int * int * int array = "ml_stick_read"
     an integer for the hat and an array of signed integers for the axis *)
 
 (** Range for the input axis *)
-let max_input = 127
-let min_input = -127
+let max_input = 32768
+let min_input = -32768
 let trim_step = 0.2
 
 (** Representation of an input value *)
@@ -370,6 +370,11 @@ let fit = fun x min max min_input max_input ->
   let v = min_input + ((x - min) * (max_input - min_input)) / (max - min) in
   bound v min_input max_input
 
+(** Fit a given interval of value into [min_input; max_input] around 0 *)
+let fitcenter = fun x min center max min_input center_input max_input ->
+  if x > center then let v = center_input + ((x - center) * (max_input - center_input)) / (max - center) in bound v center_input max_input
+  else  let v = min_input + ((x - min) * (center_input - min_input)) / (center - min) in bound v min_input center_input
+
 (** Return a pprz RC mode
     * mode > max -> 2
     * mode < min -> 0
@@ -404,6 +409,7 @@ let eval_call = fun f args hat->
     | "HatLeftDown",  [_] -> if hat = 12 then 1 else 0
     | "Scale", [x; min; max] -> scale (x) (min) (max)
     | "Fit", [x; min; max; min_input; max_input] -> fit (x) (min) (max) (min_input) (max_input)
+    | "Fitcenter", [x; min; center; max; min_input; center_input; max_input] -> fitcenter (x) (min) (center) (max) (min_input) (center_input) (max_input)
     | "Bound", [x; min; max] -> bound (x) (min) (max)
     | "PprzMode", [x] -> pprz_mode (x)
     | "JoystickID", [] -> !joystick_id
