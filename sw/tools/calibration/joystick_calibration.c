@@ -31,9 +31,6 @@
 #include <errno.h>
 #include <math.h>
 
-//needed for joystick interface
-#include <SDL/SDL.h>
-
 #define AXIS_COUNT        32
 
 // the axis of the joystick device
@@ -160,32 +157,55 @@ void *calibrate_axis_thread(void* data)
     }
 }
 
+void flush_input ( FILE *in )
+{
+  int ch;
+
+  do
+    ch = fgetc ( in ); 
+  while ( ch != EOF && ch != '\n' ); 
+
+  clearerr ( in );
+}
+
 void find_max_min(void)
 {
-  //find max and min position
+  //ask user for the max and min position
   printf("Move ALL axis from MAX to MIN.\n");
   thread_done = 0;
-  //start thread find_max_min()
+  //start max_min_thread
   pthread_t thread_max_min;
   pthread_create( &thread_max_min, NULL, max_min_thread, NULL);
-  //stop thread find_max_min
-  printf("Done? Press a KEY+ENTER to continue\n");
-  scanf("%s", &answer);
+  // clear input buffer
+  flush_input( stdin );
+  // ask user when to stop the thread
+  printf("Done? Press any KEY + ENTER to continue...\n");
+  // clear output buffer
+  fflush( stdout );
+  // wait until user is finished calibrating
+  getchar();
+  //stop max_min_thread
   thread_done = 1;
   pthread_join(thread_max_min, NULL);
 }
 
 void find_center(void)
 {
-  //find center position
+  //ask user for the center position
   printf("Move ALL axis to the CENTER position\n");
   thread_done = 0;
-  //start thread find_center()
+  //start center_thread
   pthread_t thread_center;
   pthread_create( &thread_center, NULL, center_thread, NULL);
-  //stop thread find_max_min
-  printf("Done? Press a KEY+ENTER to continue\n");
-  scanf("%s", &answer);
+  // clear input buffer
+  flush_input( stdin );
+  //ask user when to stop the thread
+  printf("Done? Press any KEY + ENTER to continue...\n");
+  // clear output buffer
+  fflush ( stdout );
+  // wait until user is finished calibrating
+  getchar();
+  //stop center_thread
   thread_done = 1;
   pthread_join(thread_center, NULL);
 }
@@ -199,11 +219,17 @@ void find_axis_info(void)
     printf("%s\n", axis_output[i].convention);
     thread_done = 0;
     pthread_t thread_axis;
-    //start thread
+    //start calibrate_axis_thread
     pthread_create( &thread_axis, NULL, calibrate_axis_thread, NULL);
-    //stop thread
-    printf("Done? Press a KEY+ENTER to continue\n");
-    scanf("%s", &answer);
+    // clear input buffer
+    flush_input( stdin );
+    //ask user when to stop the thread
+    printf("Done? Press any KEY + ENTER to continue...\n");
+    // clear output buffer
+    fflush ( stdout );
+    // wait until user is finished calibrating
+    getchar();
+    //stop calibrate_axis_thread
     thread_done = 1;
     axis_output[i].index = current_axis;
     pthread_join(thread_axis, NULL);
@@ -249,7 +275,7 @@ void print_to_file(void)
 int main(void)
 {  
   printf("Would you like to start the joystick calibration? Enter (Y/n) \n");
-  scanf("%s", &answer);
+  scanf("%c", &answer);
 
   if (answer != 'y' && answer != 'Y'){
     return 0;
@@ -257,9 +283,34 @@ int main(void)
 
   int device_index;
   int joystick_number;
+  SDL_Joystick *sdl_joystick;
 
-  printf("Which device would you like to calibrate? Speficy index (0,1,2..) \n");
-  scanf("%i", &joystick_number);
+  /* Initialize SDL with joystick support */
+  if (SDL_Init(SDL_INIT_JOYSTICK) < 0)
+  {
+    printf("Could not initialize SDL: %s.\n", SDL_GetError());
+    exit(-1);
+  }
+
+  //Quit SDL at exit
+  atexit(SDL_Quit);
+  
+  int j;
+  int joysticks_available = 5;
+  const char * name;
+  //show available joysticks
+  for (j = 0; j < joysticks_available; j++)
+  {
+    name = SDL_JoystickName(j);
+    if (name != NULL)
+    {
+      printf("Input device name: \"%s\" on SDL Index %i\n", name, j);
+    }
+  }
+ 
+  // user choses which joystick to configure
+  printf("Which input device would you like to calibrate? Speficy SDL Index (0,1,2..) \n");
+  scanf("%d", &joystick_number);
   device_index = joystick_number;
   int opened = stick_init(device_index);
 
