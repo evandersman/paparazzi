@@ -33,19 +33,22 @@ SDL_LIBS = -lSDL
 # we do however need -lSDLmain for test_stick, which is just c
 SDL_LDFLAGS = $(shell sdl-config --libs)
 
+GTK_CFLAGS = $(shell pkg-config gtk+-2.0 --cflags)
+GTK_LDFLAGS = $(shell pkg-config gtk+-2.0 --libs)
+
 all: joystick_calibration
 
 joystick_calibration: joystick_calibration.o sdl_stick.o
 	@echo BUILD $@
-	$(Q)$(CC) -g -O2 -o $@ $^ $(SDL_LDFLAGS)
+	$(Q)$(CC) -g -O2 -o $@ $^ $(SDL_LDFLAGS) $(GTK_LDFLAGS)
 
 sdl_stick.o : ../../ground_segment/joystick/sdl_stick.c
 	@echo CC ../../ground_segment/joystick/sdl_stick.o
-	$(Q)$(CC) -c -O2 $(GLIB_CFLAGS) $(INCLUDES) $<
+	$(Q)$(CC) -c -O2 $(GTK_CFLAGS) $<
 
 %.o : %.c
 	@echo CC .$@
-	$(Q)$(CC) -c -O2 $(GLIB_CFLAGS) $(INCLUDES) $<
+	$(Q)$(CC) -c -O2 $(GTK_CFLAGS) $<
 
 clean:
 	$(Q)rm -f *~ *.o *.bak joystick_calibration sdl_stick.o

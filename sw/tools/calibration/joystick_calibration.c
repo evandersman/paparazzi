@@ -30,6 +30,7 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <gtk/gtk.h>
 
 #define AXIS_COUNT        32
 
@@ -272,8 +273,44 @@ void print_to_file(void)
   printf("The results of the calibration have been saved in joystick_calibration.xml\n");
 }
 
-int main(void)
+GtkWidget* build_gui ( void ) {
+  GtkWidget *window, *vbox, *info_text, *hbox, *halign, *next, *previous;
+
+  // create a new window
+  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_title (GTK_WINDOW (window), "Joystick calibration");
+  gtk_window_set_default_size(GTK_WINDOW (window), 400, -1);
+
+  // create a new vertical box
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (window), vbox);
+
+  // add text box
+  info_text = gtk_label_new ("Move ALL axis from MAX to MIN");
+  gtk_box_pack_start (GTK_BOX (vbox), info_text, TRUE, TRUE, 0);
+
+  hbox = gtk_hbox_new (FALSE, 0);
+  halign = gtk_alignment_new(0.5, 1, 0.3, 0.2);
+  gtk_container_add(GTK_CONTAINER(halign), hbox);
+  gtk_container_add (GTK_CONTAINER (vbox), halign);
+
+  previous = gtk_button_new_with_label("Previous");
+  gtk_box_pack_start(GTK_BOX(hbox), previous, TRUE, TRUE, 5);
+  next = gtk_button_new_with_label("Next");
+  gtk_box_pack_start(GTK_BOX(hbox), next, TRUE, TRUE, 5);
+
+  return window;
+}
+
+
+int main(int argc, char** argv)
 {  
+  gtk_init(&argc, &argv);
+  GtkWidget* window = build_gui();
+  gtk_widget_show_all(window);
+  gtk_main();
+
+  return 0;
   printf("Would you like to start the joystick calibration? Enter (Y/n) \n");
   scanf("%c", &answer);
 
