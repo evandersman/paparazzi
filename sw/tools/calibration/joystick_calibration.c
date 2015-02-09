@@ -40,6 +40,12 @@ struct joystick_axis{
   int16_t min, center, max;
   bool reverse;
   bool used;
+  GtkWidget *hscale;
+  GtkWidget *adj;
+  GtkWidget *name_label;
+  GtkWidget *rev_label;
+  GtkWidget *axisbox;
+  GtkWidget *axisalign;
 };
 
 // the axis used in the calibration file
@@ -50,12 +56,21 @@ struct output_axis{
   char convention[164];
 };
 
+volatile enum STATE{
+  START,
+  FIND_MAX_MIN,
+  FIND_CENTER,
+  FIND_ROLL_AXIS,
+};
 
-volatile bool thread_done;
+enum STATE state;
+
+bool thread_done;
 int current_axis;
 char answer;
 int i;
 
+GtkWidget *window, *vbox, *hbox, *halign, *next, *previous, *vbox1, *valign;
 GtkWidget *info_text;
 
 struct joystick_axis axis[AXIS_COUNT];
@@ -103,61 +118,33 @@ struct output_axis axis_output[5] = {
 },
 }; 
 
-void *max_min_thread(void* data)
+void calibrate_axis_thread(void)
 {
-    int n;
-    while (!thread_done)
-    {
-      stick_read();
-      for (n = 0; n < stick_axis_count; n++)
-      {
-        if (stick_axis_values[n] > axis[n].max){
-          axis[n].max = stick_axis_values[n];
-        }
-        if (stick_axis_values[n] < axis[n].min){
-          axis[n].min = stick_axis_values[n];
-        }
+  int n;
+  stick_read();
+  for (n = 0; n < stick_axis_count; n++)
+  {
+    //show the axis values
+    gtk_adjustment_set_value(axis[n].adj, stick_axis_values[n]);
+    if (axis[n].used == 0){
+      if (stick_axis_values[n] > 0.8*axis[n].max && stick_axis_values[n] > 0){
+        axis[n].used = 1;
+        current_axis = n;
+        axis[n].number = n;
+        axis[n].reverse = 0;
+        gtk_button_set_label (axis[current_axis].name_label,"roll");
+        gtk_button_set_label (axis[current_axis].rev_label,"0");
+      }
+      if (stick_axis_values[n] < 0.8*axis[n].min && stick_axis_values[n] < 0){
+        axis[n].used = 1;
+        current_axis = n;
+        axis[n].number = n;
+        axis[n].reverse = 1;
+        gtk_button_set_label (axis[current_axis].name_label,"roll");
+        gtk_button_set_label (axis[current_axis].rev_label,"1");
       }
     }
-}
-
-void *center_thread(void* data)
-{
-    int n;
-    while (!thread_done)
-    {
-      stick_read();
-      for (n = 0; n < stick_axis_count; n++)
-      {
-        axis[n].center = stick_axis_values[n];
-      }
-    }
-}
-
-void *calibrate_axis_thread(void* data)
-{
-    int n;
-    while (!thread_done)
-    {
-      stick_read();
-      for (n = 0; n < stick_axis_count; n++)
-      {
-        if (axis[n].used == 0){
-          if (stick_axis_values[n] > 0.8*axis[n].max && stick_axis_values[n] > 0){
-            axis[n].used = 1;
-            current_axis = n;
-            axis[n].number = n;
-            axis[n].reverse = 0;
-          }
-          if (stick_axis_values[n] < 0.8*axis[n].min && stick_axis_values[n] < 0){
-            axis[n].used = 1;
-            current_axis = n;
-            axis[n].number = n;
-            axis[n].reverse = 1;
-          }
-        }
-      }
-    }
+  }
 }
 
 void flush_input ( FILE *in )
@@ -171,47 +158,6 @@ void flush_input ( FILE *in )
   clearerr ( in );
 }
 
-void find_max_min(void)
-{
-  //ask user for the max and min position
-  printf("Move ALL axis from MAX to MIN.\n");
-  thread_done = 0;
-  //start max_min_thread
-  pthread_t thread_max_min;
-  pthread_create( &thread_max_min, NULL, max_min_thread, NULL);
-  // clear input buffer
-  flush_input( stdin );
-  // ask user when to stop the thread
-  printf("Done? Press any KEY + ENTER to continue...\n");
-  // clear output buffer
-  fflush( stdout );
-  // wait until user is finished calibrating
-  getchar();
-  //stop max_min_thread
-  thread_done = 1;
-  pthread_join(thread_max_min, NULL);
-}
-
-void find_center(void)
-{
-  //ask user for the center position
-  printf("Move ALL axis to the CENTER position\n");
-  thread_done = 0;
-  //start center_thread
-  pthread_t thread_center;
-  pthread_create( &thread_center, NULL, center_thread, NULL);
-  // clear input buffer
-  flush_input( stdin );
-  //ask user when to stop the thread
-  printf("Done? Press any KEY + ENTER to continue...\n");
-  // clear output buffer
-  fflush ( stdout );
-  // wait until user is finished calibrating
-  getchar();
-  //stop center_thread
-  thread_done = 1;
-  pthread_join(thread_center, NULL);
-}
 
 void find_axis_info(void)
 {
@@ -275,14 +221,85 @@ void print_to_file(void)
   printf("The results of the calibration have been saved in joystick_calibration.xml\n");
 }
 
-void print_center (GtkWidget *widget,
+static gboolean find_max_min_callback(GtkWidget *widget){
+
+  if (state != FIND_MAX_MIN){
+    return FALSE;
+  }
+  int n;
+  stick_read();
+  for (n = 0; n < stick_axis_count; n++)
+  {
+    //show the max and min values
+    gtk_adjustment_set_value(axis[n].adj, stick_axis_values[n]);
+    //store the max and min values
+    if (stick_axis_values[n] > axis[n].max){
+      axis[n].max = stick_axis_values[n];
+    }
+    if (stick_axis_values[n] < axis[n].min){
+      axis[n].min = stick_axis_values[n];
+    }
+  }
+  return TRUE;
+}
+
+static gboolean find_center_callback(GtkWidget *widget){
+
+  if (state != FIND_CENTER){
+    return FALSE;
+  }
+  int n;
+  stick_read();
+  for (n = 0; n < stick_axis_count; n++)
+  {
+    //show the center values
+    gtk_adjustment_set_value(axis[n].adj, stick_axis_values[n]);
+    //store the center values
+    axis[n].center = stick_axis_values[n];
+  }
+  return TRUE;
+}
+
+static gboolean find_roll_callback(GtkWidget *widget){
+
+  if (state != FIND_ROLL_AXIS){
+    return FALSE;
+  }
+  calibrate_axis_thread();
+  return TRUE;
+}
+
+void on_next (GtkWidget *widget,
              gpointer   data)
 {
-  gtk_label_set_text (info_text, "Move to center position\n");
+  switch (state){
+    case START:
+      g_print("start program\n");
+      gtk_label_set_text (info_text, "Move ALL axis from MAX to MIN\n");
+      state++;
+      g_timeout_add(1000/60, find_max_min_callback, NULL);
+      g_print("move to state %i\n", state);
+      break;
+    case FIND_MAX_MIN:
+      gtk_label_set_text (info_text, "Move ALL to CENTER position\n");
+      state++;
+      g_timeout_add(1000/60, find_center_callback, NULL);
+      g_print("move to state %i\n", state);
+      break;
+    case FIND_CENTER:
+      gtk_label_set_text (info_text, "Move ROLL axis to the right\n");
+      state++;
+      g_timeout_add(1000/60, find_roll_callback, NULL);
+      g_print("move to state %i\n", state);
+      break;
+    case FIND_ROLL_AXIS:
+      g_print("finished roll axis\n");
+      state = 0;
+      break;
+  }
 }
 
 GtkWidget* build_gui ( void ) {
-  GtkWidget *window, *vbox, *hbox, *halign, *next, *previous, *axis1, *adj1, *vbox1, *valign, *axis2, *adj2;
 
   // create a new window
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -293,8 +310,8 @@ GtkWidget* build_gui ( void ) {
   vbox = gtk_vbox_new (FALSE, 0);
   gtk_container_add (GTK_CONTAINER (window), vbox);
 
-  // add text box inside the vertical box
-  info_text = gtk_label_new ("Move ALL axis from MAX to MIN");
+  // add text box inside the vertical box with instructions
+  info_text = gtk_label_new ("To start the calibration press NEXT");
   gtk_box_pack_start (GTK_BOX (vbox), info_text, TRUE, TRUE, 0);
 
   // add a vertically aligned box at the top inside the main vertical box
@@ -303,15 +320,22 @@ GtkWidget* build_gui ( void ) {
   gtk_container_add(GTK_CONTAINER(valign), vbox1);
   gtk_container_add (GTK_CONTAINER (vbox), valign);
 
-  adj1 = gtk_adjustment_new (0.0, -32767.0, 32767.0, 1, 1.0, 1.0);
-  adj2 = gtk_adjustment_new (0.0, -32767.0, 32767.0, 1, 1.0, 1.0);
-  gtk_adjustment_set_value(adj1, stick_axis_values[0]);
-  gtk_adjustment_set_value(adj2, stick_axis_values[1]);
-  axis1 = gtk_hscale_new (adj1);
-  axis2 = gtk_hscale_new (adj2);
-  //gtk_scale_set_draw_value (axis1, TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox1), axis1, TRUE, TRUE, 5);
-  gtk_box_pack_start(GTK_BOX(vbox1), axis2, TRUE, TRUE, 5);
+  for (i = 0; i < stick_axis_count; i++)
+  {
+  axis[i].adj = gtk_adjustment_new (0.0, -32767.0, 32767.0, 1, 1.0, 1.0);
+  axis[i].hscale = gtk_hscale_new (axis[i].adj);
+
+  axis[i].name_label = gtk_button_new_with_label("-");
+  axis[i].rev_label = gtk_button_new_with_label("-");
+  axis[i].axisbox = gtk_hbox_new (FALSE, 0);
+  axis[i].axisalign = gtk_alignment_new(0.5, 1, 0.3, 0.2);
+  gtk_container_add(GTK_CONTAINER(axis[i].axisalign), axis[i].axisbox);
+  gtk_container_add (GTK_CONTAINER (vbox1), axis[i].axisalign);
+
+  gtk_box_pack_start(GTK_BOX(vbox1), axis[i].hscale, TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(axis[i].axisbox), axis[i].name_label, TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(axis[i].axisbox), axis[i].rev_label, TRUE, TRUE, 5);
+  }
 
   // add a horizontally aligned box at the bottom inside the vertical box
   hbox = gtk_hbox_new (FALSE, 0);
@@ -324,20 +348,12 @@ GtkWidget* build_gui ( void ) {
   next = gtk_button_new_with_label("Next");
   gtk_box_pack_start(GTK_BOX(hbox), next, TRUE, TRUE, 5);
 
-  g_signal_connect (next, "clicked", G_CALLBACK (print_center), NULL);
-
   return window;
 }
 
 int main(int argc, char** argv)
 { 
-  gtk_init(&argc, &argv);
-  GtkWidget* window = build_gui();
-  g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
-  gtk_widget_show_all(window);
-  gtk_main();
 
-  return 0;
   printf("Would you like to start the joystick calibration? Enter (Y/n) \n");
   scanf("%c", &answer);
 
@@ -390,10 +406,22 @@ int main(int argc, char** argv)
     axis[cnt].max = 0;
     axis[cnt].reverse = 0;
     axis[cnt].used = 0;
+    state = 0;
   }
 
-  find_max_min();
+  gtk_init(&argc, &argv);
+  GtkWidget* window = build_gui();
+  g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+  g_signal_connect (next, "clicked", G_CALLBACK (on_next), NULL);
+  //g_timeout_add(1000/60, find_max_min_callback, NULL);
+  //g_timeout_add(1000/60, find_center_callback, NULL);
+  gtk_widget_show_all(window);
+  gtk_main();
+
+  return 0;
+
+  /*find_max_min();
   find_center();
   find_axis_info();
-  print_to_file();
+  print_to_file();*/
 }
