@@ -56,6 +56,8 @@ int current_axis;
 char answer;
 int i;
 
+GtkWidget *info_text;
+
 struct joystick_axis axis[AXIS_COUNT];
 
 struct output_axis axis_output[5] = {
@@ -273,8 +275,14 @@ void print_to_file(void)
   printf("The results of the calibration have been saved in joystick_calibration.xml\n");
 }
 
+void print_center (GtkWidget *widget,
+             gpointer   data)
+{
+  gtk_label_set_text (info_text, "Move to center position\n");
+}
+
 GtkWidget* build_gui ( void ) {
-  GtkWidget *window, *vbox, *info_text, *hbox, *halign, *next, *previous;
+  GtkWidget *window, *vbox, *hbox, *halign, *next, *previous, *axis1, *adj1, *vbox1, *valign, *axis2, *adj2;
 
   // create a new window
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -285,10 +293,27 @@ GtkWidget* build_gui ( void ) {
   vbox = gtk_vbox_new (FALSE, 0);
   gtk_container_add (GTK_CONTAINER (window), vbox);
 
-  // add text box
+  // add text box inside the vertical box
   info_text = gtk_label_new ("Move ALL axis from MAX to MIN");
   gtk_box_pack_start (GTK_BOX (vbox), info_text, TRUE, TRUE, 0);
 
+  // add a vertically aligned box at the top inside the main vertical box
+  vbox1 = gtk_vbox_new (FALSE, 0);
+  valign = gtk_alignment_new(0.5, 0, 0.3, 0.2);
+  gtk_container_add(GTK_CONTAINER(valign), vbox1);
+  gtk_container_add (GTK_CONTAINER (vbox), valign);
+
+  adj1 = gtk_adjustment_new (0.0, -32767.0, 32767.0, 1, 1.0, 1.0);
+  adj2 = gtk_adjustment_new (0.0, -32767.0, 32767.0, 1, 1.0, 1.0);
+  gtk_adjustment_set_value(adj1, stick_axis_values[0]);
+  gtk_adjustment_set_value(adj2, stick_axis_values[1]);
+  axis1 = gtk_hscale_new (adj1);
+  axis2 = gtk_hscale_new (adj2);
+  //gtk_scale_set_draw_value (axis1, TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox1), axis1, TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(vbox1), axis2, TRUE, TRUE, 5);
+
+  // add a horizontally aligned box at the bottom inside the vertical box
   hbox = gtk_hbox_new (FALSE, 0);
   halign = gtk_alignment_new(0.5, 1, 0.3, 0.2);
   gtk_container_add(GTK_CONTAINER(halign), hbox);
@@ -299,14 +324,16 @@ GtkWidget* build_gui ( void ) {
   next = gtk_button_new_with_label("Next");
   gtk_box_pack_start(GTK_BOX(hbox), next, TRUE, TRUE, 5);
 
+  g_signal_connect (next, "clicked", G_CALLBACK (print_center), NULL);
+
   return window;
 }
 
-
 int main(int argc, char** argv)
-{  
+{ 
   gtk_init(&argc, &argv);
   GtkWidget* window = build_gui();
+  g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
   gtk_widget_show_all(window);
   gtk_main();
 
