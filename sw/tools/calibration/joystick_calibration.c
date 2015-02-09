@@ -57,10 +57,12 @@ struct output_axis{
 };
 
 volatile enum STATE{
-  START,
   FIND_MAX_MIN,
   FIND_CENTER,
   FIND_ROLL_AXIS,
+  FIND_PITCH_AXIS,
+  FIND_YAW_AXIS,
+  FIND_THROTTLE_AXIS,
 };
 
 enum STATE state;
@@ -82,7 +84,6 @@ struct output_axis axis_output[5] = {
   .max = -127,
   .center= 0,
   .min = 127,
-  .convention = "Move ROLL axis to the right"
 },
 {
   .name = "pitch",
@@ -90,7 +91,6 @@ struct output_axis axis_output[5] = {
   .max = -127,
   .center= 0,
   .min = 127,
-  .convention = "Move PITCH axis towards you (pitch up)"
 },
 {
   .name = "yaw",
@@ -98,7 +98,6 @@ struct output_axis axis_output[5] = {
   .max = -127,
   .center= 0,
   .min = 127,
-  .convention = "Move YAW axis to the right"
 },
 {
   .name = "throttle",
@@ -106,7 +105,6 @@ struct output_axis axis_output[5] = {
   .max = 0,
   .center= 64,
   .min = 127,
-  .convention = "Move THROTTLE axis up (full throttle)"
 },
 {
   .name = "mode",
@@ -114,7 +112,6 @@ struct output_axis axis_output[5] = {
   .max = 0,
   .center= 1,
   .min = 2,
-  .convention = "Move MODE axis to navigation"
 },
 }; 
 
@@ -132,7 +129,6 @@ void calibrate_axis_thread(void)
         current_axis = n;
         axis[n].number = n;
         axis[n].reverse = 0;
-        gtk_button_set_label (axis[current_axis].name_label,"roll");
         gtk_button_set_label (axis[current_axis].rev_label,"0");
       }
       if (stick_axis_values[n] < 0.8*axis[n].min && stick_axis_values[n] < 0){
@@ -140,7 +136,6 @@ void calibrate_axis_thread(void)
         current_axis = n;
         axis[n].number = n;
         axis[n].reverse = 1;
-        gtk_button_set_label (axis[current_axis].name_label,"roll");
         gtk_button_set_label (axis[current_axis].rev_label,"1");
       }
     }
@@ -156,33 +151,6 @@ void flush_input ( FILE *in )
   while ( ch != EOF && ch != '\n' ); 
 
   clearerr ( in );
-}
-
-
-void find_axis_info(void)
-{
-  printf("Start calibrating the axis:\n");
-  printf("Do NOT move the axis away from the center position unless asked to do otherwise\n");
-  for (i = 0; i < 5; i++)
-  {
-    printf("%s\n", axis_output[i].convention);
-    thread_done = 0;
-    pthread_t thread_axis;
-    //start calibrate_axis_thread
-    pthread_create( &thread_axis, NULL, calibrate_axis_thread, NULL);
-    // clear input buffer
-    flush_input( stdin );
-    //ask user when to stop the thread
-    printf("Done? Press any KEY + ENTER to continue...\n");
-    // clear output buffer
-    fflush ( stdout );
-    // wait until user is finished calibrating
-    getchar();
-    //stop calibrate_axis_thread
-    thread_done = 1;
-    axis_output[i].index = current_axis;
-    pthread_join(thread_axis, NULL);
-  }
 }
 
 void print_to_file(void)
@@ -221,11 +189,8 @@ void print_to_file(void)
   printf("The results of the calibration have been saved in joystick_calibration.xml\n");
 }
 
-static gboolean find_max_min_callback(GtkWidget *widget){
+void find_max_min(void){
 
-  if (state != FIND_MAX_MIN){
-    return FALSE;
-  }
   int n;
   stick_read();
   for (n = 0; n < stick_axis_count; n++)
@@ -240,14 +205,10 @@ static gboolean find_max_min_callback(GtkWidget *widget){
       axis[n].min = stick_axis_values[n];
     }
   }
-  return TRUE;
 }
 
-static gboolean find_center_callback(GtkWidget *widget){
+void find_center(void){
 
-  if (state != FIND_CENTER){
-    return FALSE;
-  }
   int n;
   stick_read();
   for (n = 0; n < stick_axis_count; n++)
@@ -257,45 +218,54 @@ static gboolean find_center_callback(GtkWidget *widget){
     //store the center values
     axis[n].center = stick_axis_values[n];
   }
-  return TRUE;
-}
-
-static gboolean find_roll_callback(GtkWidget *widget){
-
-  if (state != FIND_ROLL_AXIS){
-    return FALSE;
-  }
-  calibrate_axis_thread();
-  return TRUE;
 }
 
 void on_next (GtkWidget *widget,
              gpointer   data)
 {
+  state++;
+}
+
+static gboolean calibration_callback(GtkWidget *widget){
+
   switch (state){
-    case START:
-      g_print("start program\n");
-      gtk_label_set_text (info_text, "Move ALL axis from MAX to MIN\n");
-      state++;
-      g_timeout_add(1000/60, find_max_min_callback, NULL);
-      g_print("move to state %i\n", state);
-      break;
-    case FIND_MAX_MIN:
-      gtk_label_set_text (info_text, "Move ALL to CENTER position\n");
-      state++;
-      g_timeout_add(1000/60, find_center_callback, NULL);
-      g_print("move to state %i\n", state);
-      break;
-    case FIND_CENTER:
-      gtk_label_set_text (info_text, "Move ROLL axis to the right\n");
-      state++;
-      g_timeout_add(1000/60, find_roll_callback, NULL);
-      g_print("move to state %i\n", state);
-      break;
-    case FIND_ROLL_AXIS:
-      g_print("finished roll axis\n");
-      state = 0;
-      break;
+
+      case FIND_MAX_MIN:
+        gtk_label_set_text (info_text, "Move ALL axis from MAX to MIN\n");
+        find_max_min();
+        break;
+      case FIND_CENTER:
+        gtk_label_set_text (info_text, "Move ALL to CENTER position\n");
+        find_center();
+        break;
+      case FIND_ROLL_AXIS:
+        gtk_label_set_text (info_text, "Move ROLL axis to the right and back to center\n");
+        calibrate_axis_thread();
+        axis_output[0].index = current_axis;
+        break;
+      case FIND_PITCH_AXIS:
+        gtk_button_set_label (axis[axis_output[0].index].name_label,"roll");
+        gtk_label_set_text (info_text, "Move PITCH axis towards you (pitch up) and back to the center\n");
+        calibrate_axis_thread();
+        axis_output[1].index = current_axis;
+        break;
+      case FIND_YAW_AXIS:
+        gtk_button_set_label (axis[axis_output[1].index].name_label,"pitch");
+        gtk_label_set_text (info_text, "Move YAW axis to the right and back to the center\n");
+        calibrate_axis_thread();
+        axis_output[2].index = current_axis;
+        break;
+      case FIND_THROTTLE_AXIS:
+        gtk_button_set_label (axis[axis_output[2].index].name_label,"yaw");
+        gtk_label_set_text (info_text, "Move THROTTLE axis up (full throttle) and back to the center\n");
+        calibrate_axis_thread();
+        axis_output[3].index = current_axis;
+        gtk_button_set_label (axis[axis_output[3].index].name_label,"throttle");
+        break;
+  }
+  return TRUE;
+  if(state == 6){
+    return FALSE;
   }
 }
 
@@ -325,8 +295,8 @@ GtkWidget* build_gui ( void ) {
   axis[i].adj = gtk_adjustment_new (0.0, -32767.0, 32767.0, 1, 1.0, 1.0);
   axis[i].hscale = gtk_hscale_new (axis[i].adj);
 
-  axis[i].name_label = gtk_button_new_with_label("-");
-  axis[i].rev_label = gtk_button_new_with_label("-");
+  axis[i].name_label = gtk_button_new_with_label("axis name");
+  axis[i].rev_label = gtk_button_new_with_label("axis sign");
   axis[i].axisbox = gtk_hbox_new (FALSE, 0);
   axis[i].axisalign = gtk_alignment_new(0.5, 1, 0.3, 0.2);
   gtk_container_add(GTK_CONTAINER(axis[i].axisalign), axis[i].axisbox);
@@ -406,22 +376,17 @@ int main(int argc, char** argv)
     axis[cnt].max = 0;
     axis[cnt].reverse = 0;
     axis[cnt].used = 0;
-    state = 0;
+    state = -1;
   }
 
   gtk_init(&argc, &argv);
   GtkWidget* window = build_gui();
   g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
   g_signal_connect (next, "clicked", G_CALLBACK (on_next), NULL);
-  //g_timeout_add(1000/60, find_max_min_callback, NULL);
-  //g_timeout_add(1000/60, find_center_callback, NULL);
+  g_timeout_add(1000/60, calibration_callback, NULL);
   gtk_widget_show_all(window);
   gtk_main();
 
   return 0;
 
-  /*find_max_min();
-  find_center();
-  find_axis_info();
-  print_to_file();*/
 }
