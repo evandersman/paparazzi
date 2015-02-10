@@ -127,6 +127,7 @@ void calibrate_axis_thread(int input_axis)
         axis[n].used = 1;
         axis[n].number = n;
         axis[n].reverse = 0;
+        axis_output[input_axis].index = n;
         gtk_button_set_label (axis[n].rev_label,"normal");
         gtk_button_set_label (axis[n].name_label, axis_output[input_axis].name);
       }
@@ -134,6 +135,7 @@ void calibrate_axis_thread(int input_axis)
         axis[n].used = 1;
         axis[n].number = n;
         axis[n].reverse = 1;
+        axis_output[input_axis].index = n;
         gtk_button_set_label (axis[n].rev_label,"reversed");
         gtk_button_set_label (axis[n].name_label, axis_output[input_axis].name);
       }
@@ -288,7 +290,7 @@ static gboolean calibration_timer(GtkWidget *widget){
         find_center();
         break;
       case FIND_ROLL_AXIS:
-        calibrate_axis_thread(0);
+        calibrate_axis_thread(0); 
         break;
       case FIND_PITCH_AXIS:
         calibrate_axis_thread(1);
