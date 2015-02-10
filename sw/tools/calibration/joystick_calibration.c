@@ -40,12 +40,15 @@ struct joystick_axis{
   int16_t min, center, max;
   bool reverse;
   bool used;
-  GtkWidget *hscale;
-  GtkWidget *adj;
+  GtkWidget *bar;
+  GtkWidget *box1;
+  GtkWidget *align1;
+  GtkWidget *box2;
+  GtkWidget *align2;
   GtkWidget *name_label;
   GtkWidget *rev_label;
-  GtkWidget *axisbox;
-  GtkWidget *axisalign;
+  GtkWidget *max_label;
+  GtkWidget *min_label;
 };
 
 // the axis used in the calibration file
@@ -71,8 +74,8 @@ enum STATE state;
 char answer;
 int i;
 
-GtkWidget *window, *vbox, *hbox, *halign, *next, *previous, *vbox1, *valign;
-GtkWidget *info_text;
+GtkWidget *window, *vbox, *hbox, *halign, *vbox1, *valign1, *next, *previous, *info_text;
+gchar *display_max, *display_min;
 
 struct joystick_axis axis[AXIS_COUNT];
 
@@ -114,6 +117,41 @@ struct output_axis axis_output[5] = {
 },
 }; 
 
+void find_max_min(void){
+
+  int n;
+  stick_read();
+  for (n = 0; n < stick_axis_count; n++)
+  {
+    //show the values
+    gtk_progress_bar_set_fraction (axis[n].bar, ((float)stick_axis_values[n]+32768)/65536);
+    //store the max and min values
+    if (stick_axis_values[n] > axis[n].max){
+      axis[n].max = stick_axis_values[n];
+      display_max = g_strdup_printf("%d", axis[n].max);     		//convert num to str
+      gtk_button_set_label (axis[n].max_label, display_max);		//set label to "display_max"
+    }
+    if (stick_axis_values[n] < axis[n].min){
+      axis[n].min = stick_axis_values[n];
+      display_min = g_strdup_printf("%d", axis[n].min);     		//convert num to str
+      gtk_button_set_label (axis[n].min_label, display_min);		//set label to "display_min"
+    }
+  }
+}
+
+void find_center(void){
+
+  int n;
+  stick_read();
+  for (n = 0; n < stick_axis_count; n++)
+  {
+    //show the values
+    gtk_progress_bar_set_fraction (axis[n].bar, ((float)stick_axis_values[n]+32768)/65536);
+    //store the center values
+    axis[n].center = stick_axis_values[n];
+  }
+}
+
 void calibrate_axis_thread(int input_axis)
 {
   int n;
@@ -121,7 +159,8 @@ void calibrate_axis_thread(int input_axis)
   for (n = 0; n < stick_axis_count; n++)
   {
     //show the axis values
-    gtk_adjustment_set_value(axis[n].adj, stick_axis_values[n]);
+    gtk_progress_bar_set_fraction (axis[n].bar, ((float)stick_axis_values[n]+32768)/65536);;
+    // store the axis number and sign
     if (axis[n].used == 0){
       if (stick_axis_values[n] > 0.8*axis[n].max && stick_axis_values[n] > 0){
         axis[n].used = 1;
@@ -189,39 +228,9 @@ void print_to_file(void)
   fclose(fp);
 }
 
-void find_max_min(void){
-
-  int n;
-  stick_read();
-  for (n = 0; n < stick_axis_count; n++)
-  {
-    //show the max and min values
-    gtk_adjustment_set_value(axis[n].adj, stick_axis_values[n]);
-    //store the max and min values
-    if (stick_axis_values[n] > axis[n].max){
-      axis[n].max = stick_axis_values[n];
-    }
-    if (stick_axis_values[n] < axis[n].min){
-      axis[n].min = stick_axis_values[n];
-    }
-  }
-}
-
-void find_center(void){
-
-  int n;
-  stick_read();
-  for (n = 0; n < stick_axis_count; n++)
-  {
-    //show the center values
-    gtk_adjustment_set_value(axis[n].adj, stick_axis_values[n]);
-    //store the center values
-    axis[n].center = stick_axis_values[n];
-  }
-}
-
 void state_definition(void){
 
+  // change text label depending on state
   switch (state){
       case FIND_MAX_MIN:
         gtk_label_set_text (info_text, "Move ALL axis from MAX to MIN\n");
@@ -315,37 +324,45 @@ GtkWidget* build_gui ( void ) {
   // create a new window
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title (GTK_WINDOW (window), "Joystick calibration");
-  gtk_window_set_default_size(GTK_WINDOW (window), 400, -1);
+  gtk_window_set_default_size(GTK_WINDOW (window), 600, -1);
 
   // create a new vertical box
   vbox = gtk_vbox_new (FALSE, 0);
   gtk_container_add (GTK_CONTAINER (window), vbox);
 
   // add text box inside the vertical box with instructions
-  info_text = gtk_label_new ("To start the calibration press NEXT");
-  gtk_box_pack_start (GTK_BOX (vbox), info_text, TRUE, TRUE, 0);
+  info_text = gtk_label_new ("To start program press NEXT");
+  gtk_box_pack_start (GTK_BOX (vbox), info_text, TRUE, TRUE, 10);
 
   // add a vertically aligned box at the top inside the main vertical box
   vbox1 = gtk_vbox_new (FALSE, 0);
-  valign = gtk_alignment_new(0.5, 0, 0.3, 0.2);
-  gtk_container_add(GTK_CONTAINER(valign), vbox1);
-  gtk_container_add (GTK_CONTAINER (vbox), valign);
+  valign1 = gtk_alignment_new(0.5, 0, 0.3, 0.2);
+  gtk_alignment_set_padding (valign1, 10, 0, 0, 0);
+  gtk_container_add(GTK_CONTAINER(valign1), vbox1);
+  gtk_container_add (GTK_CONTAINER (vbox), valign1);
 
   for (i = 0; i < stick_axis_count; i++)
   {
-  axis[i].adj = gtk_adjustment_new (0.0, -32767.0, 32767.0, 1, 1.0, 1.0);
-  axis[i].hscale = gtk_hscale_new (axis[i].adj);
-
+  axis[i].bar = gtk_progress_bar_new ();
+  axis[i].box1 = gtk_hbox_new (FALSE, 0);
+  axis[i].box2 = gtk_hbox_new (FALSE, 0);
+  axis[i].align1 = gtk_alignment_new(0.5, 0, 0.3, 0.2);
+  axis[i].align2 = gtk_alignment_new(0.5, 0, 1, 1);
   axis[i].name_label = gtk_button_new_with_label("axis name");
   axis[i].rev_label = gtk_button_new_with_label("axis sign");
-  axis[i].axisbox = gtk_hbox_new (FALSE, 0);
-  axis[i].axisalign = gtk_alignment_new(0.5, 1, 0.3, 0.2);
-  gtk_container_add(GTK_CONTAINER(axis[i].axisalign), axis[i].axisbox);
-  gtk_container_add (GTK_CONTAINER (vbox1), axis[i].axisalign);
+  axis[i].max_label = gtk_button_new_with_label("max");
+  axis[i].min_label = gtk_button_new_with_label("min");
 
-  gtk_box_pack_start(GTK_BOX(vbox1), axis[i].hscale, TRUE, TRUE, 5);
-  gtk_box_pack_start(GTK_BOX(axis[i].axisbox), axis[i].name_label, TRUE, TRUE, 5);
-  gtk_box_pack_start(GTK_BOX(axis[i].axisbox), axis[i].rev_label, TRUE, TRUE, 5);
+  gtk_container_add(GTK_CONTAINER(axis[i].align1), axis[i].box1);
+  gtk_container_add (GTK_CONTAINER (vbox1), axis[i].align1);
+  gtk_box_pack_start(GTK_BOX(axis[i].box1), axis[i].name_label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(axis[i].box1), axis[i].rev_label, TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(axis[i].align2), axis[i].box2);
+  gtk_container_add (GTK_CONTAINER (vbox1), axis[i].align2);
+  gtk_box_pack_start(GTK_BOX(axis[i].box2), axis[i].min_label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(axis[i].box2), axis[i].bar, TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(axis[i].box2), axis[i].max_label, TRUE, TRUE, 0);
+
   }
 
   // add a horizontally aligned box at the bottom inside the vertical box
@@ -353,11 +370,12 @@ GtkWidget* build_gui ( void ) {
   halign = gtk_alignment_new(0.5, 1, 0.3, 0.2);
   gtk_container_add(GTK_CONTAINER(halign), hbox);
   gtk_container_add (GTK_CONTAINER (vbox), halign);
+  gtk_alignment_set_padding (halign, 20, 0, 0, 0);
 
   previous = gtk_button_new_with_label("Previous");
-  gtk_box_pack_start(GTK_BOX(hbox), previous, TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(hbox), previous, TRUE, TRUE, 0);
   next = gtk_button_new_with_label("Next");
-  gtk_box_pack_start(GTK_BOX(hbox), next, TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(hbox), next, TRUE, TRUE, 0);
 
   return window;
 }
@@ -419,12 +437,14 @@ int main(int argc, char** argv)
     axis[cnt].used = 0;
     state = -1;
   }
-
+  
+  // start GTK and build the interface
   gtk_init(&argc, &argv);
   GtkWidget* window = build_gui();
   g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
   g_signal_connect (next, "clicked", G_CALLBACK (on_next), NULL);
   g_signal_connect (previous, "clicked", G_CALLBACK (on_previous), NULL);
+  // run thread
   g_timeout_add(1000/60, calibration_timer, NULL);
   gtk_widget_show_all(window);
   gtk_main();
