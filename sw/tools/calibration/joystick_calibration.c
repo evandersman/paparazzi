@@ -36,10 +36,10 @@
 
 // the axis of the joystick device
 struct joystick_axis{
-  int number;
   int16_t min, center, max;
   bool reverse;
   bool used;
+  int type;	// 0->(continous or more than two levels) 1->(two_levels)
   GtkWidget *bar;
   GtkWidget *box1;
   GtkWidget *align1;
@@ -129,12 +129,12 @@ void find_max_min(void){
     if (stick_axis_values[n] > axis[n].max){
       axis[n].max = stick_axis_values[n];
       display_max = g_strdup_printf("%d", axis[n].max);     		//convert num to str
-      gtk_button_set_label (axis[n].max_label, display_max);		//set label to "display_max"
+      gtk_label_set_text (axis[n].max_label, display_max);		//set label to "display_max"
     }
     if (stick_axis_values[n] < axis[n].min){
       axis[n].min = stick_axis_values[n];
       display_min = g_strdup_printf("%d", axis[n].min);     		//convert num to str
-      gtk_button_set_label (axis[n].min_label, display_min);		//set label to "display_min"
+      gtk_label_set_text (axis[n].min_label, display_min);		//set label to "display_min"
     }
   }
 }
@@ -148,7 +148,14 @@ void find_center(void){
     //show the values
     gtk_progress_bar_set_fraction (axis[n].bar, ((float)stick_axis_values[n]+32768)/65536);
     //store the center values
+    axis[n].type = 0;
     axis[n].center = stick_axis_values[n];
+    //for all axis without center position set center as the middel value
+    if (axis[n].center == axis[n].min || axis[n].center == axis[n].max)
+    {
+      axis[n].center = (axis[n].max - axis[n].min)/2;
+      axis[n].type = 1;
+    }
   }
 }
 
@@ -161,22 +168,20 @@ void calibrate_axis_thread(int input_axis)
     //show the axis values
     gtk_progress_bar_set_fraction (axis[n].bar, ((float)stick_axis_values[n]+32768)/65536);;
     // store the axis number and sign
-    if (axis[n].used == 0){
+    if (axis[n].used == 0 && axis[n].type != 1){
       if (stick_axis_values[n] > 0.8*axis[n].max && stick_axis_values[n] > 0){
         axis[n].used = 1;
-        axis[n].number = n;
         axis[n].reverse = 0;
         axis_output[input_axis].index = n;
-        gtk_button_set_label (axis[n].rev_label,"normal");
-        gtk_button_set_label (axis[n].name_label, axis_output[input_axis].name);
+        gtk_label_set_text (axis[n].rev_label,"+");
+        gtk_label_set_text (axis[n].name_label, axis_output[input_axis].name);
       }
       if (stick_axis_values[n] < 0.8*axis[n].min && stick_axis_values[n] < 0){
         axis[n].used = 1;
-        axis[n].number = n;
         axis[n].reverse = 1;
         axis_output[input_axis].index = n;
-        gtk_button_set_label (axis[n].rev_label,"reversed");
-        gtk_button_set_label (axis[n].name_label, axis_output[input_axis].name);
+        gtk_label_set_text (axis[n].rev_label,"- (reversed)");
+        gtk_label_set_text (axis[n].name_label, axis_output[input_axis].name);
       }
     }
   }
@@ -203,7 +208,7 @@ void print_to_file(void)
   fprintf(fp, "  <input>\n");
   for (i = 0; i < 5; i++)
   {
-    fprintf(fp, "    <axis index=\"%i\" name=\"%s\"/>\n", axis[axis_output[i].index].number, axis_output[i].name);
+    fprintf(fp, "    <axis index=\"%i\" name=\"%s\"/>\n", axis_output[i].index, axis_output[i].name);
   }
   fprintf(fp, "\n");
   fprintf(fp, "  </input>\n");
@@ -246,6 +251,7 @@ void state_definition(void){
         break;
       case FIND_YAW_AXIS:
         gtk_label_set_text (info_text, "Move YAW axis to the right and back to the center\n");
+        gtk_button_set_label (next,"Next");
         break;
       case FIND_THROTTLE_AXIS:
         gtk_label_set_text (info_text, "Move THROTTLE axis up (full throttle) and back to the center\n");
@@ -281,6 +287,16 @@ void on_previous (GtkWidget *widget,
 
   if ( current_state > FIND_MAX_MIN){
     state--;
+    if ( state > FIND_CENTER){
+      axis[axis_output[state-1].index].used = 0;
+      axis[axis_output[state-2].index].used = 0;
+      gtk_label_set_text (axis[axis_output[state-1].index].name_label, "axis name");
+      gtk_label_set_text (axis[axis_output[state-2].index].name_label, "axis name");
+      gtk_label_set_text (axis[axis_output[state-1].index].rev_label, "axis sign");
+      gtk_label_set_text (axis[axis_output[state-2].index].rev_label, "axis sign");
+      g_print("axis number %i is unused\n", axis_output[state-1].index);
+      g_print("axis number %i is unsued\n", axis_output[state-2].index);
+    }
   }
   else{
     state = 0;
@@ -348,10 +364,10 @@ GtkWidget* build_gui ( void ) {
   axis[i].box2 = gtk_hbox_new (FALSE, 0);
   axis[i].align1 = gtk_alignment_new(0.5, 0, 0.3, 0.2);
   axis[i].align2 = gtk_alignment_new(0.5, 0, 1, 1);
-  axis[i].name_label = gtk_button_new_with_label("axis name");
-  axis[i].rev_label = gtk_button_new_with_label("axis sign");
-  axis[i].max_label = gtk_button_new_with_label("max");
-  axis[i].min_label = gtk_button_new_with_label("min");
+  axis[i].name_label = gtk_label_new("axis name");
+  axis[i].rev_label = gtk_label_new("axis sign");
+  axis[i].max_label = gtk_label_new("max");
+  axis[i].min_label = gtk_label_new("min");
 
   gtk_container_add(GTK_CONTAINER(axis[i].align1), axis[i].box1);
   gtk_container_add (GTK_CONTAINER (vbox1), axis[i].align1);
@@ -435,6 +451,7 @@ int main(int argc, char** argv)
     axis[cnt].max = 0;
     axis[cnt].reverse = 0;
     axis[cnt].used = 0;
+    axis[cnt].type = 0;
     state = -1;
   }
   
