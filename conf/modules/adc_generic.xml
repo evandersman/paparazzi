@@ -13,6 +13,8 @@
   <periodic fun="adc_generic_periodic()" freq="4"/>
   <makefile target="ap">
     <file name="adc_generic.c"/>
+    <define name="USE_ADC_1"/>
+    <define name="USE_ADC_7"/>
     <raw>
 
 ifneq ($(ADC_CHANNEL_GENERIC1),)
