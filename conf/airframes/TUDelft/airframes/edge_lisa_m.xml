@@ -44,9 +44,19 @@
 
   <modules>
     <!--load name="sys_mon.xml"/-->
-    <load name="adc_generic.xml">
-      <configure name="ADC_CHANNEL_GENERIC1" value="ADC_1"/>
-      <configure name="ADC_CHANNEL_GENERIC2" value="ADC_7"/>
+    <load name="turbulence_adc.xml">
+      <configure name="ADC_CHANNEL_AIRSPEED_LEFT" value="ADC_1"/>
+      <define name="USE_ADC_1"/>
+      <configure name="ADC_CHANNEL_PITCH_LEFT" value="ADC_2"/>
+      <define name="USE_ADC_2"/>
+      <configure name="ADC_CHANNEL_AIRSPEED_RIGHT" value="ADC_3"/>
+      <define name="USE_ADC_3"/>
+      <!--configure name="ADC_CHANNEL_PITCH_RIGHT" value="ADC_7"/>
+      <define name="USE_ADC_7"/-->
+      <!--configure name="ADC_CHANNEL_GENERIC1" value="ADC_1"/>
+      <define name="USE_ADC_1"/>
+      <configure name="ADC_CHANNEL_GENERIC2" value="ADC_2"/>
+      <define name="USE_ADC_2"/-->
     </load>
     <load name="air_data.xml">
       <define name="AIR_DATA_CALC_AMSL_BARO" value="TRUE"/>
@@ -187,6 +197,7 @@
     <define name="CRITIC_BAT_LEVEL" value="12.8" unit="V"/>
     <define name="LOW_BAT_LEVEL" value="12.9" unit="V"/>
     <define name="MAX_BAT_LEVEL" value="16.8" unit="V"/>
+    <define name="VoltageOfAdc(adc)" value="(0.006665*adc)"/>
   </section>
 
   <section name="MISC">
@@ -195,7 +206,6 @@
     <define name="KILL_MODE_DISTANCE" value="(1.5*MAX_DIST_FROM_HOME)"/>
     <define name="CONTROL_FREQUENCY" value="60" unit="Hz"/>
     <define name="DEFAULT_CIRCLE_RADIUS" value="80."/>
-    <define name="VoltageOfAdc(adc)" value="(0.006665*adc)"/>
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">

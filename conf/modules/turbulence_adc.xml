@@ -1,0 +1,22 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="turbulence_adc" dir="sensors">
+  <doc>
+    <description>module for reading pressure sensor data</description>
+      <configure name="ADC_CHANNEL_AIRSPEED_LEFT" value="ADCX" description="choose which ADC is used for input airspeed left wing"/>
+      <configure name="ADC_CHANNEL_PITCH_LEFT" value="ADCX" description="choose which ADC is used for input pitch left wing"/>
+      <configure name="ADC_CHANNEL_AIRSPEED_RIGHT" value="ADCX" description="choose which ADC is used for input airspeed right wing"/>
+      <!--configure name="ADC_CHANNEL_PITCH_RIGHT" value="ADCX" description="choose which ADC is used for input pitch right wing"/-->
+  </doc>
+  <header>
+    <file name="turbulence_adc.h"/>
+  </header>
+  <init fun="turbulence_adc_init()"/>
+  <periodic fun="turbulence_adc_update()" freq="4"/>
+  <makefile target="ap">
+    <file name="turbulence_adc.c"/>
+    <define name="ADC_CHANNEL_AIRSPEED_LEFT" value="ADC_1"/>
+    <define name="ADC_CHANNEL_PITCH_LEFT" value="ADC_2"/>
+    <define name="ADC_CHANNEL_AIRSPEED_RIGHT" value="ADC_3"/>
+  </makefile>
+</module>
