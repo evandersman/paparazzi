@@ -34,22 +34,6 @@
 #include <stdio.h>
 #include "std.h"
 
-/*#ifndef ADC_CHANNEL_AIRSPEED_LEFT
-#define ADC_CHANNEL_AIRSPEED_LEFT ADC_1
-#endif
-
-#ifndef ADC_CHANNEL_PITCH_LEFT
-#define ADC_CHANNEL_PITCH_LEFT ADC_2
-#endif
-
-#ifndef ADC_CHANNEL_AIRSPEED_RIGHT
-#define ADC_CHANNEL_AIRSPEED_RIGHT ADC_3
-#endif
-
-#ifndef ADC_CHANNEL_PITCH_RIGHT
-#define ADC_CHANNEL_PITCH_RIGHT ADC_7
-#endif*/
-
 #ifndef ADC_CHANNEL_TURBULENCE_NB_SAMPLES
 #define ADC_CHANNEL_TURBULENCE_NB_SAMPLES DEFAULT_AV_NB_SAMPLE
 #endif
@@ -57,28 +41,28 @@
 static struct adc_buf buf_airspeed_left;
 static struct adc_buf buf_pitch_left;
 static struct adc_buf buf_airspeed_right;
-//static struct adc_buf buf_pitch_right;
+static struct adc_buf buf_pitch_right;
 
 uint16_t airspeed_left_raw;
 uint16_t pitch_left_raw;
 uint16_t airspeed_right_raw;
-//uint16_t pitch_right_raw;
+uint16_t pitch_right_raw;
 
 void turbulence_adc_init(void)
 {
   adc_buf_channel(ADC_CHANNEL_AIRSPEED_LEFT, &buf_airspeed_left, ADC_CHANNEL_TURBULENCE_NB_SAMPLES);
   adc_buf_channel(ADC_CHANNEL_PITCH_LEFT, &buf_pitch_left, ADC_CHANNEL_TURBULENCE_NB_SAMPLES);
-  adc_buf_channel(ADC_CHANNEL_AIRSPEED_LEFT, &buf_airspeed_right, ADC_CHANNEL_TURBULENCE_NB_SAMPLES);
-  //adc_buf_channel(ADC_CHANNEL_PITCH_RIGHT, &buf_pitch_right, ADC_CHANNEL_TURBULENCE_NB_SAMPLES);
+  adc_buf_channel(ADC_CHANNEL_AIRSPEED_RIGHT, &buf_airspeed_right, ADC_CHANNEL_TURBULENCE_NB_SAMPLES);
+  adc_buf_channel(ADC_CHANNEL_PITCH_RIGHT, &buf_pitch_right, ADC_CHANNEL_TURBULENCE_NB_SAMPLES);
 }
 
 void turbulence_adc_update(void)
 {
   airspeed_left_raw = buf_airspeed_left.sum / buf_airspeed_left.av_nb_sample;
-  pitch_left_raw = buf_airspeed_left.sum / buf_airspeed_left.av_nb_sample;
-  airspeed_right_raw = buf_airspeed_left.sum / buf_airspeed_left.av_nb_sample;
-  //pitch_right_raw = buf_airspeed_left.sum / buf_airspeed_left.av_nb_sample;
+  pitch_left_raw = buf_pitch_left.sum / buf_pitch_left.av_nb_sample;
+  airspeed_right_raw = buf_airspeed_right.sum / buf_airspeed_right.av_nb_sample;
+  pitch_right_raw = buf_pitch_right.sum / buf_pitch_right.av_nb_sample;
 
-  DOWNLINK_SEND_ADC_GENERIC(DefaultChannel, DefaultDevice, &airspeed_left_raw, &pitch_left_raw);
+  DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &airspeed_left_raw, &pitch_left_raw, &airspeed_right_raw, &pitch_right_raw);
 
 }

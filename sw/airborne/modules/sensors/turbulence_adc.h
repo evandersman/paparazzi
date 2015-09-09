@@ -38,7 +38,7 @@ struct TurbulenceAdc {
 extern struct TurbulenceAdc airspeed_left_adc;
 extern struct TurbulenceAdc pitch_left_adc;
 extern struct TurbulenceAdc airspeed_right_adc;
-//extern struct TurbulenceAdc pitch_right_adc;
+extern struct TurbulenceAdc pitch_right_adc;
 
 void turbulence_adc_init(void);
 void turbulence_adc_update(void);

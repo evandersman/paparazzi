@@ -853,6 +853,13 @@
     <field name="values" type="int16[]" unit="none"/>
   </message>
 
+   <message name="ADC_TURBULENCE" id="106">
+     <field name="airspeed_left_raw" type="uint16"/>
+     <field name="pitch_left_raw" type="uint16"/>
+     <field name="airspeed_right_raw" type="uint16"/>
+     <field name="pitch_right_raw" type="uint16"/>
+   </message>
+
   <!--106 is free -->
   <!--107 is free -->
   <!--108 is free -->
