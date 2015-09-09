@@ -15,8 +15,15 @@
   <periodic fun="turbulence_adc_update()" freq="4"/>
   <makefile target="ap">
     <file name="turbulence_adc.c"/>
-    <define name="ADC_CHANNEL_AIRSPEED_LEFT" value="ADC_1"/>
-    <define name="ADC_CHANNEL_PITCH_LEFT" value="ADC_2"/>
-    <define name="ADC_CHANNEL_AIRSPEED_RIGHT" value="ADC_3"/>
+    <raw>
+ADC_CHANNEL_AIRSPEED_LEFT ?= ADC_1
+ADC_CHANNEL_PITCH_LEFT ?= ADC_2
+ADC_CHANNEL_AIRSPEED_RIGHT ?= ADC_3
+
+ap.CFLAGS += -DADC_CHANNEL_AIRSPEED_LEFT=$(ADC_CHANNEL_AIRSPEED_LEFT) -DUSE_$(ADC_CHANNEL_AIRSPEED_LEFT)
+ap.CFLAGS += -DADC_CHANNEL_PITCH_LEFT=$(ADC_CHANNEL_PITCH_LEFT) -DUSE_$(ADC_CHANNEL_PITCH_LEFT)
+ap.CFLAGS += -DADC_CHANNEL_AIRSPEED_RIGHT=$(ADC_CHANNEL_AIRSPEED_RIGHT) -DUSE_$(ADC_CHANNEL_AIRSPEED_RIGHT)
+ap.CFLAGS += $(TURB_ADC_FLAGS)
+  </raw>
   </makefile>
 </module>

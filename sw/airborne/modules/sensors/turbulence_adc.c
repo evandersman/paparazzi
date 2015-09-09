@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include "std.h"
 
-#ifndef ADC_CHANNEL_AIRSPEED_LEFT
+/*#ifndef ADC_CHANNEL_AIRSPEED_LEFT
 #define ADC_CHANNEL_AIRSPEED_LEFT ADC_1
 #endif
 
@@ -46,7 +46,7 @@
 #define ADC_CHANNEL_AIRSPEED_RIGHT ADC_3
 #endif
 
-/*#ifndef ADC_CHANNEL_PITCH_RIGHT
+#ifndef ADC_CHANNEL_PITCH_RIGHT
 #define ADC_CHANNEL_PITCH_RIGHT ADC_7
 #endif*/
 

@@ -45,14 +45,6 @@
   <modules>
     <!--load name="sys_mon.xml"/-->
     <load name="turbulence_adc.xml">
-      <configure name="ADC_CHANNEL_AIRSPEED_LEFT" value="ADC_1"/>
-      <define name="USE_ADC_1"/>
-      <configure name="ADC_CHANNEL_PITCH_LEFT" value="ADC_2"/>
-      <define name="USE_ADC_2"/>
-      <configure name="ADC_CHANNEL_AIRSPEED_RIGHT" value="ADC_3"/>
-      <define name="USE_ADC_3"/>
-      <!--configure name="ADC_CHANNEL_PITCH_RIGHT" value="ADC_7"/>
-      <define name="USE_ADC_7"/-->
       <!--configure name="ADC_CHANNEL_GENERIC1" value="ADC_1"/>
       <define name="USE_ADC_1"/>
       <configure name="ADC_CHANNEL_GENERIC2" value="ADC_2"/>
