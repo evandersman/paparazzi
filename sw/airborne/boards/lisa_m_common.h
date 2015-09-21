@@ -172,8 +172,8 @@
 #endif
 
 #if USE_ADC_4
-#define AD2_1_CHANNEL 15
-#define ADC_4 AD2_1
+#define AD2_3_CHANNEL 15
+#define ADC_4 AD2_3
 #define ADC_4_GPIO_PORT GPIOC
 #define ADC_4_GPIO_PIN GPIO5
 #endif
@@ -197,8 +197,8 @@
 #endif
 
 #if USE_ADC_7
-#define AD2_3_CHANNEL 9 /* derived from the schematics*/
-#define ADC_7 AD2_3 /* ADC2_3 it was not defined for the other channels so still available */
+#define AD2_1_CHANNEL 9 /* derived from the schematics*/
+#define ADC_7 AD2_1
 #define ADC_7_GPIO_PORT GPIOB /* spi port letter from schematics */
 #define ADC_7_GPIO_PIN GPIO1 /* spi pin number from schematics */
 #endif

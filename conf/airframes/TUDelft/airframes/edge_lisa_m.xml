@@ -44,12 +44,7 @@
 
   <modules>
     <!--load name="sys_mon.xml"/-->
-    <load name="turbulence_adc.xml">
-      <!--configure name="ADC_CHANNEL_GENERIC1" value="ADC_1"/>
-      <define name="USE_ADC_1"/>
-      <configure name="ADC_CHANNEL_GENERIC2" value="ADC_2"/>
-      <define name="USE_ADC_2"/-->
-    </load>
+    <load name="turbulence_adc.xml"/>
     <load name="air_data.xml">
       <define name="AIR_DATA_CALC_AMSL_BARO" value="TRUE"/>
     </load>
@@ -185,9 +180,9 @@
 
   <section name="BAT">
     <define name="MILLIAMP_AT_FULL_THROTTLE" value="2000"/>
-    <define name="CATASTROPHIC_BAT_LEVEL" value="12.4" unit="V"/>
-    <define name="CRITIC_BAT_LEVEL" value="12.8" unit="V"/>
-    <define name="LOW_BAT_LEVEL" value="12.9" unit="V"/>
+    <define name="CATASTROPHIC_BAT_LEVEL" value="14.2" unit="V"/>
+    <define name="CRITIC_BAT_LEVEL" value="14.5" unit="V"/>
+    <define name="LOW_BAT_LEVEL" value="14.8" unit="V"/>
     <define name="MAX_BAT_LEVEL" value="16.8" unit="V"/>
     <define name="VoltageOfAdc(adc)" value="(0.006665*adc)"/>
   </section>
