@@ -49,7 +49,7 @@ enum adc1_channels {
 };
 
 enum adc2_channels {
-ADC2_BEGIN = ADC1_END-1,
+  ADC2_BEGIN = ADC1_END-1,
 #ifdef AD2_1_CHANNEL
   AD2_1,
 #endif
@@ -66,7 +66,7 @@ ADC2_BEGIN = ADC1_END-1,
 };
 
 enum adc3_channels {
-ADC3_BEGIN = ADC2_END-1,
+  ADC3_BEGIN = ADC2_END-1,
 #ifdef AD3_1_CHANNEL
   AD3_1,
 #endif

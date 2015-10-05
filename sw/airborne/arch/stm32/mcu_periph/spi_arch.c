@@ -122,8 +122,8 @@ static void spi_start_dma_transaction(struct spi_periph *periph, struct spi_tran
 static void spi_next_transaction(struct spi_periph *periph);
 static void spi_configure_dma(uint32_t dma, uint32_t rcc_dma, uint8_t chan, uint32_t periph_addr, uint32_t buf_addr,
                               uint16_t len, enum SPIDataSizeSelect dss, bool_t increment);
-static void process_rx_dma_interrupt(struct spi_periph *periph);
-static void process_tx_dma_interrupt(struct spi_periph *periph);
+static void __attribute__((unused)) process_rx_dma_interrupt(struct spi_periph *periph);
+static void __attribute__((unused)) process_tx_dma_interrupt(struct spi_periph *periph);
 static void spi_arch_int_enable(struct spi_periph *spi);
 static void spi_arch_int_disable(struct spi_periph *spi);
 
@@ -324,7 +324,7 @@ bool_t spi_resume(struct spi_periph *p, uint8_t slave)
  * Transaction configuration helper functions
  *
  *****************************************************************************/
-static void set_default_comm_config(struct locm3_spi_comm *c)
+static void __attribute__((unused)) set_default_comm_config(struct locm3_spi_comm *c)
 {
   c->br = SPI_CR1_BAUDRATE_FPCLK_DIV_64;
   c->cpol = SPI_CR1_CPOL_CLK_TO_1_WHEN_IDLE;
@@ -339,7 +339,7 @@ static inline uint8_t get_transaction_signature(struct spi_transaction *t)
           (t->cpha << 1) | (t->cpol));
 }
 
-static uint8_t get_comm_signature(struct locm3_spi_comm *c)
+static uint8_t __attribute__((unused)) get_comm_signature(struct locm3_spi_comm *c)
 {
   uint8_t sig = 0;
   if (c->cpol == SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE) {
@@ -717,13 +717,9 @@ void spi1_arch_init(void)
 
   // Configure GPIOs: SCK, MISO and MOSI
 #ifdef STM32F1
-  // TODO configure lisa board files to use gpio_setup_pin_af function
-  gpio_set_mode(GPIO_BANK_SPI1_SCK, GPIO_MODE_OUTPUT_50_MHZ,
-                GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
-                GPIO_SPI1_SCK | GPIO_SPI1_MOSI);
-
-  gpio_set_mode(GPIO_BANK_SPI1_MISO, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
-                GPIO_SPI1_MISO);
+  gpio_setup_pin_af(GPIO_BANK_SPI1_MISO, GPIO_SPI1_MISO, 0, FALSE);
+  gpio_setup_pin_af(GPIO_BANK_SPI1_MOSI, GPIO_SPI1_MOSI, 0, TRUE);
+  gpio_setup_pin_af(GPIO_BANK_SPI1_SCK, GPIO_SPI1_SCK, 0, TRUE);
 #elif defined STM32F4
   gpio_setup_pin_af(SPI1_GPIO_PORT_MISO, SPI1_GPIO_MISO, SPI1_GPIO_AF, FALSE);
   gpio_setup_pin_af(SPI1_GPIO_PORT_MOSI, SPI1_GPIO_MOSI, SPI1_GPIO_AF, TRUE);
@@ -809,13 +805,9 @@ void spi2_arch_init(void)
 
   // Configure GPIOs: SCK, MISO and MOSI
 #ifdef STM32F1
-  // TODO configure lisa board files to use gpio_setup_pin_af function
-  gpio_set_mode(GPIO_BANK_SPI2_SCK, GPIO_MODE_OUTPUT_50_MHZ,
-                GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
-                GPIO_SPI2_SCK | GPIO_SPI2_MOSI);
-
-  gpio_set_mode(GPIO_BANK_SPI2_MISO, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
-                GPIO_SPI2_MISO);
+  gpio_setup_pin_af(GPIO_BANK_SPI2_MISO, GPIO_SPI2_MISO, 0, FALSE);
+  gpio_setup_pin_af(GPIO_BANK_SPI2_MOSI, GPIO_SPI2_MOSI, 0, TRUE);
+  gpio_setup_pin_af(GPIO_BANK_SPI2_SCK, GPIO_SPI2_SCK, 0, TRUE);
 #elif defined STM32F4
   gpio_setup_pin_af(SPI2_GPIO_PORT_MISO, SPI2_GPIO_MISO, SPI2_GPIO_AF, FALSE);
   gpio_setup_pin_af(SPI2_GPIO_PORT_MOSI, SPI2_GPIO_MOSI, SPI2_GPIO_AF, TRUE);
@@ -902,13 +894,9 @@ void spi3_arch_init(void)
 
   // Configure GPIOs: SCK, MISO and MOSI
 #ifdef STM32F1
-  // TODO configure lisa board files to use gpio_setup_pin_af function
-  gpio_set_mode(GPIO_BANK_SPI3_SCK, GPIO_MODE_OUTPUT_50_MHZ,
-                GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
-                GPIO_SPI3_SCK | GPIO_SPI3_MOSI);
-
-  gpio_set_mode(GPIO_BANK_SPI3_MISO, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
-                GPIO_SPI3_MISO);
+  gpio_setup_pin_af(GPIO_BANK_SPI3_MISO, GPIO_SPI3_MISO, 0, FALSE);
+  gpio_setup_pin_af(GPIO_BANK_SPI3_MOSI, GPIO_SPI3_MOSI, 0, TRUE);
+  gpio_setup_pin_af(GPIO_BANK_SPI3_SCK, GPIO_SPI3_SCK, 0, TRUE);
 #elif defined STM32F4
   gpio_setup_pin_af(SPI3_GPIO_PORT_MISO, SPI3_GPIO_MISO, SPI3_GPIO_AF, FALSE);
   gpio_setup_pin_af(SPI3_GPIO_PORT_MOSI, SPI3_GPIO_MOSI, SPI3_GPIO_AF, TRUE);
@@ -1260,18 +1248,11 @@ void spi1_slave_arch_init(void) {
   rcc_periph_clock_enable(RCC_SPI1);
 
   // Configure GPIOs: SCK, MISO and MOSI
-  // TODO configure lisa board files to use gpio_setup_pin_af function
-  gpio_set_mode(GPIO_BANK_SPI1_SCK, GPIO_MODE_INPUT,
-                GPIO_CNF_INPUT_FLOAT,
-                GPIO_SPI1_SCK | GPIO_SPI1_MOSI);
-
-  gpio_set_mode(GPIO_BANK_SPI1_MISO, GPIO_MODE_OUTPUT_50_MHZ,
-                GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
-                GPIO_SPI1_MISO);
-
-  gpio_set_mode(GPIO_BANK_SPI1_NSS, GPIO_MODE_INPUT,
-                GPIO_CNF_INPUT_FLOAT,
-                GPIO_SPI1_NSS);
+  gpio_setup_pin_af(GPIO_BANK_SPI1_MISO, GPIO_SPI1_MISO, 0, TRUE);
+  gpio_setup_pin_af(GPIO_BANK_SPI1_MOSI, GPIO_SPI1_MOSI, 0, FALSE);
+  gpio_setup_pin_af(GPIO_BANK_SPI1_SCK, GPIO_SPI1_SCK, 0, FALSE);
+  // set NSS as input
+  gpio_setup_pin_af(GPIO_BANK_SPI1_NSS, GPIO_SPI1_NSS, 0, FALSE);
 
   // reset SPI
   spi_reset(SPI1);
@@ -1354,18 +1335,11 @@ void spi2_slave_arch_init(void) {
   rcc_periph_clock_enable(RCC_SPI2);
 
   // Configure GPIOs: SCK, MISO and MOSI
-  // TODO configure lisa board files to use gpio_setup_pin_af function
-  gpio_set_mode(GPIO_BANK_SPI2_SCK, GPIO_MODE_INPUT,
-                GPIO_CNF_INPUT_FLOAT,
-                GPIO_SPI2_SCK | GPIO_SPI2_MOSI);
-
-  gpio_set_mode(GPIO_BANK_SPI2_MISO, GPIO_MODE_OUTPUT_50_MHZ,
-                GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
-                GPIO_SPI2_MISO);
-
-  gpio_set_mode(GPIO_BANK_SPI2_NSS, GPIO_MODE_INPUT,
-                GPIO_CNF_INPUT_FLOAT,
-                GPIO_SPI2_NSS);
+  gpio_setup_pin_af(GPIO_BANK_SPI2_MISO, GPIO_SPI2_MISO, 0, TRUE);
+  gpio_setup_pin_af(GPIO_BANK_SPI2_MOSI, GPIO_SPI2_MOSI, 0, FALSE);
+  gpio_setup_pin_af(GPIO_BANK_SPI2_SCK, GPIO_SPI2_SCK, 0, FALSE);
+  // set NSS as input
+  gpio_setup_pin_af(GPIO_BANK_SPI2_NSS, GPIO_SPI2_NSS, 0, FALSE);
 
   // reset SPI
   spi_reset(SPI2);
