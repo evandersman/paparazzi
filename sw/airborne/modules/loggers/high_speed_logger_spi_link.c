@@ -23,7 +23,9 @@
 #include "high_speed_logger_spi_link.h"
 
 #include "subsystems/imu.h"
+#include "subsystems/commands.h"
 #include "mcu_periph/spi.h"
+#include "state.h"
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
 struct spi_transaction high_speed_logger_spi_link_transaction;
@@ -64,6 +66,12 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.mag_x      = imu.mag_unscaled.x;
     high_speed_logger_spi_link_data.mag_y      = imu.mag_unscaled.y;
     high_speed_logger_spi_link_data.mag_z      = imu.mag_unscaled.z;
+    high_speed_logger_spi_link_data.scaled_p   = state.body_rates_i.p;
+    high_speed_logger_spi_link_data.scaled_q   = state.body_rates_i.q;
+    high_speed_logger_spi_link_data.scaled_r   = state.body_rates_i.r;
+    high_speed_logger_spi_link_data.command_roll  = commands[1];
+    high_speed_logger_spi_link_data.command_pitch = commands[2];
+    high_speed_logger_spi_link_data.command_yaw   = commands[3];
 
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
   }
