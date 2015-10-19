@@ -33,6 +33,7 @@
 #include "state.h"
 #include <stdio.h>
 #include "std.h"
+#include "inter_mcu.h"
 
 #ifndef ADC_CHANNEL_TURBULENCE_NB_SAMPLES
 #define ADC_CHANNEL_TURBULENCE_NB_SAMPLES DEFAULT_AV_NB_SAMPLE
@@ -47,6 +48,11 @@ uint16_t airspeed_left_raw;
 uint16_t pitch_left_raw;
 uint16_t airspeed_right_raw;
 uint16_t pitch_right_raw;
+float pgain;
+float cmd_left;
+float cmd_right;
+pprz_t cmd_trimmed_left;
+pprz_t cmd_trimmed_right;
 
 void turbulence_adc_init(void)
 {
@@ -62,7 +68,16 @@ void turbulence_adc_update(void)
   pitch_left_raw = buf_pitch_left.sum / buf_pitch_left.av_nb_sample;
   airspeed_right_raw = buf_airspeed_right.sum / buf_airspeed_right.av_nb_sample;
   pitch_right_raw = buf_pitch_right.sum / buf_pitch_right.av_nb_sample;
+  pgain = 40000;
+  cmd_left = (ANGLE_FLOAT_OF_BFP(pitch_left_raw)-0.5) * pgain;
+  cmd_right = (ANGLE_FLOAT_OF_BFP(pitch_right_raw)-0.5) * pgain;
+  //Bound(cmd_left, -2000, 2000);
+  //Bound(cmd_right, -2000, 2000); /*command stays zero, figure out why */
+  cmd_trimmed_left = TRIM_PPRZ(cmd_left);
+  cmd_trimmed_right = TRIM_PPRZ(cmd_right);
+  ap_state->commands[COMMAND_TURB_LEFT] = cmd_trimmed_left;
+  ap_state->commands[COMMAND_TURB_RIGHT] = cmd_trimmed_right;
 
-  DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &airspeed_left_raw, &pitch_left_raw, &airspeed_right_raw, &pitch_right_raw);
+  DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &cmd_trimmed_left, &cmd_left, &cmd_trimmed_right, &cmd_right);
 
 }
