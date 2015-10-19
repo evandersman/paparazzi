@@ -26,7 +26,7 @@
  *
  */
 
-#include "firmwares/fixedwing/stabilization/stabilization_attitude.h"
+#include "firmwares/fixedwing/stabilization/stabilization_attitude_indi.h"
 #include "std.h"
 #include "led.h"
 #include "state.h"
@@ -34,6 +34,46 @@
 #include "generated/airframe.h"
 #include CTRL_TYPE_H
 #include "firmwares/fixedwing/autopilot.h"
+
+float G;
+
+struct ReferenceSystem reference_acceleration = {STABILIZATION_INDI_REF_ERR_P,
+         STABILIZATION_INDI_REF_ERR_Q,
+         STABILIZATION_INDI_REF_ERR_R,
+         STABILIZATION_INDI_REF_RATE_P,
+         STABILIZATION_INDI_REF_RATE_Q,
+         STABILIZATION_INDI_REF_RATE_R,
+};
+
+struct IndiVariables indi = {
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.}
+};
+
+#ifndef STABILIZATION_INDI_FILT_OMEGA
+#define STABILIZATION_INDI_FILT_OMEGA 50.0
+#endif
+
+#ifndef STABILIZATION_INDI_FILT_ZETA
+#define STABILIZATION_INDI_FILT_ZETA 0.55
+#endif
+
+#define STABILIZATION_INDI_FILT_OMEGA2 (STABILIZATION_INDI_FILT_OMEGA*STABILIZATION_INDI_FILT_OMEGA)
+
+#ifndef STABILIZATION_INDI_FILT_OMEGA_R
+#define STABILIZATION_INDI_FILT_OMEGA_R STABILIZATION_INDI_FILT_OMEGA
+#define STABILIZATION_INDI_FILT_ZETA_R STABILIZATION_INDI_FILT_ZETA
+#endif
+
+#define STABILIZATION_INDI_FILT_OMEGA2_R (STABILIZATION_INDI_FILT_OMEGA_R*STABILIZATION_INDI_FILT_OMEGA_R)
 
 /* outer loop parameters */
 float h_ctl_course_setpoint; /* rad, CW/north */
@@ -81,17 +121,6 @@ uint8_t h_ctl_pitch_mode;
 /* inner loop pre-command */
 float h_ctl_aileron_of_throttle;
 float h_ctl_elevator_of_roll;
-
-/* rate loop */
-#ifdef H_CTL_RATE_LOOP
-float h_ctl_roll_rate_setpoint;
-float h_ctl_roll_rate_mode;
-float h_ctl_roll_rate_setpoint_pgain;
-float h_ctl_hi_throttle_roll_rate_pgain;
-float h_ctl_lo_throttle_roll_rate_pgain;
-float h_ctl_roll_rate_igain;
-float h_ctl_roll_rate_dgain;
-#endif
 
 #ifdef H_CTL_COURSE_SLEW_INCREMENT
 float h_ctl_course_slew_increment;
@@ -146,7 +175,6 @@ void h_ctl_init(void)
 #endif
 
   h_ctl_disabled = FALSE;
-
   h_ctl_roll_setpoint = 0.;
 #ifdef H_CTL_ROLL_PGAIN
   h_ctl_roll_pgain = H_CTL_ROLL_PGAIN;
@@ -162,15 +190,6 @@ void h_ctl_init(void)
   h_ctl_pitch_dgain = H_CTL_PITCH_DGAIN;
   h_ctl_elevator_setpoint = 0;
   h_ctl_elevator_of_roll = H_CTL_ELEVATOR_OF_ROLL;
-
-#ifdef H_CTL_RATE_LOOP
-  h_ctl_roll_rate_mode = H_CTL_ROLL_RATE_MODE_DEFAULT;
-  h_ctl_roll_rate_setpoint_pgain = H_CTL_ROLL_RATE_SETPOINT_PGAIN;
-  h_ctl_hi_throttle_roll_rate_pgain = H_CTL_HI_THROTTLE_ROLL_RATE_PGAIN;
-  h_ctl_lo_throttle_roll_rate_pgain = H_CTL_LO_THROTTLE_ROLL_RATE_PGAIN;
-  h_ctl_roll_rate_igain = H_CTL_ROLL_RATE_IGAIN;
-  h_ctl_roll_rate_dgain = H_CTL_ROLL_RATE_DGAIN;
-#endif
 
 #ifdef H_CTL_ROLL_SLEW
   h_ctl_roll_slew = H_CTL_ROLL_SLEW;
@@ -188,6 +207,19 @@ void h_ctl_init(void)
 #ifdef AGR_CLIMB
   nav_ratio = 0;
 #endif
+
+  G = STABILIZATION_INDI_G;
+
+  FLOAT_RATES_ZERO(indi.filtered_rate);
+  FLOAT_RATES_ZERO(indi.filtered_rate_deriv);
+  FLOAT_RATES_ZERO(indi.filtered_rate_2deriv);
+  FLOAT_RATES_ZERO(indi.angular_accel_ref);
+  FLOAT_RATES_ZERO(indi.u);
+  FLOAT_RATES_ZERO(indi.du);
+  FLOAT_RATES_ZERO(indi.u_act_dyn);
+  FLOAT_RATES_ZERO(indi.u_in);
+  FLOAT_RATES_ZERO(indi.udot);
+  FLOAT_RATES_ZERO(indi.udotdot);
 
 #if PERIODIC_TELEMETRY
   register_periodic_telemetry(DefaultPeriodic, "CALIBRATION", send_calibration);
@@ -337,40 +369,34 @@ inline static void h_ctl_roll_loop(void)
   //calculate the attitude error
   float err = stateGetNedToBodyEulers_f()->phi - h_ctl_roll_setpoint;
 
-  //calculate the rate setpoint
-  h_ctl_roll_rate_setpoint = h_ctl_roll_rate_setpoint_pgain * err;
-  BoundAbs(h_ctl_roll_rate_setpoint, H_CTL_ROLL_RATE_MAX_SETPOINT);
-
   //Propagate the second order filter on the gyroscopes
   struct FloatRates *body_rates = stateGetBodyRates_f();
   stabilization_indi_second_order_filter(body_rates, &indi.filtered_rate_2deriv, &indi.filtered_rate_deriv,
                                          &indi.filtered_rate, STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);
-  // Calculate rate error
-  float err = stateGetBodyRates_f()->p - h_ctl_roll_rate_setpoint;
 
-  //Calculate required angular acceleration
+  // Calculate required angular acceleration
   indi.angular_accel_ref.p = reference_acceleration.err_p * err
                              - reference_acceleration.rate_p * stateGetBodyRates_f()->p;
 
-  //Incremented in angular acceleration requires increment in control input
-  indi.du.p = J / K * (indi.angular_accel_ref.p - indi.filtered_rate_deriv.p);
+  // Incremented in angular acceleration requires increment in control input
+  indi.du.p = G * (indi.angular_accel_ref.p - indi.filtered_rate_deriv.p);
 
-  //add the increment to the total control input
+  // Add the increment to the total control input
   indi.u_in.p = indi.u.p + indi.du.p;
 
-  //bound the total control input
+  // Bound the total control input
   Bound(indi.u_in.p, -4500, 4500);
 
-  //Propagate input filters
-  //first order actuator dynamics
+  // Propagate input filters
+  // First order actuator dynamics
   indi.u_act_dyn.p = indi.u_act_dyn.p + STABILIZATION_INDI_ACT_DYN_P * (indi.u_in.p - indi.u_act_dyn.p);
 
-  //sensor filter
+  // Sensor filter
   stabilization_indi_second_order_filter(&indi.u_act_dyn, &indi.udotdot, &indi.udot, &indi.u,
                                          STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);
 
-  //Don't increment if thrust is off
-  if (stabilization_cmd[COMMAND_THRUST] < 300) {
+  // Don't increment if thrust is off
+  if (v_ctl_throttle_setpoint < 300) {
     FLOAT_RATES_ZERO(indi.u);
     FLOAT_RATES_ZERO(indi.du);
     FLOAT_RATES_ZERO(indi.u_act_dyn);
@@ -379,10 +405,8 @@ inline static void h_ctl_roll_loop(void)
     FLOAT_RATES_ZERO(indi.udotdot);
   }
 
-  /*  INDI feedback */
-  cmd = indi.u_in.p;
-
-  h_ctl_aileron_setpoint = TRIM_PPRZ(cmd);
+  /* INDI feedback */
+  h_ctl_aileron_setpoint = TRIM_PPRZ(indi.u_in.p);
 }
 
 // This is a simple second order low pass filter

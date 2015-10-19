@@ -33,6 +33,35 @@
 #include "std.h"
 #include "paparazzi.h"
 #include "generated/airframe.h"
+#include "math/pprz_algebra_float.h"
+
+struct ReferenceSystem {
+  float err_p;
+  float err_q;
+  float err_r;
+  float rate_p;
+  float rate_q;
+  float rate_r;
+};
+
+struct IndiVariables {
+  struct FloatRates filtered_rate;
+  struct FloatRates filtered_rate_deriv;
+  struct FloatRates filtered_rate_2deriv;
+  struct FloatRates angular_accel_ref;
+  struct FloatRates du;
+  struct FloatRates u_act_dyn;
+  struct FloatRates u_in;
+  struct FloatRates u;
+  struct FloatRates udot;
+  struct FloatRates udotdot;
+};
+
+extern float G;
+extern struct ReferenceSystem reference_acceleration;
+
+void stabilization_indi_second_order_filter(struct FloatRates *input, struct FloatRates *filter_ddx,
+    struct FloatRates *filter_dx, struct FloatRates *filter_x, float omega, float zeta, float omega_r);
 
 /* outer loop parameters */
 extern float h_ctl_course_setpoint; /* rad, CW/north */
@@ -88,20 +117,6 @@ extern pprz_t h_ctl_flaps_setpoint;
 /* inner loop pre-command */
 extern float h_ctl_aileron_of_throttle;
 extern float h_ctl_elevator_of_roll;
-
-/* rate loop */
-
-#ifdef H_CTL_RATE_LOOP
-extern float h_ctl_roll_rate_mode;
-extern float h_ctl_roll_rate_setpoint_pgain;
-extern float h_ctl_roll_rate_pgain;
-extern float h_ctl_hi_throttle_roll_rate_pgain;
-extern float h_ctl_lo_throttle_roll_rate_pgain;
-extern float h_ctl_roll_rate_igain;
-extern float h_ctl_roll_rate_dgain;
-
-#define stabilization_attitude_SetRollRatePGain(v) { h_ctl_hi_throttle_roll_rate_pgain = v; h_ctl_lo_throttle_roll_rate_pgain = v; }
-#endif
 
 extern void h_ctl_init(void);
 extern void h_ctl_course_loop(void);
