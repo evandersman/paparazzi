@@ -396,17 +396,20 @@ inline static void h_ctl_roll_loop(void)
                                          STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);
 
   // Don't increment if thrust is off
-  if (v_ctl_throttle_setpoint < 300) {
+  /*if (v_ctl_throttle_setpoint < 300) {
     FLOAT_RATES_ZERO(indi.u);
     FLOAT_RATES_ZERO(indi.du);
     FLOAT_RATES_ZERO(indi.u_act_dyn);
     FLOAT_RATES_ZERO(indi.u_in);
     FLOAT_RATES_ZERO(indi.udot);
     FLOAT_RATES_ZERO(indi.udotdot);
-  }
+  }*/
 
   /* INDI feedback */
   h_ctl_aileron_setpoint = TRIM_PPRZ(indi.u_in.p);
+
+  DOWNLINK_SEND_STAB_ATTITUDE_INDI(DefaultChannel, DefaultDevice, &indi.angular_accel_ref.p, &indi.angular_accel_ref.q, &indi.angular_accel_ref.r, &indi.du.p, &indi.du.q, &indi.du.r, &indi.u_in.p, &indi.u_in.q, &indi.u_in.r);
+
 }
 
 // This is a simple second order low pass filter
