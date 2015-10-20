@@ -29,10 +29,9 @@
 #include <inttypes.h>
 
 struct TurbulenceAdc {
-  uint16_t val;
+  uint16_t raw;
   uint16_t offset;
-  float scale;    ///< used as quadratic scale if TURBULENCE_ADC_QUADRATIC_SCALE, otherwise linear
-  float airspeed;
+  float scaled;
 };
 
 extern struct TurbulenceAdc airspeed_left_adc;

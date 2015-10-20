@@ -36,38 +36,16 @@
     <subsystem name="gps" type="ublox"/>
 
     <subsystem name="ahrs" type="int_cmpl_quat"/>
-    <subsystem name="control" type="indi">
-      <define name="H_CTL_RATE_LOOP"/>
-    </subsystem>
+    <subsystem name="control"/>
     <subsystem name="navigation"/>
     <subsystem name="ins" type="alt_float">
       <define name="USE_BAROMETER" value="TRUE"/>
     </subsystem>
   </firmware>
 
-  <modules>
-    <!--load name="sys_mon.xml"/>
-    <load name="baro_sim.xml"/-->
+  <modules main_freq="100">
     <load name="turbulence_adc.xml"/>
-
-    <load name="air_data.xml">
-      <define name="AIR_DATA_CALC_AMSL_BARO" value="TRUE"/>
-    </load>
-
-    <!-- extra navigation routines -->
-    <load name="nav_bungee_takeoff.xml"/>
-    <load name="nav_line.xml"/>
-    <load name="nav_line_border.xml"/>
-    <load name="nav_line_osam.xml"/>
-    <load name="nav_flower.xml"/>
-    <load name="nav_smooth.xml"/>
-    <load name="nav_survey_polygon.xml"/>
-    <load name="nav_survey_poly_osam.xml"/>
-    <load name="nav_survey_zamboni.xml"/>
-    <load name="nav_vertical_raster.xml"/>
-    <load name="nav_spiral.xml"/>
     <load name="logger_spi_link.xml"/>
-
   </modules>
 
   <servos>
@@ -223,7 +201,12 @@
     <define name="CARROT" value="5." unit="s"/>
     <define name="KILL_MODE_DISTANCE" value="(1.5*MAX_DIST_FROM_HOME)"/>
     <define name="CONTROL_FREQUENCY" value="60" unit="Hz"/>
-    <define name="DEFAULT_CIRCLE_RADIUS" value="80."/>
+    <define name="DEFAULT_CIRCLE_RADIUS" value="80."/>  
+    <define name="AIRSPEED_LEFT_OFFSET" value="2064"/>
+    <define name="PITCH_LEFT_OFFSET" value="2063"/>
+    <define name="AIRSPEED_RIGHT_OFFSET" value="2063"/>
+    <define name="PITCH_RIGHT_OFFSET" value="2064"/>
+    <define name="TURB_PGAIN" value="50000"/>
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">

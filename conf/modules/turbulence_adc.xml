@@ -12,7 +12,7 @@
     <file name="turbulence_adc.h"/>
   </header>
   <init fun="turbulence_adc_init()"/>
-  <periodic fun="turbulence_adc_update()" freq="4"/>
+  <periodic fun="turbulence_adc_update()" freq="100"/>
   <makefile target="ap">
     <file name="turbulence_adc.c"/>
     <raw>
