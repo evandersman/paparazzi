@@ -867,7 +867,13 @@
      <field name="cmd_right" type="float"/>
    </message>
 
-  <!--108 is free -->
+   <message name="ADC_TURBULENCE_SCALED" id="108">
+     <field name="airspeed_left_scaled" type="float"/>
+     <field name="pitch_left_scaled" type="float"/>
+     <field name="airspeed_right_scaled" type="float"/>
+     <field name="pitch_right_scaled" type="float"/>
+   </message>
+
   <!--109 is free -->
 
   <message name="DC_SHOT" id="110">

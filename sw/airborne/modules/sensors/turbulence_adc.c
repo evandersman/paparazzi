@@ -37,7 +37,7 @@
 
 #ifndef ADC_CHANNEL_TURBULENCE_NB_SAMPLES
 //#define ADC_CHANNEL_TURBULENCE_NB_SAMPLES DEFAULT_AV_NB_SAMPLE
-#define ADC_CHANNEL_TURBULENCE_NB_SAMPLES 2
+#define ADC_CHANNEL_TURBULENCE_NB_SAMPLES 4
 #endif
 
 /// Default offset value
@@ -90,26 +90,32 @@ void turbulence_adc_init(void)
 
 void turbulence_adc_update(void)
 {
+  // 12bit adc values
   airspeed_left_adc.raw = buf_airspeed_left.sum / buf_airspeed_left.av_nb_sample;
   pitch_left_adc.raw = buf_pitch_left.sum / buf_pitch_left.av_nb_sample;
   airspeed_right_adc.raw = buf_airspeed_right.sum / buf_airspeed_right.av_nb_sample;
   pitch_right_adc.raw = buf_pitch_right.sum / buf_pitch_right.av_nb_sample;
   
-  airspeed_left_adc.scaled = ANGLE_FLOAT_OF_BFP(airspeed_left_adc.raw-airspeed_left_adc.offset);
-  pitch_left_adc.scaled = ANGLE_FLOAT_OF_BFP(pitch_left_adc.raw-pitch_left_adc.offset);
-  airspeed_right_adc.scaled = ANGLE_FLOAT_OF_BFP(airspeed_right_adc.raw-airspeed_right_adc.offset);
-  pitch_right_adc.scaled = ANGLE_FLOAT_OF_BFP(pitch_right_adc.raw-pitch_right_adc.offset);
+  
+  // pressure differential in millipascal first covert to voltage by using the scaling factor raw*3.3/2^12 and the convert to pressure by using formula in the datasheet
+  airspeed_left_adc.scaled = (ANGLE_FLOAT_OF_BFP(airspeed_left_adc.raw*3.3)-0.1*3.3)*7.6-(10.0+airspeed_left_adc.offset);
+  pitch_left_adc.scaled = (ANGLE_FLOAT_OF_BFP(pitch_left_adc.raw*3.3)-0.1*3.3)*7.6-(10.0+pitch_left_adc.offset);
+  airspeed_right_adc.scaled = (ANGLE_FLOAT_OF_BFP(airspeed_right_adc.raw*3.3)-0.1*3.3)*7.6-(10.0+airspeed_right_adc.offset);
+  pitch_right_adc.scaled = (ANGLE_FLOAT_OF_BFP(pitch_right_adc.raw*3.3)-0.1*3.3)*7.6-(10.0+pitch_right_adc.offset);
 
+  // calculate command in floats
   cmd_left = (pitch_left_adc.scaled)*pgain;
   cmd_right = (pitch_right_adc.scaled)*pgain;
-
+  // trim command
   cmd_trimmed_left = TRIM_PPRZ(cmd_left);
   cmd_trimmed_right = TRIM_PPRZ(cmd_right);
 
+  // send command to ailerons individually
   ap_state->commands[COMMAND_TURB_LEFT] = cmd_trimmed_left;
   ap_state->commands[COMMAND_TURB_RIGHT] = cmd_trimmed_right;
 
   DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.raw, &pitch_left_adc.raw, &airspeed_right_adc.raw, &pitch_right_adc.raw);
-  DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &cmd_trimmed_left, &cmd_left, &cmd_trimmed_right, &cmd_right);
+  //DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &airspeed_left_adc.scaled, &pitch_left_adc.scaled, &airspeed_right_adc.scaled, &pitch_right_adc.scaled);
+  //DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &cmd_trimmed_left, &cmd_left, &cmd_trimmed_right, &cmd_right);
 
 }
