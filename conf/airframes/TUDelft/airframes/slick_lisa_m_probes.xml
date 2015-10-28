@@ -203,10 +203,10 @@
     <define name="KILL_MODE_DISTANCE" value="(1.5*MAX_DIST_FROM_HOME)"/>
     <define name="CONTROL_FREQUENCY" value="60" unit="Hz"/>
     <define name="DEFAULT_CIRCLE_RADIUS" value="80."/>  
-    <define name="AIRSPEED_LEFT_OFFSET" value="0."/>
-    <define name="PITCH_LEFT_OFFSET" value="0."/>
-    <define name="AIRSPEED_RIGHT_OFFSET" value="0."/>
-    <define name="PITCH_RIGHT_OFFSET" value="0."/>
+    <define name="AIRSPEED_LEFT_OFFSET" value="0"/>
+    <define name="PITCH_LEFT_OFFSET" value="400"/>
+    <define name="AIRSPEED_RIGHT_OFFSET" value="0"/>
+    <define name="PITCH_RIGHT_OFFSET" value="400"/>
     <define name="TURB_PGAIN" value="300"/>
   </section>
 
