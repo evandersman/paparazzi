@@ -160,13 +160,13 @@
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
-    <define name="G" value="0.07"/>
+    <define name="G" value="0.1"/>
 
     <!-- reference acceleration for attitude control -->
-    <define name="REF_ERR_P" value="100000.0"/>
+    <define name="REF_ERR_P" value="600.0"/>
     <define name="REF_ERR_Q" value="380.0"/>
-    <define name="REF_ERR_R" value="250.0"/>
-    <define name="REF_RATE_P" value="10000.6"/>
+    <define name="REF_ERR_R" value="30.0"/>
+    <define name="REF_RATE_P" value="28.0"/>
     <define name="REF_RATE_Q" value="21.6"/>
     <define name="REF_RATE_R" value="21.0"/>
 
@@ -177,7 +177,7 @@
     <define name="FILT_ZETA_R" value="0.55"/>
 
     <!-- first order actuator dynamics -->
-    <define name="ACT_DYN_P" value="0.06"/>
+    <define name="ACT_DYN_P" value="0.1"/>
     <define name="ACT_DYN_Q" value="0.06"/>
     <define name="ACT_DYN_R" value="0.06"/>
   </section>

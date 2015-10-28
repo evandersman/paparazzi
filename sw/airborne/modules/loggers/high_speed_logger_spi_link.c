@@ -26,6 +26,8 @@
 #include "subsystems/commands.h"
 #include "mcu_periph/spi.h"
 #include "state.h"
+#include "firmwares/fixedwing/stabilization/stabilization_attitude.h"
+#include "modules/sensors/turbulence_adc.h"
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
 struct spi_transaction high_speed_logger_spi_link_transaction;
@@ -62,10 +64,10 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.gyro_r     = imu.gyro_unscaled.r;
     high_speed_logger_spi_link_data.acc_x      = imu.accel_unscaled.x;
     high_speed_logger_spi_link_data.acc_y      = imu.accel_unscaled.y;
-    high_speed_logger_spi_link_data.acc_z      = imu.accel_unscaled.z;
-    high_speed_logger_spi_link_data.mag_x      = imu.mag_unscaled.x;
-    high_speed_logger_spi_link_data.mag_y      = imu.mag_unscaled.y;
-    high_speed_logger_spi_link_data.mag_z      = imu.mag_unscaled.z;
+    high_speed_logger_spi_link_data.pprobes    = ANGLE_BFP_OF_REAL(pgain);
+    high_speed_logger_spi_link_data.phi        = stateGetNedToBodyEulers_i()->phi;
+    high_speed_logger_spi_link_data.pgain      = ANGLE_BFP_OF_REAL(h_ctl_roll_attitude_gain);
+    high_speed_logger_spi_link_data.dgain      = ANGLE_BFP_OF_REAL(h_ctl_roll_rate_gain);
     high_speed_logger_spi_link_data.scaled_p   = state.body_rates_i.p;
     high_speed_logger_spi_link_data.scaled_q   = state.body_rates_i.q;
     high_speed_logger_spi_link_data.scaled_r   = state.body_rates_i.r;

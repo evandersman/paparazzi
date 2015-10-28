@@ -43,33 +43,13 @@
     </subsystem>
   </firmware>
 
-  <modules>
-    <!--load name="sys_mon.xml"/>
-    <load name="baro_sim.xml"/-->
-
-    <load name="air_data.xml">
-      <define name="AIR_DATA_CALC_AMSL_BARO" value="TRUE"/>
-    </load>
-
-    <!-- extra navigation routines -->
-    <load name="nav_bungee_takeoff.xml"/>
-    <load name="nav_line.xml"/>
-    <load name="nav_line_border.xml"/>
-    <load name="nav_line_osam.xml"/>
-    <load name="nav_flower.xml"/>
-    <load name="nav_smooth.xml"/>
-    <load name="nav_survey_polygon.xml"/>
-    <load name="nav_survey_poly_osam.xml"/>
-    <load name="nav_survey_zamboni.xml"/>
-    <load name="nav_vertical_raster.xml"/>
-    <load name="nav_spiral.xml"/>
+  <modules main_freq="512">
     <load name="logger_spi_link.xml"/>
-
   </modules>
 
   <servos>
     <servo name="THROTTLE" no="0" min="1100" neutral="1100" max="1900"/>
-    <servo name="AILERON_LEFT" no="1" min="2000" neutral="1445" max="750"/>
+    <servo name="AILERON_LEFT" no="1" min="2100" neutral="1530" max="800"/>
     <servo name="AILERON_RIGHT" no="2" min="2200" neutral="1500" max="900"/>
     <servo name="ELEVATOR" no="3" min="1960" neutral="1355" max="800"/>
     <servo name="RUDDER" no="4" min="2200" neutral="1408" max="700"/>

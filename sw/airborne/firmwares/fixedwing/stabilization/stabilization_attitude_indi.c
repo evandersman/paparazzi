@@ -396,14 +396,14 @@ inline static void h_ctl_roll_loop(void)
                                          STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);
 
   // Don't increment if thrust is off
-  /*if (v_ctl_throttle_setpoint < 300) {
+  if (v_ctl_throttle_setpoint < 100) {
     FLOAT_RATES_ZERO(indi.u);
     FLOAT_RATES_ZERO(indi.du);
     FLOAT_RATES_ZERO(indi.u_act_dyn);
     FLOAT_RATES_ZERO(indi.u_in);
     FLOAT_RATES_ZERO(indi.udot);
     FLOAT_RATES_ZERO(indi.udotdot);
-  }*/
+  }
 
   /* INDI feedback */
   h_ctl_aileron_setpoint = TRIM_PPRZ(indi.u_in.p);
