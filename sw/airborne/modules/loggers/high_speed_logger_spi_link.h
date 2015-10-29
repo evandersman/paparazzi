@@ -35,8 +35,8 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t gyro_p;     // 2
   int32_t gyro_q;
   int32_t gyro_r;
-  int32_t acc_x;      // 5
-  int32_t acc_y;
+  int32_t offset_pl;      // 5
+  int32_t offset_pr;
   int32_t pprobes;
   int32_t phi;      // 8
   int32_t pgain;

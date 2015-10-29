@@ -62,8 +62,8 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.gyro_p     = imu.gyro_unscaled.p;
     high_speed_logger_spi_link_data.gyro_q     = imu.gyro_unscaled.q;
     high_speed_logger_spi_link_data.gyro_r     = imu.gyro_unscaled.r;
-    high_speed_logger_spi_link_data.acc_x      = imu.accel_unscaled.x;
-    high_speed_logger_spi_link_data.acc_y      = imu.accel_unscaled.y;
+    high_speed_logger_spi_link_data.offset_pl  = pitch_left_adc.offset;
+    high_speed_logger_spi_link_data.offset_pr  = pitch_right_adc.offset;
     high_speed_logger_spi_link_data.pprobes    = ANGLE_BFP_OF_REAL(pgain);
     high_speed_logger_spi_link_data.phi        = stateGetNedToBodyEulers_i()->phi;
     high_speed_logger_spi_link_data.pgain      = ANGLE_BFP_OF_REAL(h_ctl_roll_attitude_gain);
@@ -72,8 +72,8 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.scaled_q   = state.body_rates_i.q;
     high_speed_logger_spi_link_data.scaled_r   = state.body_rates_i.r;
     high_speed_logger_spi_link_data.command_roll  = commands[1];
-    high_speed_logger_spi_link_data.command_pitch = commands[2];
-    high_speed_logger_spi_link_data.command_yaw   = commands[3];
+    high_speed_logger_spi_link_data.command_pitch = commands[4];
+    high_speed_logger_spi_link_data.command_yaw   = commands[5];
 
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
   }
