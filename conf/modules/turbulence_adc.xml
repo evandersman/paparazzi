@@ -11,7 +11,7 @@
   <settings>
     <dl_settings>
       <dl_settings NAME="TURBULENCE">
-        <dl_setting MAX="4000" MIN="0" STEP="1" VAR="pgain" shortname="pgain" module="modules/sensors/turbulence_adc" param="TURB_PGAIN"/>
+        <dl_setting MAX="20000" MIN="0" STEP="1" VAR="pgain" shortname="pgain" module="modules/sensors/turbulence_adc" param="TURB_PGAIN"/>
         <dl_setting MAX="600" MIN="-600" STEP="1" VAR="pitch_left_adc.offset" shortname="offset_pl" module="modules/sensors/turbulence_adc" param="PITCH_LEFT_OFFSET"/>
         <dl_setting MAX="600" MIN="-600" STEP="1" VAR="pitch_right_adc.offset" shortname="offset_pr" module="modules/sensors/turbulence_adc" param="PITCH_RIGHT_OFFSET"/>
       </dl_settings>

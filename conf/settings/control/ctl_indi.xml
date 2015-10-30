@@ -1,0 +1,11 @@
+<!DOCTYPE settings SYSTEM "../settings.dtd">
+
+<!-- A conf to use to tune a new A/C -->
+
+<settings>
+  <dl_settings>
+    <dl_settings NAME="indi">
+        <dl_setting MAX="0.2" MIN="0" STEP="0.1" VAR="G" shortname="indi_control_eff"  param="STABILIZATION_INDI_G" module="stabilization/stabilization_indi"/>
+    </dl_settings>
+  </dl_settings>
+</settings>

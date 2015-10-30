@@ -95,13 +95,19 @@ void turbulence_adc_update(void)
   pitch_left_adc.raw = buf_pitch_left.sum / buf_pitch_left.av_nb_sample;
   airspeed_right_adc.raw = buf_airspeed_right.sum / buf_airspeed_right.av_nb_sample;
   pitch_right_adc.raw = buf_pitch_right.sum / buf_pitch_right.av_nb_sample;
+
+  // 12 bit calibration offset
+  airspeed_left_adc.calibration = ANGLE_BFP_OF_REAL(ANGLE_FLOAT_OF_BFP(airspeed_left_adc.raw*3.3) - 1.5);
+  pitch_left_adc.calibration = ANGLE_BFP_OF_REAL(ANGLE_FLOAT_OF_BFP(pitch_left_adc.raw*3.3) - 1.5);
+  airspeed_right_adc.calibration = ANGLE_BFP_OF_REAL(ANGLE_FLOAT_OF_BFP(airspeed_right_adc.raw*3.3) - 1.5);
+  pitch_right_adc.calibration = ANGLE_BFP_OF_REAL(ANGLE_FLOAT_OF_BFP(pitch_right_adc.raw*3.3) - 1.5);
   
   
   // pressure differential in millipascal first covert to voltage by using the scaling factor raw*3.3/2^12 and the convert to pressure by using formula in the datasheet
-  airspeed_left_adc.scaled = (ANGLE_FLOAT_OF_BFP(airspeed_left_adc.raw*3.3)-0.1*3.3)*7.6-(10.0+ANGLE_FLOAT_OF_BFP(airspeed_left_adc.offset));
-  pitch_left_adc.scaled = (ANGLE_FLOAT_OF_BFP(pitch_left_adc.raw*3.3)-0.1*3.3)*7.6-(10.0+ANGLE_FLOAT_OF_BFP(pitch_left_adc.offset));
-  airspeed_right_adc.scaled = (ANGLE_FLOAT_OF_BFP(airspeed_right_adc.raw*3.3)-0.1*3.3)*7.6-(10.0+ANGLE_FLOAT_OF_BFP(airspeed_right_adc.offset));
-  pitch_right_adc.scaled = (ANGLE_FLOAT_OF_BFP(pitch_right_adc.raw*3.3)-0.1*3.3)*7.6-(10.0+ANGLE_FLOAT_OF_BFP(pitch_right_adc.offset));
+  airspeed_left_adc.scaled = (ANGLE_FLOAT_OF_BFP(airspeed_left_adc.raw*3.3)-ANGLE_FLOAT_OF_BFP(airspeed_left_adc.offset)-0.1*3.3)*7.6-10.0;
+  pitch_left_adc.scaled = (ANGLE_FLOAT_OF_BFP(pitch_left_adc.raw*3.3)-ANGLE_FLOAT_OF_BFP(pitch_left_adc.offset)-0.1*3.3)*7.6-10.0;
+  airspeed_right_adc.scaled = (ANGLE_FLOAT_OF_BFP(airspeed_right_adc.raw*3.3)-ANGLE_FLOAT_OF_BFP(airspeed_right_adc.offset)-0.1*3.3)*7.6-10.0;
+  pitch_right_adc.scaled = (ANGLE_FLOAT_OF_BFP(pitch_right_adc.raw*3.3)-ANGLE_FLOAT_OF_BFP(pitch_right_adc.offset)-0.1*3.3)*7.6-10.0;
 
   // calculate command in floats
   cmd_left = (pitch_left_adc.scaled)*pgain;
@@ -114,7 +120,7 @@ void turbulence_adc_update(void)
   ap_state->commands[COMMAND_TURB_LEFT] = cmd_trimmed_left;
   ap_state->commands[COMMAND_TURB_RIGHT] = cmd_trimmed_right;
 
-  //DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.raw, &pitch_left_adc.raw, &airspeed_right_adc.raw, &pitch_right_adc.raw);
+  DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.calibration, &pitch_left_adc.calibration, &airspeed_right_adc.calibration, &pitch_right_adc.calibration);
   DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &airspeed_left_adc.scaled, &pitch_left_adc.scaled, &airspeed_right_adc.scaled, &pitch_right_adc.scaled);
   //DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &cmd_trimmed_left, &cmd_left, &cmd_trimmed_right, &cmd_right);
 

@@ -31,6 +31,7 @@
 struct TurbulenceAdc {
   uint16_t raw;
   uint16_t offset;
+  uint16_t calibration;
   float scaled;
 };
 
