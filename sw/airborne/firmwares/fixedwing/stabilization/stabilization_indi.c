@@ -36,6 +36,10 @@
 #include "firmwares/fixedwing/autopilot.h"
 
 float G;
+float tau_act_dyn_p;
+float indi_omega;
+float indi_zeta;
+float indi_omega_r;
 
 struct ReferenceSystem reference_acceleration = {STABILIZATION_INDI_REF_ERR_P,
          STABILIZATION_INDI_REF_ERR_Q,
@@ -209,6 +213,10 @@ void h_ctl_init(void)
 #endif
 
   G = STABILIZATION_INDI_G;
+  tau_act_dyn_p = STABILIZATION_INDI_ACT_DYN_P;
+  indi_omega = STABILIZATION_INDI_FILT_OMEGA;
+  indi_zeta = STABILIZATION_INDI_FILT_ZETA;
+  indi_omega_r = STABILIZATION_INDI_FILT_OMEGA_R;
 
   FLOAT_RATES_ZERO(indi.filtered_rate);
   FLOAT_RATES_ZERO(indi.filtered_rate_deriv);
@@ -370,9 +378,13 @@ inline static void h_ctl_roll_loop(void)
   float err = stateGetNedToBodyEulers_f()->phi - h_ctl_roll_setpoint;
 
   //Propagate the second order filter on the gyroscopes
-  struct FloatRates *body_rates = stateGetBodyRates_f();
+ /* struct FloatRates *body_rates = stateGetBodyRates_f();
   stabilization_indi_second_order_filter(body_rates, &indi.filtered_rate_2deriv, &indi.filtered_rate_deriv,
-                                         &indi.filtered_rate, STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);
+                                         &indi.filtered_rate, STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);*/
+  float omega2 = indi_omega * indi_omega;
+  indi.filtered_rate.p = indi.filtered_rate.p + indi.filtered_rate_deriv.p * 1.0 / PERIODIC_FREQUENCY;
+  indi.filtered_rate_deriv.p =  indi.filtered_rate_deriv.p + indi.filtered_rate_2deriv.p * 1.0 / PERIODIC_FREQUENCY;
+  indi.filtered_rate_2deriv.p = -indi.filtered_rate_deriv.p * 2 * indi_zeta * indi_omega   + (stateGetBodyRates_f()->p - indi.filtered_rate.p) * omega2;
 
   // Calculate required angular acceleration
   indi.angular_accel_ref.p = reference_acceleration.err_p * err
@@ -389,11 +401,15 @@ inline static void h_ctl_roll_loop(void)
 
   // Propagate input filters
   // First order actuator dynamics
-  indi.u_act_dyn.p = indi.u_act_dyn.p + STABILIZATION_INDI_ACT_DYN_P * (indi.u_in.p - indi.u_act_dyn.p);
+  indi.u_act_dyn.p = indi.u_act_dyn.p + tau_act_dyn_p * (indi.u_in.p - indi.u_act_dyn.p);
 
   // Sensor filter
-  stabilization_indi_second_order_filter(&indi.u_act_dyn, &indi.udotdot, &indi.udot, &indi.u,
-                                         STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);
+  /*stabilization_indi_second_order_filter(&indi.u_act_dyn, &indi.udotdot, &indi.udot, &indi.u,
+                                         STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);*/
+
+  indi.u.p = indi.u.p + indi.udot.p * 1.0 / PERIODIC_FREQUENCY;
+  indi.udot.p =  indi.udot.p + indi.udotdot.p * 1.0 / PERIODIC_FREQUENCY;
+  indi.udotdot.p = -indi.udot.p * 2 * indi_zeta * indi_omega   + (indi.u_act_dyn.p - indi.u.p) * omega2;
 
   // Don't increment if thrust is off
   if (v_ctl_throttle_setpoint < 100) {
@@ -413,7 +429,7 @@ inline static void h_ctl_roll_loop(void)
 }
 
 // This is a simple second order low pass filter
-void stabilization_indi_second_order_filter(struct FloatRates *input, struct FloatRates *filter_ddx,
+/*void stabilization_indi_second_order_filter(struct FloatRates *input, struct FloatRates *filter_ddx,
     struct FloatRates *filter_dx, struct FloatRates *filter_x, float omega, float zeta, float omega_r)
 {
   float_rates_integrate_fi(filter_x, filter_dx, 1.0 / PERIODIC_FREQUENCY);
@@ -424,7 +440,7 @@ void stabilization_indi_second_order_filter(struct FloatRates *input, struct Flo
   filter_ddx->p = -filter_dx->p * 2 * zeta * omega   + (input->p - filter_x->p) * omega2;    \
   filter_ddx->q = -filter_dx->q * 2 * zeta * omega   + (input->q - filter_x->q) * omega2;    \
   filter_ddx->r = -filter_dx->r * 2 * zeta * omega_r + (input->r - filter_x->r) * omega2_r;
-}
+}*/
 
 #ifdef LOITER_TRIM
 

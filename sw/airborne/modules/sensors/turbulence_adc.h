@@ -33,6 +33,11 @@ struct TurbulenceAdc {
   uint16_t offset;
   uint16_t calibration;
   float scaled;
+  float scaled_dx;
+  float scaled_ddx;
+  float filtered;
+  float filtered_dx;
+  float filtered_ddx;
 };
 
 extern struct TurbulenceAdc airspeed_left_adc;
@@ -40,6 +45,8 @@ extern struct TurbulenceAdc pitch_left_adc;
 extern struct TurbulenceAdc airspeed_right_adc;
 extern struct TurbulenceAdc pitch_right_adc;
 extern float pgain;
+extern float pitch_omega;
+extern float pitch_zeta;
 
 void turbulence_adc_init(void);
 void turbulence_adc_update(void);

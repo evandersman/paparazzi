@@ -10,7 +10,7 @@
 
   <firmware name="fixedwing">
     <target name="ap" board="lisa_m_2.0">
-      <configure name="FLASH_MODE" value="JTAG_BMP"/>
+      <configure name="FLASH_MODE" value="SWD"/>
       <configure name="PERIODIC_FREQUENCY" value="120"/>
       <configure name="AHRS_PROPAGATE_FREQUENCY" value="100"/>
       <configure name="AHRS_CORRECT_FREQUENCY" value="100"/>
@@ -140,24 +140,24 @@
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
-    <define name="G" value="0.0285"/>
+    <define name="G" value="0.024"/>
 
     <!-- reference acceleration for attitude control -->
-    <define name="REF_ERR_P" value="200.0"/>
+    <define name="REF_ERR_P" value="260.0"/>
     <define name="REF_ERR_Q" value="600.0"/>
     <define name="REF_ERR_R" value="600.0"/>
-    <define name="REF_RATE_P" value="5.0"/>
+    <define name="REF_RATE_P" value="2.0"/>
     <define name="REF_RATE_Q" value="28.0"/>
     <define name="REF_RATE_R" value="28.0"/>
 
     <!-- second order filter parameters -->
     <define name="FILT_OMEGA" value="10.0"/>
-    <define name="FILT_ZETA" value="0.55"/>
-    <define name="FILT_OMEGA_R" value="10.0"/>
+    <define name="FILT_ZETA" value="0.7"/>
+    <define name="FILT_OMEGA_R" value="20.0"/>
     <define name="FILT_ZETA_R" value="0.55"/>
 
     <!-- first order actuator dynamics -->
-    <define name="ACT_DYN_P" value="0.06"/>
+    <define name="ACT_DYN_P" value="0.08"/>
     <define name="ACT_DYN_Q" value="0.1"/>
     <define name="ACT_DYN_R" value="0.1"/>
   </section>

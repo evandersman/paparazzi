@@ -33,6 +33,23 @@ extern void high_speed_logger_spi_link_periodic(void);
 struct PACKED high_speed_logger_spi_link_data {
   int32_t id;         // 1
   int32_t gyro_p;     // 2
+  int32_t err_p;
+  int32_t rate_p;
+  int32_t acc_ref;      // 5
+  int32_t filt_rate;
+  int32_t act_dyn_p;
+  int32_t g;      // 8
+  int32_t phi;
+  int32_t scaled_p;
+  int32_t u_act_dyn;        // 11
+  int32_t u_p;
+  int32_t du_p;
+  int32_t command_roll;     // 14
+  int32_t command_turb_l;     // 15
+  int32_t command_turb_r;     // 16
+
+  /*int32_t id;         // 1
+  int32_t gyro_p;     // 2
   int32_t gyro_q;
   int32_t gyro_r;
   int32_t offset_pl;      // 5
@@ -46,7 +63,7 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t scaled_r;
   int32_t command_roll;     // 14
   int32_t command_pitch;     // 15
-  int32_t command_yaw;     // 16
+  int32_t command_yaw;     // 16*/
 };
 
 #endif /* HIGH_SPEED_LOGGER_SPI_LINK_H_ */

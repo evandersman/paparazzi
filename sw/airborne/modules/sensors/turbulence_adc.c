@@ -69,6 +69,12 @@ struct TurbulenceAdc airspeed_right_adc;
 struct TurbulenceAdc pitch_right_adc;
 
 float pgain;
+float pitch_omega;
+float pitch_zeta;
+float pitch_left_adc_previous;
+float pitch_left_adc_previous_dx;
+float pitch_right_adc_previous;
+float pitch_right_adc_previous_dx;
 float cmd_left;
 float cmd_right;
 pprz_t cmd_trimmed_left;
@@ -86,6 +92,19 @@ void turbulence_adc_init(void)
   airspeed_right_adc.offset = AIRSPEED_RIGHT_OFFSET;
   pitch_right_adc.offset = PITCH_RIGHT_OFFSET;
   pgain = TURB_PGAIN;
+  pitch_omega = PITCH_OMEGA;
+  pitch_zeta = PITCH_ZETA;
+  pitch_left_adc.filtered = 0;
+  pitch_left_adc.filtered_dx = 0;
+  pitch_left_adc.filtered_ddx = 0;
+  pitch_left_adc.scaled_dx = 0;
+  pitch_left_adc.scaled_ddx = 0;
+
+  pitch_right_adc.filtered = 0;
+  pitch_right_adc.filtered_dx = 0;
+  pitch_right_adc.filtered_ddx = 0;
+  pitch_right_adc.scaled_dx = 0;
+  pitch_right_adc.scaled_ddx = 0;
 }
 
 void turbulence_adc_update(void)
@@ -109,9 +128,32 @@ void turbulence_adc_update(void)
   airspeed_right_adc.scaled = (ANGLE_FLOAT_OF_BFP(airspeed_right_adc.raw*3.3)-ANGLE_FLOAT_OF_BFP(airspeed_right_adc.offset)-0.1*3.3)*7.6-10.0;
   pitch_right_adc.scaled = (ANGLE_FLOAT_OF_BFP(pitch_right_adc.raw*3.3)-ANGLE_FLOAT_OF_BFP(pitch_right_adc.offset)-0.1*3.3)*7.6-10.0;
 
+  //high pass filter
+  pitch_left_adc.filtered = pitch_left_adc.filtered + pitch_left_adc.filtered_dx * 1.0 / MODULES_FREQUENCY;
+  pitch_left_adc.filtered_dx = pitch_left_adc.filtered_dx + pitch_left_adc.filtered_ddx * 1.0 / MODULES_FREQUENCY;
+
+  pitch_left_adc.scaled_dx = (pitch_left_adc.scaled - pitch_left_adc_previous) * MODULES_FREQUENCY;
+  pitch_left_adc.scaled_ddx = (pitch_left_adc.scaled_dx - pitch_left_adc_previous_dx) * MODULES_FREQUENCY;
+
+  pitch_right_adc.filtered = pitch_right_adc.filtered + pitch_right_adc.filtered_dx * 1.0 / MODULES_FREQUENCY;
+  pitch_right_adc.filtered_dx = pitch_right_adc.filtered_dx + pitch_right_adc.filtered_ddx * 1.0 / MODULES_FREQUENCY;
+
+  pitch_right_adc.scaled_dx = (pitch_right_adc.scaled - pitch_right_adc_previous) * MODULES_FREQUENCY;
+  pitch_right_adc.scaled_ddx = (pitch_right_adc.scaled_dx - pitch_right_adc_previous_dx) * MODULES_FREQUENCY;
+
+  float omega2 = pitch_omega * pitch_omega;
+  pitch_left_adc_previous = pitch_left_adc.scaled;
+  pitch_left_adc_previous_dx = pitch_left_adc.scaled_dx;
+
+  pitch_right_adc_previous = pitch_right_adc.scaled;
+  pitch_right_adc_previous_dx = pitch_right_adc.scaled_dx;
+
+  pitch_left_adc.filtered_ddx = -pitch_left_adc.filtered_dx * 2 * pitch_zeta * pitch_omega + pitch_left_adc.scaled_ddx - pitch_left_adc.filtered * omega2;
+  pitch_right_adc.filtered_ddx = -pitch_right_adc.filtered_dx * 2 * pitch_zeta * pitch_omega + pitch_right_adc.scaled_ddx - pitch_right_adc.filtered * omega2;
+
   // calculate command in floats
-  cmd_left = (pitch_left_adc.scaled)*pgain;
-  cmd_right = (pitch_right_adc.scaled)*pgain;
+  cmd_left = (pitch_left_adc.filtered)*pgain;
+  cmd_right = (pitch_right_adc.filtered)*pgain;
   // trim command
   cmd_trimmed_left = TRIM_PPRZ(cmd_left);
   cmd_trimmed_right = TRIM_PPRZ(cmd_right);
@@ -120,7 +162,7 @@ void turbulence_adc_update(void)
   ap_state->commands[COMMAND_TURB_LEFT] = cmd_trimmed_left;
   ap_state->commands[COMMAND_TURB_RIGHT] = cmd_trimmed_right;
 
-  DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.calibration, &pitch_left_adc.calibration, &airspeed_right_adc.calibration, &pitch_right_adc.calibration);
+  //DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.calibration, &pitch_left_adc.calibration, &airspeed_right_adc.calibration, &pitch_right_adc.calibration);
   DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &airspeed_left_adc.scaled, &pitch_left_adc.scaled, &airspeed_right_adc.scaled, &pitch_right_adc.scaled);
   //DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &cmd_trimmed_left, &cmd_left, &cmd_trimmed_right, &cmd_right);
 

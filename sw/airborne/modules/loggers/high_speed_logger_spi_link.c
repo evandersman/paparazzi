@@ -26,7 +26,7 @@
 #include "subsystems/commands.h"
 #include "mcu_periph/spi.h"
 #include "state.h"
-#include "firmwares/fixedwing/stabilization/stabilization_attitude.h"
+#include "firmwares/fixedwing/stabilization/stabilization_indi.h"
 #include "modules/sensors/turbulence_adc.h"
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
@@ -60,20 +60,20 @@ void high_speed_logger_spi_link_periodic(void)
   if (high_speed_logger_spi_link_ready) {
     high_speed_logger_spi_link_ready = FALSE;
     high_speed_logger_spi_link_data.gyro_p     = imu.gyro_unscaled.p;
-    high_speed_logger_spi_link_data.gyro_q     = imu.gyro_unscaled.q;
-    high_speed_logger_spi_link_data.gyro_r     = imu.gyro_unscaled.r;
-    high_speed_logger_spi_link_data.offset_pl  = imu.gyro_unscaled.p;
-    high_speed_logger_spi_link_data.offset_pr  = imu.gyro_unscaled.p;
-    high_speed_logger_spi_link_data.pprobes    = imu.gyro_unscaled.p;
+    high_speed_logger_spi_link_data.err_p      = ANGLE_BFP_OF_REAL(reference_acceleration.err_p);
+    high_speed_logger_spi_link_data.rate_p     = ANGLE_BFP_OF_REAL(reference_acceleration.rate_p);
+    high_speed_logger_spi_link_data.acc_ref    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);
+    high_speed_logger_spi_link_data.filt_rate  = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.p);
+    high_speed_logger_spi_link_data.act_dyn_p  = ANGLE_BFP_OF_REAL(tau_act_dyn_p);
+    high_speed_logger_spi_link_data.g          = ANGLE_BFP_OF_REAL(G);
     high_speed_logger_spi_link_data.phi        = stateGetNedToBodyEulers_i()->phi;
-    high_speed_logger_spi_link_data.pgain      = ANGLE_BFP_OF_REAL(h_ctl_roll_attitude_gain);
-    high_speed_logger_spi_link_data.dgain      = ANGLE_BFP_OF_REAL(h_ctl_roll_rate_gain);
     high_speed_logger_spi_link_data.scaled_p   = state.body_rates_i.p;
-    high_speed_logger_spi_link_data.scaled_q   = state.body_rates_i.q;
-    high_speed_logger_spi_link_data.scaled_r   = state.body_rates_i.r;
-    high_speed_logger_spi_link_data.command_roll  = commands[1];
-    high_speed_logger_spi_link_data.command_pitch = commands[2];
-    high_speed_logger_spi_link_data.command_yaw   = commands[3];
+    high_speed_logger_spi_link_data.u_act_dyn  = ANGLE_BFP_OF_REAL(indi.u_act_dyn.p);
+    high_speed_logger_spi_link_data.u_p        = ANGLE_BFP_OF_REAL(indi.u.p);
+    high_speed_logger_spi_link_data.du_p       = ANGLE_BFP_OF_REAL(indi.du.p);
+    high_speed_logger_spi_link_data.command_roll   = commands[1];
+    high_speed_logger_spi_link_data.command_turb_l = commands[4];
+    high_speed_logger_spi_link_data.command_turb_r = commands[5];
 
     /*high_speed_logger_spi_link_ready = FALSE;
     high_speed_logger_spi_link_data.gyro_p     = imu.gyro_unscaled.p;

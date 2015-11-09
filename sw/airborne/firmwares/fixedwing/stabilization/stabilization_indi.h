@@ -26,8 +26,8 @@
  *
  */
 
-#ifndef FW_H_CTL_H
-#define FW_H_CTL_H
+#ifndef FW_H_CTL_I_H
+#define FW_H_CTL_I_H
 
 #include <inttypes.h>
 #include "std.h"
@@ -36,6 +36,10 @@
 #include "math/pprz_algebra_float.h"
 
 extern float G;
+extern float tau_act_dyn_p;
+extern float indi_omega;
+extern float indi_zeta;
+extern float indi_omega_r;
 
 struct ReferenceSystem {
   float err_p;
@@ -61,6 +65,7 @@ struct IndiVariables {
 
 
 extern struct ReferenceSystem reference_acceleration;
+extern struct IndiVariables indi;
 
 void stabilization_indi_second_order_filter(struct FloatRates *input, struct FloatRates *filter_ddx,
     struct FloatRates *filter_dx, struct FloatRates *filter_x, float omega, float zeta, float omega_r);
@@ -127,4 +132,4 @@ extern void h_ctl_attitude_loop(void);
 extern float h_ctl_roll_attitude_gain;
 extern float h_ctl_roll_rate_gain;
 
-#endif /* FW_H_CTL_H */
+#endif /* FW_H_CTL_I_H */
