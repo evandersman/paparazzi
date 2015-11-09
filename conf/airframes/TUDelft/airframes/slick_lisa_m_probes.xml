@@ -52,7 +52,7 @@
     <servo name="THROTTLE" no="0" min="1100" neutral="1100" max="1900"/>
     <servo name="AILERON_LEFT" no="1" min="2000" neutral="1500" max="1000"/>
     <servo name="AILERON_RIGHT" no="2" min="2000" neutral="1500" max="1000"/>
-    <servo name="ELEVATOR" no="3" min="2000" neutral="1500" max="1000"/>
+    <servo name="ELEVATOR" no="3" min="1800" neutral="1300" max="800"/>
     <servo name="RUDDER" no="4" min="2000" neutral="1500" max="1000"/>
   </servos>
 
@@ -128,7 +128,7 @@
 
     <define name="ROLL_MAX_SETPOINT" value="35" unit="deg"/>
     <define name="PITCH_MAX_SETPOINT" value="60" unit="deg"/>
-    <define name="PITCH_MIN_SETPOINT" value="-30" unit="deg"/>
+    <define name="PITCH_MIN_SETPOINT" value="-60" unit="deg"/>
 
     <define name="PITCH_PGAIN" value="4500."/>
     <define name="PITCH_DGAIN" value="1.5"/>
@@ -210,6 +210,7 @@
     <define name="TURB_PGAIN" value="14000"/>
     <define name="PITCH_OMEGA" value="1"/>
     <define name="PITCH_ZETA" value="0.7"/>
+    <define name="COMMAND_PITCH_TRIM" value="0."/>
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">
