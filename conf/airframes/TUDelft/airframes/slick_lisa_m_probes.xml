@@ -10,7 +10,7 @@
 
   <firmware name="fixedwing">
     <target name="ap" board="lisa_m_2.1">
-      <configure name="FLASH_MODE" value="JTAG_BMP"/>
+      <configure name="FLASH_MODE" value="SWD"/>
       <configure name="PERIODIC_FREQUENCY" value="120"/>
       <configure name="AHRS_PROPAGATE_FREQUENCY" value="100"/>
       <configure name="AHRS_CORRECT_FREQUENCY" value="100"/>
@@ -45,15 +45,15 @@
 
   <modules main_freq="100">
     <load name="turbulence_adc.xml"/>
-    <load name="logger_spi_link.xml"/>
+    <!--load name="logger_spi_link.xml"/-->
   </modules>
 
   <servos>
     <servo name="THROTTLE" no="0" min="1100" neutral="1100" max="1900"/>
-    <servo name="AILERON_LEFT" no="1" min="2200" neutral="1666" max="820"/>
-    <servo name="AILERON_RIGHT" no="2" min="2220" neutral="1523" max="820"/>
-    <servo name="ELEVATOR" no="3" min="1960" neutral="1355" max="800"/>
-    <servo name="RUDDER" no="4" min="2200" neutral="1408" max="700"/>
+    <servo name="AILERON_LEFT" no="1" min="2000" neutral="1500" max="1000"/>
+    <servo name="AILERON_RIGHT" no="2" min="2000" neutral="1500" max="1000"/>
+    <servo name="ELEVATOR" no="3" min="2000" neutral="1500" max="1000"/>
+    <servo name="RUDDER" no="4" min="2000" neutral="1500" max="1000"/>
   </servos>
 
   <commands>
@@ -127,40 +127,40 @@
     <define name="COURSE_DGAIN" value="0.3"/>
 
     <define name="ROLL_MAX_SETPOINT" value="35" unit="deg"/>
-    <define name="PITCH_MAX_SETPOINT" value="30" unit="deg"/>
+    <define name="PITCH_MAX_SETPOINT" value="60" unit="deg"/>
     <define name="PITCH_MIN_SETPOINT" value="-30" unit="deg"/>
 
-    <define name="PITCH_PGAIN" value="12000."/>
+    <define name="PITCH_PGAIN" value="4500."/>
     <define name="PITCH_DGAIN" value="1.5"/>
 
     <define name="ELEVATOR_OF_ROLL" value="1250"/>
 
     <define name="ROLL_SLEW" value="0.1"/>
 
-    <define name="ROLL_ATTITUDE_GAIN" value="7000"/>
+    <define name="ROLL_ATTITUDE_GAIN" value="12500"/>
     <define name="ROLL_RATE_GAIN" value="700"/>
   </section>
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
-    <define name="G" value="0.032"/>
+    <define name="G" value="0.024"/>
 
     <!-- reference acceleration for attitude control -->
-    <define name="REF_ERR_P" value="380.0"/>
+    <define name="REF_ERR_P" value="150.0"/>
     <define name="REF_ERR_Q" value="380.0"/>
     <define name="REF_ERR_R" value="250.0"/>
-    <define name="REF_RATE_P" value="21.6"/>
+    <define name="REF_RATE_P" value="0.0"/>
     <define name="REF_RATE_Q" value="21.6"/>
     <define name="REF_RATE_R" value="21.0"/>
 
     <!-- second order filter parameters -->
-    <define name="FILT_OMEGA" value="20.0"/>
-    <define name="FILT_ZETA" value="0.55"/>
+    <define name="FILT_OMEGA" value="10.0"/>
+    <define name="FILT_ZETA" value="0.6"/>
     <define name="FILT_OMEGA_R" value="20.0"/>
     <define name="FILT_ZETA_R" value="0.55"/>
 
     <!-- first order actuator dynamics -->
-    <define name="ACT_DYN_P" value="0.06"/>
+    <define name="ACT_DYN_P" value="0.2"/>
     <define name="ACT_DYN_Q" value="0.06"/>
     <define name="ACT_DYN_R" value="0.06"/>
   </section>
@@ -185,7 +185,7 @@
 
   <section name="AUTO1" prefix="AUTO1_">
     <define name="MAX_ROLL" value="60." unit="deg"/>
-    <define name="MAX_PITCH" value="35." unit="deg"/>
+    <define name="MAX_PITCH" value="60." unit="deg"/>
   </section>
 
   <section name="BAT">
@@ -203,11 +203,13 @@
     <define name="KILL_MODE_DISTANCE" value="(1.5*MAX_DIST_FROM_HOME)"/>
     <define name="CONTROL_FREQUENCY" value="100" unit="Hz"/>
     <define name="DEFAULT_CIRCLE_RADIUS" value="80."/>  
-    <define name="AIRSPEED_LEFT_OFFSET" value="400"/>
-    <define name="PITCH_LEFT_OFFSET" value="450"/>
-    <define name="AIRSPEED_RIGHT_OFFSET" value="400"/>
-    <define name="PITCH_RIGHT_OFFSET" value="450"/>
-    <define name="TURB_PGAIN" value="10000"/>
+    <define name="AIRSPEED_LEFT_OFFSET" value="69"/>
+    <define name="PITCH_LEFT_OFFSET" value="69"/>
+    <define name="AIRSPEED_RIGHT_OFFSET" value="69"/>
+    <define name="PITCH_RIGHT_OFFSET" value="69"/>
+    <define name="TURB_PGAIN" value="14000"/>
+    <define name="PITCH_OMEGA" value="1"/>
+    <define name="PITCH_ZETA" value="0.7"/>
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">
