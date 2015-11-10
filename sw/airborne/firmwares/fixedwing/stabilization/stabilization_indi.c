@@ -36,6 +36,7 @@
 #include "firmwares/fixedwing/autopilot.h"
 
 float G;
+float p_previous;
 float tau_act_dyn_p;
 float indi_omega;
 float indi_zeta;
@@ -217,6 +218,7 @@ void h_ctl_init(void)
   indi_omega = STABILIZATION_INDI_FILT_OMEGA;
   indi_zeta = STABILIZATION_INDI_FILT_ZETA;
   indi_omega_r = STABILIZATION_INDI_FILT_OMEGA_R;
+  p_previous = 0;
 
   FLOAT_RATES_ZERO(indi.filtered_rate);
   FLOAT_RATES_ZERO(indi.filtered_rate_deriv);
@@ -382,10 +384,11 @@ inline static void h_ctl_roll_loop(void)
   stabilization_indi_second_order_filter(body_rates, &indi.filtered_rate_2deriv, &indi.filtered_rate_deriv,
                                          &indi.filtered_rate, STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);*/
   float omega2 = indi_omega * indi_omega;
-  indi.filtered_rate.p = indi.filtered_rate.p + indi.filtered_rate_deriv.p * 1.0 / PERIODIC_FREQUENCY;
-  indi.filtered_rate_deriv.p =  indi.filtered_rate_deriv.p + indi.filtered_rate_2deriv.p * 1.0 / PERIODIC_FREQUENCY;
-  indi.filtered_rate_2deriv.p = -indi.filtered_rate_deriv.p * 2 * indi_zeta * indi_omega   + (stateGetBodyRates_f()->p - indi.filtered_rate.p) * omega2;
-
+  /*indi.filtered_rate.p = indi.filtered_rate.p + indi.filtered_rate_deriv.p * 1.0 / CONTROL_FREQUENCY;
+  indi.filtered_rate_deriv.p =  indi.filtered_rate_deriv.p + indi.filtered_rate_2deriv.p * 1.0 / CONTROL_FREQUENCY;
+  indi.filtered_rate_2deriv.p = -indi.filtered_rate_deriv.p * 2 * indi_zeta * indi_omega   + (stateGetBodyRates_f()->p - indi.filtered_rate.p) * omega2;*/
+  indi.filtered_rate_deriv.p = (stateGetBodyRates_f()->p - p_previous) * 1.0 / CONTROL_FREQUENCY;
+  p_previous = stateGetBodyRates_f()->p;
   // Calculate required angular acceleration
   indi.angular_accel_ref.p = reference_acceleration.err_p * err
                              - reference_acceleration.rate_p * stateGetBodyRates_f()->p;
@@ -406,10 +409,11 @@ inline static void h_ctl_roll_loop(void)
   // Sensor filter
   /*stabilization_indi_second_order_filter(&indi.u_act_dyn, &indi.udotdot, &indi.udot, &indi.u,
                                          STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);*/
+  indi.u.p = indi.u_act_dyn.p;
 
-  indi.u.p = indi.u.p + indi.udot.p * 1.0 / PERIODIC_FREQUENCY;
-  indi.udot.p =  indi.udot.p + indi.udotdot.p * 1.0 / PERIODIC_FREQUENCY;
-  indi.udotdot.p = -indi.udot.p * 2 * indi_zeta * indi_omega   + (indi.u_act_dyn.p - indi.u.p) * omega2;
+  /*indi.u.p = indi.u.p + indi.udot.p * 1.0 / CONTROL_FREQUENCY;
+  indi.udot.p =  indi.udot.p + indi.udotdot.p * 1.0 / CONTROL_FREQUENCY;
+  indi.udotdot.p = -indi.udot.p * 2 * indi_zeta * indi_omega   + (indi.u_act_dyn.p - indi.u.p) * omega2;*/
 
   // Don't increment if thrust is off
   if (v_ctl_throttle_setpoint < 100) {
