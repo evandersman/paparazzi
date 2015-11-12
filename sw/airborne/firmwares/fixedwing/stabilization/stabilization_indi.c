@@ -380,21 +380,17 @@ inline static void h_ctl_roll_loop(void)
   float err = stateGetNedToBodyEulers_f()->phi - h_ctl_roll_setpoint;
 
   //Propagate the second order filter on the gyroscopes
- /* struct FloatRates *body_rates = stateGetBodyRates_f();
-  stabilization_indi_second_order_filter(body_rates, &indi.filtered_rate_2deriv, &indi.filtered_rate_deriv,
-                                         &indi.filtered_rate, STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);*/
   float omega2 = indi_omega * indi_omega;
-  /*indi.filtered_rate.p = indi.filtered_rate.p + indi.filtered_rate_deriv.p * 1.0 / CONTROL_FREQUENCY;
+  indi.filtered_rate.p = indi.filtered_rate.p + indi.filtered_rate_deriv.p * 1.0 / CONTROL_FREQUENCY;
   indi.filtered_rate_deriv.p =  indi.filtered_rate_deriv.p + indi.filtered_rate_2deriv.p * 1.0 / CONTROL_FREQUENCY;
-  indi.filtered_rate_2deriv.p = -indi.filtered_rate_deriv.p * 2 * indi_zeta * indi_omega   + (stateGetBodyRates_f()->p - indi.filtered_rate.p) * omega2;*/
-  indi.filtered_rate_deriv.p = (stateGetBodyRates_f()->p - p_previous) * 1.0 / CONTROL_FREQUENCY;
-  p_previous = stateGetBodyRates_f()->p;
+  indi.filtered_rate_2deriv.p = -indi.filtered_rate_deriv.p * 2 * indi_zeta * indi_omega   + (stateGetBodyRates_f()->p - indi.filtered_rate.p) * omega2;
+
   // Calculate required angular acceleration
   indi.angular_accel_ref.p = reference_acceleration.err_p * err
-                             - reference_acceleration.rate_p * stateGetBodyRates_f()->p;
+                             + reference_acceleration.rate_p * stateGetBodyRates_f()->p;
 
   // Incremented in angular acceleration requires increment in control input
-  indi.du.p = 1.0/G * (indi.angular_accel_ref.p - indi.filtered_rate_deriv.p);
+  indi.du.p = 1.0/G * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p);
 
   // Add the increment to the total control input
   indi.u_in.p = indi.u.p + indi.du.p;
@@ -407,13 +403,9 @@ inline static void h_ctl_roll_loop(void)
   indi.u_act_dyn.p = indi.u_act_dyn.p + tau_act_dyn_p * (indi.u_in.p - indi.u_act_dyn.p);
 
   // Sensor filter
-  /*stabilization_indi_second_order_filter(&indi.u_act_dyn, &indi.udotdot, &indi.udot, &indi.u,
-                                         STABILIZATION_INDI_FILT_OMEGA, STABILIZATION_INDI_FILT_ZETA, STABILIZATION_INDI_FILT_OMEGA_R);*/
-  indi.u.p = indi.u_act_dyn.p;
-
-  /*indi.u.p = indi.u.p + indi.udot.p * 1.0 / CONTROL_FREQUENCY;
+  indi.u.p = indi.u.p + indi.udot.p * 1.0 / CONTROL_FREQUENCY;
   indi.udot.p =  indi.udot.p + indi.udotdot.p * 1.0 / CONTROL_FREQUENCY;
-  indi.udotdot.p = -indi.udot.p * 2 * indi_zeta * indi_omega   + (indi.u_act_dyn.p - indi.u.p) * omega2;*/
+  indi.udotdot.p = -indi.udot.p * 2 * indi_zeta * indi_omega   + (indi.u_act_dyn.p - indi.u.p) * omega2;
 
   // Don't increment if thrust is off
   if (v_ctl_throttle_setpoint < 100) {
