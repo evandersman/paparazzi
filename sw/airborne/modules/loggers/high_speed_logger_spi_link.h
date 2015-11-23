@@ -46,7 +46,7 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t u_p;
   int32_t u_in_p;
   int32_t u_act_dyn;    // 14
-  int32_t aileron_sp;   // 15
+  int32_t probes_acc;   // 15
   int32_t command_roll; // 16
 
 /*

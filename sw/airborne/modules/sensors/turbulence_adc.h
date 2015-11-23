@@ -45,6 +45,8 @@ extern struct TurbulenceAdc pitch_left_adc;
 extern struct TurbulenceAdc airspeed_right_adc;
 extern struct TurbulenceAdc pitch_right_adc;
 extern float pgain;
+extern float acc_gain;
+extern float probes_ang_acc;
 extern float pitch_omega;
 extern float pitch_zeta;
 

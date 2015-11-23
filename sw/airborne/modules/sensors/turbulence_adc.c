@@ -58,6 +58,10 @@
 #define TURB_PGAIN 40000
 #endif
 
+#if !defined PROBES_FF_ANG_ACC
+#error "You need to define PROBES_FF_ANG_ACC"
+#endif
+
 static struct adc_buf buf_airspeed_left;
 static struct adc_buf buf_pitch_left;
 static struct adc_buf buf_airspeed_right;
@@ -69,6 +73,8 @@ struct TurbulenceAdc airspeed_right_adc;
 struct TurbulenceAdc pitch_right_adc;
 
 float pgain;
+float acc_gain;
+float probes_ang_acc;
 float pitch_omega;
 float pitch_zeta;
 float pitch_left_adc_previous;
@@ -92,6 +98,7 @@ void turbulence_adc_init(void)
   airspeed_right_adc.offset = AIRSPEED_RIGHT_OFFSET;
   pitch_right_adc.offset = PITCH_RIGHT_OFFSET;
   pgain = TURB_PGAIN;
+  acc_gain = TURB_ACC_GAIN;
   pitch_omega = PITCH_OMEGA;
   pitch_zeta = PITCH_ZETA;
   pitch_left_adc.filtered = 0;
@@ -150,20 +157,24 @@ void turbulence_adc_update(void)
 
   pitch_left_adc.filtered_ddx = -pitch_left_adc.filtered_dx * 2 * pitch_zeta * pitch_omega + pitch_left_adc.scaled_ddx - pitch_left_adc.filtered * omega2;
   pitch_right_adc.filtered_ddx = -pitch_right_adc.filtered_dx * 2 * pitch_zeta * pitch_omega + pitch_right_adc.scaled_ddx - pitch_right_adc.filtered * omega2;
-
+  
+  #if PROBES_FF_ANG_ACC
+  // predict angular acceleration due to turbulence for indi controller
+  probes_ang_acc = (pitch_left_adc.filtered - pitch_right_adc.filtered)*acc_gain;
+  #else
   // calculate command in floats
   cmd_left = (pitch_left_adc.filtered)*pgain;
   cmd_right = (pitch_right_adc.filtered)*pgain;
   // trim command
   cmd_trimmed_left = TRIM_PPRZ(cmd_left);
   cmd_trimmed_right = TRIM_PPRZ(cmd_right);
-
   // send command to ailerons individually
   ap_state->commands[COMMAND_TURB_LEFT] = cmd_trimmed_left;
   ap_state->commands[COMMAND_TURB_RIGHT] = cmd_trimmed_right;
+  #endif
 
+  RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &airspeed_left_adc.scaled, &pitch_left_adc.scaled, &airspeed_right_adc.scaled, &pitch_right_adc.scaled));
   //DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.calibration, &pitch_left_adc.calibration, &airspeed_right_adc.calibration, &pitch_right_adc.calibration);
-  DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &airspeed_left_adc.scaled, &pitch_left_adc.scaled, &airspeed_right_adc.scaled, &pitch_right_adc.scaled);
   //DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &cmd_trimmed_left, &cmd_left, &cmd_trimmed_right, &cmd_right);
 
 }

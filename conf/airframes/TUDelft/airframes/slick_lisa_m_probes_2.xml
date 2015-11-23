@@ -37,7 +37,7 @@
     <subsystem name="gps" type="ublox"/>
 
     <subsystem name="ahrs" type="int_cmpl_quat"/>
-    <subsystem name="control"/>
+    <subsystem name="control" type="indi"/>
     <subsystem name="navigation"/>
     <subsystem name="ins" type="alt_float">
       <define name="USE_BAROMETER" value="TRUE"/>
@@ -45,8 +45,8 @@
   </firmware>
 
   <modules main_freq="100">
-    <!--load name="turbulence_adc.xml"/-->
-    <!--load name="logger_spi_link.xml"/-->
+    <load name="turbulence_adc.xml"/>
+    <load name="logger_spi_link.xml"/>
   </modules>
 
   <servos>
@@ -199,13 +199,15 @@
     <define name="KILL_MODE_DISTANCE" value="(1.5*MAX_DIST_FROM_HOME)"/>
     <define name="CONTROL_FREQUENCY" value="100" unit="Hz"/>
     <define name="DEFAULT_CIRCLE_RADIUS" value="80."/>  
-    <define name="AIRSPEED_LEFT_OFFSET" value="69"/>
-    <define name="PITCH_LEFT_OFFSET" value="69"/>
-    <define name="AIRSPEED_RIGHT_OFFSET" value="69"/>
-    <define name="PITCH_RIGHT_OFFSET" value="69"/>
+    <define name="AIRSPEED_LEFT_OFFSET" value="30"/>
+    <define name="PITCH_LEFT_OFFSET" value="30"/>
+    <define name="AIRSPEED_RIGHT_OFFSET" value="30"/>
+    <define name="PITCH_RIGHT_OFFSET" value="30"/>
     <define name="TURB_PGAIN" value="14000"/>
+    <define name="TURB_ACC_GAIN" value="1"/>
     <define name="PITCH_OMEGA" value="1"/>
     <define name="PITCH_ZETA" value="0.7"/>
+    <define name="PROBES_FF_ANG_ACC" value="40"/>
     <define name="COMMAND_PITCH_TRIM" value="0."/>
   </section>
 

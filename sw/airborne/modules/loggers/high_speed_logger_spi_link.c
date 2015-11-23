@@ -81,7 +81,7 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.u_p          = ANGLE_BFP_OF_REAL(indi.u.p);
     high_speed_logger_spi_link_data.u_in_p       = ANGLE_BFP_OF_REAL(indi.u_in.p);
     high_speed_logger_spi_link_data.u_act_dyn    = ANGLE_BFP_OF_REAL(indi.u_act_dyn.p);
-    high_speed_logger_spi_link_data.aileron_sp   = ANGLE_BFP_OF_REAL(h_ctl_aileron_setpoint);
+    high_speed_logger_spi_link_data.probes_acc   = ANGLE_BFP_OF_REAL(probes_ang_acc);
     high_speed_logger_spi_link_data.command_roll = commands[1];
 
     /* Pid parameters */

@@ -27,6 +27,7 @@
  */
 
 #include "firmwares/fixedwing/stabilization/stabilization_indi.h"
+#include "modules/sensors/turbulence_adc.h"
 #include "std.h"
 #include "led.h"
 #include "state.h"
@@ -390,7 +391,11 @@ inline static void h_ctl_roll_loop(void)
                              + reference_acceleration.rate_p * stateGetBodyRates_f()->p;
 
   // Incremented in angular acceleration requires increment in control input
+  #if PROBES_FF_ANG_ACC
+  indi.du.p = 1.0/G * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p + probes_ang_acc);
+  #else
   indi.du.p = 1.0/G * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p);
+  #endif
 
   // Add the increment to the total control input
   indi.u_in.p = indi.u.p + indi.du.p;
@@ -420,7 +425,7 @@ inline static void h_ctl_roll_loop(void)
   /* INDI feedback */
   h_ctl_aileron_setpoint = TRIM_PPRZ(indi.u_in.p);
 
-  DOWNLINK_SEND_STAB_ATTITUDE_INDI(DefaultChannel, DefaultDevice, &indi.angular_accel_ref.p, &indi.angular_accel_ref.q, &indi.angular_accel_ref.r, &indi.du.p, &indi.du.q, &indi.du.r, &indi.u_in.p, &indi.u_in.q, &indi.u_in.r);
+  RunOnceEvery(50, DOWNLINK_SEND_STAB_ATTITUDE_INDI(DefaultChannel, DefaultDevice, &indi.angular_accel_ref.p, &indi.angular_accel_ref.q, &indi.angular_accel_ref.r, &indi.du.p, &indi.du.q, &indi.du.r, &indi.u_in.p, &indi.u_in.q, &indi.u_in.r));
 
 }
 

@@ -7,11 +7,13 @@
       <configure name="ADC_CHANNEL_PITCH_LEFT" value="ADCX" description="choose which ADC is used for input pitch left wing"/>
       <configure name="ADC_CHANNEL_AIRSPEED_RIGHT" value="ADCX" description="choose which ADC is used for input airspeed right wing"/>
       <configure name="ADC_CHANNEL_PITCH_RIGHT" value="ADCX" description="choose which ADC is used for input pitch right wing"/>
+      <configure name="PROBES_FF_ANG_ACC" value="1" description="activate probes for indi control"/>
   </doc>
   <settings>
     <dl_settings>
       <dl_settings NAME="TURBULENCE">
         <dl_setting MAX="20000" MIN="0" STEP="1" VAR="pgain" shortname="pgain" module="modules/sensors/turbulence_adc" param="TURB_PGAIN"/>
+        <dl_setting MAX="20000" MIN="0" STEP="1" VAR="acc_gain" shortname="acc_gain" module="modules/sensors/turbulence_adc" param="TURB_ACC_GAIN"/>
         <dl_setting MAX="600" MIN="-600" STEP="1" VAR="pitch_left_adc.offset" shortname="offset_pl" module="modules/sensors/turbulence_adc" param="PITCH_LEFT_OFFSET"/>
         <dl_setting MAX="600" MIN="-600" STEP="1" VAR="pitch_right_adc.offset" shortname="offset_pr" module="modules/sensors/turbulence_adc" param="PITCH_RIGHT_OFFSET"/>
         <dl_setting MAX="20" MIN="0" STEP="1" VAR="pitch_omega" shortname="omega" module="modules/sensors/turbulence_adc" param="PITCH_OMEGA"/>
@@ -28,9 +30,9 @@
     <file name="turbulence_adc.c"/>
     <raw>
 ADC_CHANNEL_PITCH_RIGHT ?= ADC_1
-ADC_CHANNEL_AIRSPEED_RIGHT ?= ADC_2
+ADC_CHANNEL_AIRSPEED_RIGHT ?= ADC_7
 ADC_CHANNEL_AIRSPEED_LEFT ?= ADC_3
-ADC_CHANNEL_PITCH_LEFT ?= ADC_7
+ADC_CHANNEL_PITCH_LEFT ?= ADC_2
 
 TURB_ADC_FLAGS = -DADC_CHANNEL_AIRSPEED_LEFT=$(ADC_CHANNEL_AIRSPEED_LEFT) -DUSE_$(ADC_CHANNEL_AIRSPEED_LEFT)
 TURB_ADC_FLAGS += -DADC_CHANNEL_PITCH_LEFT=$(ADC_CHANNEL_PITCH_LEFT) -DUSE_$(ADC_CHANNEL_PITCH_LEFT)
