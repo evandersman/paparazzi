@@ -37,7 +37,6 @@
 #include "firmwares/fixedwing/autopilot.h"
 
 float G;
-float p_previous;
 float tau_act_dyn_p;
 float indi_omega;
 float indi_zeta;
@@ -219,7 +218,6 @@ void h_ctl_init(void)
   indi_omega = STABILIZATION_INDI_FILT_OMEGA;
   indi_zeta = STABILIZATION_INDI_FILT_ZETA;
   indi_omega_r = STABILIZATION_INDI_FILT_OMEGA_R;
-  p_previous = 0;
 
   FLOAT_RATES_ZERO(indi.filtered_rate);
   FLOAT_RATES_ZERO(indi.filtered_rate_deriv);
@@ -392,7 +390,7 @@ inline static void h_ctl_roll_loop(void)
 
   // Incremented in angular acceleration requires increment in control input
   #if PROBES_FF_ANG_ACC
-  indi.du.p = 1.0/G * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p + probes_ang_acc);
+  indi.du.p = 1.0/G * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p - probes_ang_acc);
   #else
   indi.du.p = 1.0/G * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p);
   #endif

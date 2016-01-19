@@ -11,9 +11,9 @@
   <firmware name="fixedwing">
     <target name="ap" board="lisa_m_2.0">
       <configure name="FLASH_MODE" value="SWD"/>
-      <configure name="PERIODIC_FREQUENCY" value="120"/>
-      <configure name="AHRS_PROPAGATE_FREQUENCY" value="100"/>
-      <configure name="AHRS_CORRECT_FREQUENCY" value="100"/>
+      <configure name="PERIODIC_FREQUENCY" value="512"/>
+      <configure name="AHRS_PROPAGATE_FREQUENCY" value="512"/>
+      <configure name="AHRS_CORRECT_FREQUENCY" value="512"/>
     </target>
     <target name="sim" board="pc"/>
     <target name="nps" board="pc">
@@ -29,29 +29,29 @@
     <subsystem name="radio_control" type="spektrum"/>
 
     <!-- Communication -->
-    <subsystem name="telemetry" type="transparent"/>
-    <configure name="MODEM_BAUD" value="B9600"/>
+    <subsystem name="telemetry" type="xbee_api"/>
 
     <!-- Sensors -->
     <subsystem name="imu" type="aspirin_v2.1"/>
     <subsystem name="gps" type="ublox"/>
 
     <subsystem name="ahrs" type="int_cmpl_quat"/>
-    <subsystem name="control" type="indi"/>
+    <subsystem name="control"/>
     <subsystem name="navigation"/>
     <subsystem name="ins" type="alt_float">
       <define name="USE_BAROMETER" value="TRUE"/>
     </subsystem>
   </firmware>
 
-  <modules main_freq="100">
-    <load name="turbulence_adc.xml"/>
+  <modules main_freq="512">
+    <!--load name="turbulence_adc.xml"/-->
+    <load name="potentiometer_adc.xml"/>
     <load name="logger_spi_link.xml"/>
   </modules>
 
   <servos>
     <servo name="THROTTLE" no="0" min="1100" neutral="1100" max="1900"/>
-    <servo name="AILERON_LEFT" no="1" min="2000" neutral="1500" max="1000"/>
+    <servo name="AILERON_LEFT" no="1" min="2050" neutral="1550" max="1050"/>
     <servo name="AILERON_RIGHT" no="2" min="2000" neutral="1500" max="1000"/>
     <servo name="ELEVATOR" no="3" min="1800" neutral="1300" max="800"/>
     <servo name="RUDDER" no="4" min="2000" neutral="1500" max="1000"/>
@@ -82,7 +82,7 @@
     <set servo="ELEVATOR" value="@PITCH"/>
     <set servo="RUDDER" value="@YAW"/>
     <set servo="AILERON_LEFT" value="@ROLL + @TURB_LEFT"/>
-    <set servo="AILERON_RIGHT" value="@ROLL + @TURB_RIGHT"/>
+    <set servo="AILERON_RIGHT" value="@ROLL - @TURB_RIGHT"/>
   </command_laws>
 
   <section name="IMU" prefix="IMU_">
@@ -197,17 +197,17 @@
     <define name="NOMINAL_AIRSPEED" value="13." unit="m/s"/>
     <define name="CARROT" value="5." unit="s"/>
     <define name="KILL_MODE_DISTANCE" value="(1.5*MAX_DIST_FROM_HOME)"/>
-    <define name="CONTROL_FREQUENCY" value="100" unit="Hz"/>
+    <define name="CONTROL_FREQUENCY" value="512" unit="Hz"/>
     <define name="DEFAULT_CIRCLE_RADIUS" value="80."/>  
     <define name="AIRSPEED_LEFT_OFFSET" value="30"/>
-    <define name="PITCH_LEFT_OFFSET" value="30"/>
+    <define name="PITCH_LEFT_OFFSET" value="24"/>
     <define name="AIRSPEED_RIGHT_OFFSET" value="30"/>
-    <define name="PITCH_RIGHT_OFFSET" value="30"/>
+    <define name="PITCH_RIGHT_OFFSET" value="35"/>
     <define name="TURB_PGAIN" value="14000"/>
     <define name="TURB_ACC_GAIN" value="1"/>
-    <define name="PITCH_OMEGA" value="1"/>
-    <define name="PITCH_ZETA" value="0.7"/>
-    <define name="PROBES_FF_ANG_ACC" value="40"/>
+    <define name="PITCH_OMEGA" value="0.5"/>
+    <define name="PITCH_ZETA" value="1"/>
+    <!--define name="PROBES_FF_ANG_ACC" value="1"/-->
     <define name="COMMAND_PITCH_TRIM" value="0."/>
   </section>
 

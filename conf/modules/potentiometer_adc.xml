@@ -1,0 +1,22 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="potentiometer_adc" dir="sensors">
+  <doc>
+    <description>module for reading pressure servo potentiometer data</description>
+      <configure name="ADC_CHANNEL_POTENTIOMETER" value="ADCX" description="choose which ADC is used for servo potentiometer"/>
+  </doc>
+  <header>
+    <file name="potentiometer_adc.h"/>
+  </header>
+  <init fun="potentiometer_adc_init()"/>
+  <periodic fun="potentiometer_adc_update()" freq="512"/>
+  <makefile target="ap">
+    <file name="potentiometer_adc.c"/>
+    <raw>
+ADC_CHANNEL_POTENTIOMETER ?= ADC_2
+
+POT_ADC_FLAGS = -DADC_CHANNEL_POTENTIOMETER=$(ADC_CHANNEL_POTENTIOMETER) -DUSE_$(ADC_CHANNEL_POTENTIOMETER)
+ap.CFLAGS += $(POT_ADC_FLAGS)
+  </raw>
+  </makefile>
+</module>

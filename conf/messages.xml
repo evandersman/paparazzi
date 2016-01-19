@@ -868,9 +868,9 @@
    </message>
 
    <message name="ADC_TURBULENCE_SCALED" id="108">
-     <field name="airspeed_left_scaled" type="float"/>
+     <field name="pitch_left_filtered" type="float"/>
      <field name="pitch_left_scaled" type="float"/>
-     <field name="airspeed_right_scaled" type="float"/>
+     <field name="pitch_right_filtered" type="float"/>
      <field name="pitch_right_scaled" type="float"/>
    </message>
 

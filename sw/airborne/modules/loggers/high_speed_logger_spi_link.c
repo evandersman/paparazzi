@@ -28,6 +28,7 @@
 #include "state.h"
 #include "firmwares/fixedwing/stabilization/stabilization_indi.h"
 #include "modules/sensors/turbulence_adc.h"
+#include "modules/sensors/potentiometer_adc.h"
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
 struct spi_transaction high_speed_logger_spi_link_transaction;
@@ -60,13 +61,36 @@ void high_speed_logger_spi_link_periodic(void)
   if (high_speed_logger_spi_link_ready) {
     high_speed_logger_spi_link_ready = FALSE;
 
+    /* Data which will be logged for servo model */
+    high_speed_logger_spi_link_data.pot        	    = potentiometer_adc_raw;
+    high_speed_logger_spi_link_data.roll_setpoint   = commands[1];
+    high_speed_logger_spi_link_data.phi        	    = stateGetNedToBodyEulers_i()->phi;
+    // probe calibration and gain
+    high_speed_logger_spi_link_data.offset_pl  = potentiometer_adc_raw;
+    high_speed_logger_spi_link_data.offset_al  = potentiometer_adc_raw;
+    high_speed_logger_spi_link_data.offset_pr  = potentiometer_adc_raw;
+    high_speed_logger_spi_link_data.offset_ar  = potentiometer_adc_raw;
+    high_speed_logger_spi_link_data.pprobes    = potentiometer_adc_raw;
+    // gains
+    high_speed_logger_spi_link_data.pgain      = potentiometer_adc_raw;
+    high_speed_logger_spi_link_data.dgain      = potentiometer_adc_raw;
+    // probe pressures differentials in millipascals
+    high_speed_logger_spi_link_data.probe_press_l = potentiometer_adc_raw;
+    high_speed_logger_spi_link_data.probe_press_r = potentiometer_adc_raw;
+    // commands
+    high_speed_logger_spi_link_data.command_roll   = potentiometer_adc_raw;
+    high_speed_logger_spi_link_data.command_turb_l = potentiometer_adc_raw;
+    high_speed_logger_spi_link_data.command_turb_r = potentiometer_adc_raw;
+
     /* Data which will be logged for both pid and indi */
+/*
     high_speed_logger_spi_link_data.phi        	    = stateGetNedToBodyEulers_i()->phi;
     high_speed_logger_spi_link_data.p               = state.body_rates_i.p;
     high_speed_logger_spi_link_data.roll_setpoint   = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);
+*/
 
     /* Indi parameters */
-
+/*
     // outer loop gains
     high_speed_logger_spi_link_data.pgain      = ANGLE_BFP_OF_REAL(reference_acceleration.err_p);
     high_speed_logger_spi_link_data.dgain      = ANGLE_BFP_OF_REAL(reference_acceleration.rate_p);
@@ -83,7 +107,7 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.u_act_dyn    = ANGLE_BFP_OF_REAL(indi.u_act_dyn.p);
     high_speed_logger_spi_link_data.probes_acc   = ANGLE_BFP_OF_REAL(probes_ang_acc);
     high_speed_logger_spi_link_data.command_roll = commands[1];
-
+*/
     /* Pid parameters */
 /*
     // probe calibration and gain

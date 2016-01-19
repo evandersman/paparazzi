@@ -31,11 +31,18 @@ extern void high_speed_logger_spi_link_periodic(void);
 #define PACKED __attribute__((__packed__))
 
 struct PACKED high_speed_logger_spi_link_data {
+
+
   int32_t id;           // 1
+  int32_t pot;          // 2
+  int32_t roll_setpoint;
+  int32_t phi;
+/*
   int32_t phi;          // 2
   int32_t p;
   int32_t roll_setpoint;
-
+*/
+/*
   int32_t pgain;        // 5
   int32_t dgain;
   int32_t ref_acc;
@@ -48,8 +55,8 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t u_act_dyn;    // 14
   int32_t probes_acc;   // 15
   int32_t command_roll; // 16
+*/
 
-/*
   int32_t offset_pl;      // 5
   int32_t offset_al;
   int32_t offset_pr;
@@ -62,7 +69,7 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t command_roll;     // 14
   int32_t command_turb_l;   // 15
   int32_t command_turb_r;   // 16
-*/
+
 };
 
 #endif /* HIGH_SPEED_LOGGER_SPI_LINK_H_ */
