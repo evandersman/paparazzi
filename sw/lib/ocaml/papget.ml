@@ -69,15 +69,15 @@ object
   method type_ = "message_field"
 
   initializer
-  let module P = Pprz.Messages (struct let name = class_name end) in
+  let module P = PprzLink.Messages (struct let name = class_name end) in
   let process_message = fun _sender values ->
     let (field_name, index) = base_and_index field_descr in
     let value =
-      match Pprz.assoc field_name values with
-          Pprz.Array array -> array.(index)
+      match PprzLink.assoc field_name values with
+          PprzLink.Array array -> array.(index)
         | scalar -> scalar in
 
-    last_value <- Pprz.string_of_value value;
+    last_value <- PprzLink.string_of_value value;
 
     List.iter (fun cb -> cb last_value) callbacks in
   ignore (P.message_bind ?sender msg_name process_message)
@@ -405,9 +405,11 @@ end
 
 
 (****************************************************************************)
-class canvas_video_plugin_item = fun properties (canvas_renderer:PR.t) ->
-object
+class canvas_video_plugin_item = fun properties (canvas_renderer:PR.t) (adj:GData.adjustment) ->
+object (self)
   inherit canvas_item ~config:properties canvas_renderer as item
+  method update_zoom = fun zoom ->
+    item#update zoom
   method config = fun () ->
     let props = renderer#config () in
     let (x, y) = item#xy in
@@ -416,5 +418,6 @@ object
         "display", String.lowercase item#renderer#tag;
         "x", sprintf "%.0f" x; "y", sprintf "%.0f" y ] in
     Xml.Element ("papget", attrs, properties@props)
+  initializer ignore(adj#connect#value_changed (fun () -> self#update_zoom (string_of_float adj#value)))
 end
 

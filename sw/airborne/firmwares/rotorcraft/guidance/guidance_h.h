@@ -59,6 +59,7 @@
 #define GUIDANCE_H_MODE_FORWARD     7
 #define GUIDANCE_H_MODE_MODULE      8
 #define GUIDANCE_H_MODE_FLIP        9
+#define GUIDANCE_H_MODE_GUIDED      10
 
 
 struct HorizontalGuidanceSetpoint {
@@ -69,6 +70,7 @@ struct HorizontalGuidanceSetpoint {
   struct Int32Vect2 pos;
   struct Int32Vect2 speed;  ///< only used if GUIDANCE_H_USE_SPEED_REF
   int32_t heading;          ///< with #INT32_ANGLE_FRAC
+  uint8_t mask;             ///< bit 4: vx, bit 5: vy, bit 6: vz, bit 7: vyaw
 };
 
 struct HorizontalGuidanceReference {
@@ -111,6 +113,25 @@ extern void guidance_h_run(bool_t in_flight);
 
 extern void guidance_h_set_igain(uint32_t igain);
 
+/** Set horizontal position setpoint in GUIDED mode.
+ * @param x North position (local NED frame) in meters.
+ * @param y East position (local NED frame) in meters.
+ * @return TRUE if setpoints were set (currently in GUIDANCE_H_MODE_GUIDED)
+ */
+extern bool_t guidance_h_set_guided_pos(float x, float y);
+
+/** Set heading setpoint in GUIDED mode.
+ * @param heading Setpoint in radians.
+ * @return TRUE if setpoint was set (currently in GUIDANCE_H_MODE_GUIDED)
+ */
+extern bool_t guidance_h_set_guided_heading(float heading);
+
+/** Set horizontal velocity setpoint in GUIDED mode.
+ * @param x North velocity (local NED frame) in meters/sec.
+ * @param y East velocity (local NED frame) in meters/sec.
+ * @return TRUE if setpoints were set (currently in GUIDANCE_H_MODE_GUIDED)
+ */
+extern bool_t guidance_h_set_guided_vel(float vx, float vy);
 
 /* Make sure that ref can only be temporarily disabled for testing,
  * but not enabled if GUIDANCE_H_USE_REF was defined to FALSE.

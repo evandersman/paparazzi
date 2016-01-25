@@ -32,7 +32,7 @@
 #include "subsystems/abi.h"
 
 #include "mcu_periph/uart.h"
-#include "messages.h"
+#include "pprzlink/messages.h"
 #include "subsystems/datalink/downlink.h"
 
 #if PERIODIC_TELEMETRY
@@ -160,7 +160,7 @@ void ms45xx_i2c_init(void)
                               MS45XX_I2C_PERIODIC_PERIOD, 0);
 
 #if PERIODIC_TELEMETRY
-  register_periodic_telemetry(DefaultPeriodic, "AIRSPEED_MS45XX", ms45xx_downlink);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AIRSPEED_MS45XX, ms45xx_downlink);
 #endif
 }
 

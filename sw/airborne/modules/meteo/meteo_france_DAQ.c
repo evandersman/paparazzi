@@ -106,20 +106,23 @@ void mf_daq_send_report(void)
     uint8_t foo = 0;
     int16_t climb = -gps.ned_vel.z;
     int16_t course = (DegOfRad(gps.course) / ((int32_t)1e6));
+    struct UtmCoor_f utm = stateGetPositionEnu_f();
+    int32_t east = utm.east * 100;
+    int32_t north = utm.north * 100;
     DOWNLINK_SEND_GPS(pprzlog_tp, chibios_sdlog, &gps.fix,
-                      &gps.utm_pos.east, &gps.utm_pos.north,
-                      &course, &gps.hmsl, &gps.gspeed, &climb,
-                      &gps.week, &gps.tow, &gps.utm_pos.zone, &foo);
+                      &east, &north, &course, &gps.hmsl, &gps.gspeed, &climb,
+                      &gps.week, &gps.tow, &utm.zone, &foo);
   }
 }
 
 void parse_mf_daq_msg(void)
 {
-  mf_daq.nb = DL_PAYLOAD_FLOAT_values_length(dl_buffer);
+  mf_daq.nb = dl_buffer[2];
   if (mf_daq.nb > 0) {
     if (mf_daq.nb > MF_DAQ_SIZE) { mf_daq.nb = MF_DAQ_SIZE; }
     // Store data struct directly from dl_buffer
-    memcpy(mf_daq.values, DL_PAYLOAD_FLOAT_values(dl_buffer), mf_daq.nb * sizeof(float));
+    float *buf = (float*)(dl_buffer+3);
+    memcpy(mf_daq.values, buf, mf_daq.nb * sizeof(float));
     // Log on SD card
     if (log_started) {
       DOWNLINK_SEND_PAYLOAD_FLOAT(pprzlog_tp, chibios_sdlog, mf_daq.nb, mf_daq.values);

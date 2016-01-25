@@ -24,13 +24,14 @@
 Q=@
 
 
-OCAMLC=ocamlfind ocamlc
-OCAMLOPT=ocamlfind ocamlopt
-OCAMLDEP=ocamlfind ocamldep
-OCAMLLEX=ocamllex
-OCAMLYACC=ocamlyacc
-OCAMLMKLIB=ocamlmklib
-OCAMLLIBDIR=$(shell $(OCAMLC) -where)
+#OCAMLC=ocamlfind ocamlc
+#OCAMLOPT=ocamlfind ocamlopt
+#OCAMLDEP=ocamlfind ocamldep
+#OCAMLLEX=ocamllex
+#OCAMLYACC=ocamlyacc
+#OCAMLMKLIB=ocamlmklib
+#OCAMLLIBDIR=$(shell $(OCAMLC) -where)
+include ../../Makefile.ocaml
 
 # verbose ocamlmklib: Print commands before executing them
 #VERBOSITY = -verbose
@@ -62,11 +63,11 @@ PP_CMO = $(PP_SRC:.ml=.cmo)
 PP_CMX = $(PP_SRC:.ml=.cmx)
 
 INCLUDES=
-PKGCOMMON=xml-light,netclient,glibivy,lablgtk2
+PKGCOMMON=pprzlink,xml-light,netclient,glibivy,lablgtk2
 XINCLUDES=
-XPKGCOMMON=xml-light,glibivy,$(LABLGTK2GNOMECANVAS),lablgtk2.glade
+XPKGCOMMON=pprzlink,xml-light,glibivy,$(LABLGTK2GNOMECANVAS),lablgtk2.glade
 
-SRC = fig.ml debug.ml base64.ml serial.ml ocaml_tools.ml expr_syntax.ml expr_parser.ml expr_lexer.ml extXml.ml env.ml xml2h.ml latlong.ml egm96.ml srtm.ml http.ml maps_support.ml gm.ml iGN.ml geometry_2d.ml cserial.o convert.o ubx.ml pprz.ml xbee.ml logpprz.ml xmlCom.ml os_calls.ml editAirframe.ml defivybus.ml fp_proc.ml gen_common.ml
+SRC = fig.ml debug.ml base64.ml serial.ml ocaml_tools.ml expr_syntax.ml expr_parser.ml expr_lexer.ml extXml.ml env.ml xml2h.ml latlong.ml egm96.ml srtm.ml http.ml maps_support.ml gm.ml iGN.ml geometry_2d.ml cserial.o ubx.ml xmlCom.ml os_calls.ml editAirframe.ml defivybus.ml fp_proc.ml gen_common.ml
 CMO = $(SRC:.ml=.cmo)
 CMX = $(SRC:.ml=.cmx)
 
@@ -106,6 +107,10 @@ xlib-pprz.cmxa dllxlib-pprz.so: $(XCMX)
 lib-pprz.cmxa: | liblib-pprz.a dlllib-pprz.so
 
 xlib-pprz.cmxa: | libxlib-pprz.a dllxlib-pprz.so
+
+xml_get.cmo : xml_get.ml lib-pprz.cma
+	@echo OC $@
+	$(Q)$(OCAMLC) $(INCLUDES) -package $(PKGCOMMON) -I . lib-pprz.cma -c $<
 
 xml_get.out : lib-pprz.cma xml_get.cmo
 	@echo OL $@

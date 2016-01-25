@@ -102,7 +102,7 @@ int32_t guidance_v_delta_t;
 
 float guidance_v_nominal_throttle;
 bool_t guidance_v_adapt_throttle_enabled;
-
+bool_t guidance_v_guided_vel_enabled;
 
 /** Direct throttle from radio control.
  *  range 0:#MAX_PPRZ
@@ -184,6 +184,7 @@ void guidance_v_init(void)
 
   guidance_v_nominal_throttle = GUIDANCE_V_NOMINAL_HOVER_THROTTLE;
   guidance_v_adapt_throttle_enabled = GUIDANCE_V_ADAPT_THROTTLE_ENABLED;
+  guidance_v_guided_vel_enabled = FALSE;
 
   gv_adapt_init();
 
@@ -192,8 +193,8 @@ void guidance_v_init(void)
 #endif
 
 #if PERIODIC_TELEMETRY
-  register_periodic_telemetry(DefaultPeriodic, "VERT_LOOP", send_vert_loop);
-  register_periodic_telemetry(DefaultPeriodic, "TUNE_VERT", send_tune_vert);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_VERT_LOOP, send_vert_loop);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_TUNE_VERT, send_tune_vert);
 #endif
 }
 
@@ -229,6 +230,7 @@ void guidance_v_mode_changed(uint8_t new_mode)
 
   switch (new_mode) {
     case GUIDANCE_V_MODE_HOVER:
+    case GUIDANCE_V_MODE_GUIDED:
       guidance_v_z_sp = stateGetPositionNed_i()->z; // set current altitude as setpoint
       guidance_v_z_sum_err = 0;
       GuidanceVSetRef(stateGetPositionNed_i()->z, 0, 0);
@@ -309,9 +311,19 @@ void guidance_v_run(bool_t in_flight)
       break;
 
     case GUIDANCE_V_MODE_HOVER:
-      guidance_v_zd_sp = 0;
-      gv_update_ref_from_z_sp(guidance_v_z_sp);
-      run_hover_loop(in_flight);
+      guidance_v_guided_vel_enabled = FALSE;
+    case GUIDANCE_V_MODE_GUIDED:
+      if (guidance_v_guided_vel_enabled) {
+        gv_update_ref_from_zd_sp(guidance_v_zd_sp, stateGetPositionNed_i()->z);
+        run_hover_loop(in_flight);
+        /* update z sp for telemetry/debuging */
+        guidance_v_z_sp = guidance_v_z_ref;
+      }
+      else {
+        guidance_v_zd_sp = 0;
+        gv_update_ref_from_z_sp(guidance_v_z_sp);
+        run_hover_loop(in_flight);
+      }
 #if !NO_RC_THRUST_LIMIT
       /* use rc limitation if available */
       if (radio_control.status == RC_OK) {
@@ -366,7 +378,8 @@ void guidance_v_run(bool_t in_flight)
 /// get the cosine of the angle between thrust vector and gravity vector
 static int32_t get_vertical_thrust_coeff(void)
 {
-  static const int32_t max_bank_coef = BFP_OF_REAL(RadOfDeg(30.), INT32_TRIG_FRAC);
+  // cos(30°) = 0.8660254
+  static const int32_t max_bank_coef = BFP_OF_REAL(0.8660254f, INT32_TRIG_FRAC);
 
   struct Int32RMat *att = stateGetNedToBodyRMat_i();
   /* thrust vector:
@@ -445,4 +458,24 @@ static void run_hover_loop(bool_t in_flight)
   /* bound the result */
   Bound(guidance_v_delta_t, 0, MAX_PPRZ);
 
+}
+
+bool_t guidance_v_set_guided_z(float z)
+{
+  if (guidance_v_mode == GUIDANCE_V_MODE_GUIDED) {
+    guidance_v_guided_vel_enabled = FALSE;
+    guidance_v_z_sp = POS_BFP_OF_REAL(z);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+bool_t guidance_v_set_guided_vz(float vz)
+{
+  if (guidance_v_mode == GUIDANCE_V_MODE_GUIDED) {
+    guidance_v_guided_vel_enabled = TRUE;
+    guidance_v_zd_sp = SPEED_BFP_OF_REAL(vz);
+    return TRUE;
+  }
+  return FALSE;
 }

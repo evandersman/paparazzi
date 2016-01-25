@@ -31,7 +31,7 @@ int32_t GPS_Data[14];
 
 
 #include "mcu_periph/uart.h"
-#include "messages.h"
+#include "pprzlink/messages.h"
 #include "subsystems/datalink/downlink.h"
 
 struct i2c_transaction ardu_gps_trans;
@@ -215,6 +215,7 @@ void IMU_Daten_verarbeiten(void)
   att.psi = 0.;
   imu_daten_angefordert = FALSE;
   stateSetNedToBodyEulers_f(&att);
+  uint8_t arduimu_id = 102;
 
-  RunOnceEvery(15, DOWNLINK_SEND_AHRS_EULER(DefaultChannel, DefaultDevice, &att->phi, &att->theta, &att->psi));
+  RunOnceEvery(15, DOWNLINK_SEND_AHRS_EULER(DefaultChannel, DefaultDevice, &att->phi, &att->theta, &att->psi, &arduimu_id));
 }

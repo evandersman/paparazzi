@@ -258,7 +258,7 @@ void superbitrf_init(void)
   cyrf6936_init(&superbitrf.cyrf6936, &(SUPERBITRF_SPI_DEV), 2, SUPERBITRF_RST_PORT, SUPERBITRF_RST_PIN);
 
 #if PERIODIC_TELEMETRY
-  register_periodic_telemetry(DefaultPeriodic, "SUPERBITRF", send_superbit);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_SUPERBITRF, send_superbit);
 #endif
 }
 
@@ -863,7 +863,7 @@ static inline void superbitrf_receive_packet_cb(bool_t error, uint8_t status, ui
 
             // When we have a full message
             if (superbitrf.rx_transport.trans_rx.msg_received) {
-              pprz_parse_payload(&superbitrf.rx_transport);
+              DatalinkFillDlBuffer(superbitrf.rx_transport.trans_rx.payload, superbitrf.rx_transport.trans_rx.payload_len);
               superbitrf.rx_transport.trans_rx.msg_received = FALSE;
             }
           }
@@ -923,7 +923,7 @@ static inline void superbitrf_receive_packet_cb(bool_t error, uint8_t status, ui
 
             // When we have a full message
             if (superbitrf.rx_transport.trans_rx.msg_received) {
-              pprz_parse_payload(&superbitrf.rx_transport);
+              DatalinkFillDlBuffer(superbitrf.rx_transport.trans_rx.payload, superbitrf.rx_transport.trans_rx.payload_len);
               superbitrf.rx_transport.trans_rx.msg_received = FALSE;
             }
           }
@@ -1009,7 +1009,7 @@ static inline void superbitrf_receive_packet_cb(bool_t error, uint8_t status, ui
 
             // When we have a full message
             if (superbitrf.rx_transport.trans_rx.msg_received) {
-              pprz_parse_payload(&superbitrf.rx_transport);
+              DatalinkFillDlBuffer(superbitrf.rx_transport.trans_rx.payload, superbitrf.rx_transport.trans_rx.payload_len);
               superbitrf.rx_transport.trans_rx.msg_received = FALSE;
             }
           }

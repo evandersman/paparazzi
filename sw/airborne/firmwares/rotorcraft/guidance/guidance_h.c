@@ -191,10 +191,10 @@ void guidance_h_init(void)
 #endif
 
 #if PERIODIC_TELEMETRY
-  register_periodic_telemetry(DefaultPeriodic, "GUIDANCE_H_INT", send_gh);
-  register_periodic_telemetry(DefaultPeriodic, "HOVER_LOOP", send_hover_loop);
-  register_periodic_telemetry(DefaultPeriodic, "GUIDANCE_H_REF", send_href);
-  register_periodic_telemetry(DefaultPeriodic, "ROTORCRAFT_TUNE_HOVER", send_tune_hover);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_GUIDANCE_H_INT, send_gh);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_HOVER_LOOP, send_hover_loop);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_GUIDANCE_H_REF_INT, send_href);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_ROTORCRAFT_TUNE_HOVER, send_tune_hover);
 #endif
 
 #if GUIDANCE_INDI
@@ -366,14 +366,17 @@ void guidance_h_run(bool_t  in_flight)
       break;
 
     case GUIDANCE_H_MODE_HOVER:
+      /* set psi command from RC */
+      guidance_h.sp.heading = guidance_h.rc_sp.psi;
+      /* fall trough to GUIDED to update ref, run traj and set final attitude setpoint */
+
+    case GUIDANCE_H_MODE_GUIDED:
+      /* guidance_h.sp.pos and guidance_h.sp.heading need to be set from external source */
       if (!in_flight) {
         guidance_h_hover_enter();
       }
 
       guidance_h_update_reference();
-
-      /* set psi command */
-      guidance_h.sp.heading = guidance_h.rc_sp.psi;
 
 #if GUIDANCE_INDI
       guidance_indi_run(in_flight, guidance_h.sp.heading);
@@ -381,8 +384,7 @@ void guidance_h_run(bool_t  in_flight)
       /* compute x,y earth commands */
       guidance_h_traj_run(in_flight);
       /* set final attitude setpoint */
-      stabilization_attitude_set_earth_cmd_i(&guidance_h_cmd_earth,
-                                             guidance_h.sp.heading);
+      stabilization_attitude_set_earth_cmd_i(&guidance_h_cmd_earth, guidance_h.sp.heading);
 #endif
       stabilization_attitude_run(in_flight);
       break;
@@ -440,7 +442,7 @@ static void guidance_h_update_reference(void)
   /* compute reference even if usage temporarily disabled via guidance_h_use_ref */
 #if GUIDANCE_H_USE_REF
 #if GUIDANCE_H_USE_SPEED_REF
-  if (guidance_h.mode == GUIDANCE_H_MODE_HOVER) {
+  if (bit_is_set(guidance_h.sp.mask, 4) && bit_is_set(guidance_h.sp.mask, 5)) {
     gh_update_ref_from_speed_sp(guidance_h.sp.speed);
   } else
 #endif
@@ -548,6 +550,8 @@ static void guidance_h_traj_run(bool_t in_flight)
 
 static void guidance_h_hover_enter(void)
 {
+  ClearBit(guidance_h.sp.mask, 4);
+  ClearBit(guidance_h.sp.mask, 5);
 
   /* set horizontal setpoint to current position */
   VECT2_COPY(guidance_h.sp.pos, *stateGetPositionNed_i());
@@ -555,10 +559,13 @@ static void guidance_h_hover_enter(void)
   reset_guidance_reference_from_current_position();
 
   guidance_h.rc_sp.psi = stateGetNedToBodyEulers_i()->psi;
+  guidance_h.sp.heading = guidance_h.rc_sp.psi;
 }
 
 static void guidance_h_nav_enter(void)
 {
+  ClearBit(guidance_h.sp.mask, 4);
+  ClearBit(guidance_h.sp.mask, 5);
 
   /* horizontal position setpoint from navigation/flightplan */
   INT32_VECT2_NED_OF_ENU(guidance_h.sp.pos, navigation_carrot);
@@ -615,4 +622,39 @@ void guidance_h_set_igain(uint32_t igain)
 {
   guidance_h.gains.i = igain;
   INT_VECT2_ZERO(guidance_h_trim_att_integrator);
+}
+
+bool_t guidance_h_set_guided_pos(float x, float y)
+{
+  if (guidance_h.mode == GUIDANCE_H_MODE_GUIDED) {
+    ClearBit(guidance_h.sp.mask, 4);
+    ClearBit(guidance_h.sp.mask, 5);
+    guidance_h.sp.pos.x = POS_BFP_OF_REAL(x);
+    guidance_h.sp.pos.y = POS_BFP_OF_REAL(y);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+bool_t guidance_h_set_guided_heading(float heading)
+{
+  if (guidance_h.mode == GUIDANCE_H_MODE_GUIDED) {
+    ClearBit(guidance_h.sp.mask, 7);
+    guidance_h.sp.heading = ANGLE_BFP_OF_REAL(heading);
+    INT32_ANGLE_NORMALIZE(guidance_h.sp.heading);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+bool_t guidance_h_set_guided_vel(float vx, float vy)
+{
+  if (guidance_h.mode == GUIDANCE_H_MODE_GUIDED) {
+    SetBit(guidance_h.sp.mask, 4);
+    SetBit(guidance_h.sp.mask, 5);
+    guidance_h.sp.speed.x = SPEED_BFP_OF_REAL(vx);
+    guidance_h.sp.speed.y = SPEED_BFP_OF_REAL(vy);
+    return TRUE;
+  }
+  return FALSE;
 }

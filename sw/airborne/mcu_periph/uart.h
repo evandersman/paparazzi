@@ -29,7 +29,7 @@
 #define MCU_PERIPH_UART_H
 
 #include "mcu_periph/uart_arch.h"
-#include "mcu_periph/link_device.h"
+#include "pprzlink/pprzlink_device.h"
 #include "std.h"
 
 #ifndef UART_RX_BUFFER_SIZE
@@ -132,5 +132,15 @@ extern void uart5_init(void);
 extern struct uart_periph uart6;
 extern void uart6_init(void);
 #endif // USE_UART6
+
+#if USE_UART7
+extern struct uart_periph uart7;
+extern void uart7_init(void);
+#endif // USE_UART7
+
+#if USE_UART8
+extern struct uart_periph uart8;
+extern void uart8_init(void);
+#endif // USE_UART8
 
 #endif /* MCU_PERIPH_UART_H */

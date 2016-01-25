@@ -52,8 +52,6 @@ struct GpsUbx {
 
   uint8_t status_flags;
   uint8_t sol_flags;
-  uint8_t have_velned;
-
 };
 
 extern struct GpsUbx gps_ubx;
@@ -82,7 +80,7 @@ extern struct GpsUbxRaw gps_ubx_raw;
 /*
  * This part is used by the autopilot to read data from a uart
  */
-#include "mcu_periph/link_device.h"
+#include "pprzlink/pprzlink_device.h"
 
 extern void ubx_header(struct link_device *dev, uint8_t nav_id, uint8_t msg_id, uint16_t len);
 extern void ubx_trailer(struct link_device *dev);

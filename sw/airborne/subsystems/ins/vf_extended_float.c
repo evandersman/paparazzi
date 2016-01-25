@@ -43,7 +43,7 @@ PRINT_CONFIG_VAR(DEBUG_VFF_EXTENDED)
 
 #if DEBUG_VFF_EXTENDED
 #include "mcu_periph/uart.h"
-#include "messages.h"
+#include "pprzlink/messages.h"
 #include "subsystems/datalink/downlink.h"
 #endif
 
@@ -97,7 +97,7 @@ void vff_init(float init_z, float init_zdot, float init_accel_bias, float init_b
   }
 
 #if PERIODIC_TELEMETRY
-  register_periodic_telemetry(DefaultPeriodic, "VFF_EXTENDED", send_vffe);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_VFF_EXTENDED, send_vffe);
 #endif
 }
 

@@ -35,11 +35,9 @@
 #include "subsystems/abi.h"
 #include "mcu_periph/uart.h"
 #include "math/pprz_geodetic_double.h"
-#if GPS_USE_LATLONG
-#include "math/pprz_geodetic_float.h"
-#include "subsystems/navigation/common_nav.h"
+
+// get NAV_MSL0 for geoid separation
 #include "generated/flight_plan.h"
-#endif
 
 #include <libsbp/sbp.h>
 #include <libsbp/navigation.h>
@@ -47,6 +45,12 @@
 #include <libsbp/tracking.h>
 #include <libsbp/settings.h>
 #include <libsbp/piksi.h>
+
+#define SBP_FIX_MODE_SPP 0X00
+#define SBP_FIX_MODE_FLOAT 0X02
+#define SPB_FIX_MODE_FIXED 0X01
+
+#define POS_ECEF_TIMEOUT 1000
 
 /*
  * Set the Piksi GPS antenna (default is Patch, internal)
@@ -93,8 +97,10 @@ sbp_msg_callbacks_node_t tracking_state_dep_a_node;
 
 
 static void gps_piksi_publish(void);
+static uint8_t get_fix_mode(uint8_t flags);
 uint32_t gps_piksi_read(uint8_t *buff, uint32_t n, void *context __attribute__((unused)));
 uint32_t gps_piksi_write(uint8_t *buff, uint32_t n, void *context __attribute__((unused)));
+static uint32_t time_since_last_pos_update;
 
 /*
  * Callback functions to interpret SBP messages.
@@ -106,28 +112,25 @@ static void sbp_pos_ecef_callback(uint16_t sender_id __attribute__((unused)),
                                   uint8_t msg[],
                                   void *context __attribute__((unused)))
 {
-  static uint8_t last_flags = 0;
+  time_since_last_pos_update = get_sys_time_msec();
   msg_pos_ecef_t pos_ecef = *(msg_pos_ecef_t *)msg;
 
   // Check if we got RTK fix (FIXME when libsbp has a nicer way of doing this)
-  if(pos_ecef.flags > 0 ){//|| last_flags == 0) {
-    gps.ecef_pos.x = (int32_t)(pos_ecef.x * 100.0);
-    gps.ecef_pos.y = (int32_t)(pos_ecef.y * 100.0);
-    gps.ecef_pos.z = (int32_t)(pos_ecef.z * 100.0);
-    gps.pacc = (uint32_t)(pos_ecef.accuracy);// FIXME not implemented yet by libswiftnav
-    gps.num_sv = pos_ecef.n_sats;
-    gps.tow = pos_ecef.tow;
-
-    if(pos_ecef.flags == 1)
-      gps.fix = GPS_FIX_RTK;
-    else if(pos_ecef.flags == 2)
-      gps.fix = GPS_FIX_DGPS;
-    else
-      gps.fix = GPS_FIX_3D;
+  gps.fix = get_fix_mode(pos_ecef.flags);
+  // get_fix_mode() will still return fix > 3D even if the current flags are spp so ignore when it is spp
+  if ( ( (gps.fix > GPS_FIX_3D) )
+    && pos_ecef.flags == SBP_FIX_MODE_SPP) {
+    return;
   }
-  last_flags = pos_ecef.flags;
 
-  if(pos_ecef.flags > 0) gps_piksi_publish(); // Only if RTK position
+  gps.ecef_pos.x = (int32_t)(pos_ecef.x * 100.0);
+  gps.ecef_pos.y = (int32_t)(pos_ecef.y * 100.0);
+  gps.ecef_pos.z = (int32_t)(pos_ecef.z * 100.0);
+  SetBit(gps.valid_fields, GPS_VALID_POS_ECEF_BIT);
+  gps.pacc = (uint32_t)(pos_ecef.accuracy);// FIXME not implemented yet by libswiftnav
+  gps.num_sv = pos_ecef.n_sats;
+  gps.tow = pos_ecef.tow;
+  gps_piksi_publish(); // Only if RTK position
 }
 
 static void sbp_vel_ecef_callback(uint16_t sender_id __attribute__((unused)),
@@ -139,6 +142,7 @@ static void sbp_vel_ecef_callback(uint16_t sender_id __attribute__((unused)),
   gps.ecef_vel.x = (int32_t)(vel_ecef.x / 10);
   gps.ecef_vel.y = (int32_t)(vel_ecef.y / 10);
   gps.ecef_vel.z = (int32_t)(vel_ecef.z / 10);
+  SetBit(gps.valid_fields, GPS_VALID_VEL_ECEF_BIT);
   gps.sacc = (uint32_t)(vel_ecef.accuracy);
 
   // Solution available (VEL_ECEF is the last message to be send)
@@ -154,23 +158,11 @@ static void sbp_pos_llh_callback(uint16_t sender_id __attribute__((unused)),
   msg_pos_llh_t pos_llh = *(msg_pos_llh_t *)msg;
 
   // Check if we got RTK fix (FIXME when libsbp has a nicer way of doing this)
-  if(pos_llh.flags > 0 || last_flags == 0) {
+  if (pos_llh.flags > 0 || last_flags == 0) {
     gps.lla_pos.lat = (int32_t)(pos_llh.lat * 1e7);
     gps.lla_pos.lon = (int32_t)(pos_llh.lon * 1e7);
+
     int32_t alt = (int32_t)(pos_llh.height * 1000.);
-#if GPS_USE_LATLONG
-    /* Computes from (lat, long) in the referenced UTM zone */
-    struct LlaCoor_f lla_f;
-    LLA_FLOAT_OF_BFP(lla_f, gps.lla_pos);
-    struct UtmCoor_f utm_f;
-    utm_f.zone = nav_utm_zone0;
-    /* convert to utm */
-    utm_of_lla_f(&utm_f, &lla_f);
-    /* copy results of utm conversion */
-    gps.utm_pos.east = utm_f.east * 100;
-    gps.utm_pos.north = utm_f.north * 100;
-    gps.utm_pos.alt = gps.lla_pos.alt;
-    gps.utm_pos.zone = nav_utm_zone0;
     // height is above ellipsoid or MSL according to bit flag (but not both are available)
     // 0: above ellipsoid
     // 1: above MSL
@@ -182,11 +174,9 @@ static void sbp_pos_llh_callback(uint16_t sender_id __attribute__((unused)),
       gps.lla_pos.alt = alt;
       gps.hmsl = alt - NAV_MSL0;
     }
-#else
-    // but here we fill the two alt with the same value since we don't know HMSL
-    gps.lla_pos.alt = alt;
-    gps.hmsl = alt;
-#endif
+
+    SetBit(gps.valid_fields, GPS_VALID_POS_LLA_BIT);
+    SetBit(gps.valid_fields, GPS_VALID_HMSL_BIT);
   }
   last_flags = pos_llh.flags;
 }
@@ -200,10 +190,11 @@ static void sbp_vel_ned_callback(uint16_t sender_id __attribute__((unused)),
   gps.ned_vel.x = (int32_t)(vel_ned.n / 10);
   gps.ned_vel.y = (int32_t)(vel_ned.e / 10);
   gps.ned_vel.z = (int32_t)(vel_ned.d / 10);
-#if GPS_USE_LATLONG
+  SetBit(gps.valid_fields, GPS_VALID_VEL_NED_BIT);
+
   gps.gspeed = int32_sqrt(gps.ned_vel.x * gps.ned_vel.x + gps.ned_vel.y * gps.ned_vel.y);
   gps.course = (int32_t)(1e7 * atan2(gps.ned_vel.y, gps.ned_vel.x));
-#endif
+  SetBit(gps.valid_fields, GPS_VALID_COURSE_BIT);
 }
 
 static void sbp_dops_callback(uint16_t sender_id __attribute__((unused)),
@@ -258,6 +249,31 @@ static void sbp_tracking_state_dep_a_callback(uint16_t sender_id __attribute__((
 }
 
 /*
+ * Return fix mode based on present and past flags
+ */
+ static uint8_t get_fix_mode(uint8_t flags)
+{
+  static uint8_t n_since_last_rtk = 0;
+  if (flags == SBP_FIX_MODE_SPP) {
+    n_since_last_rtk++;
+    if ( n_since_last_rtk > 2 ) {
+      return GPS_FIX_3D;
+    } else {
+      return gps.fix;
+    }
+  } else if (flags == SBP_FIX_MODE_FLOAT) {
+    n_since_last_rtk = 0;
+    return GPS_FIX_DGPS;
+  } else if (flags == SPB_FIX_MODE_FIXED) {
+    n_since_last_rtk = 0;
+    return GPS_FIX_RTK;
+  } else {
+    return GPS_FIX_NONE;
+  }
+
+}
+
+/*
  * Initialize the Piksi GPS and write the settings
  */
 void gps_impl_init(void)
@@ -295,6 +311,9 @@ void gps_impl_init(void)
  */
 void gps_piksi_event(void)
 {
+  if ( get_sys_time_msec() - time_since_last_pos_update > POS_ECEF_TIMEOUT ) {
+    gps.fix = GPS_FIX_NONE;
+  }
   // call sbp event function
   if (uart_char_available(&(GPS_LINK)))
     sbp_process(&sbp_state, &gps_piksi_read);

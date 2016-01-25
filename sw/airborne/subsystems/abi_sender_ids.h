@@ -226,4 +226,16 @@
 #define IMU_MPU60X0_ID 16
 #endif
 
+#ifndef PX4FLOW_VELOCITY_ID
+#define PX4FLOW_VELOCITY_ID 17
+#endif
+
+/*
+ * IDs of RSSI measurements (message 13)
+ */
+#ifndef RSSI_BLUEGIGA_ID
+#define RSSI_BLUEGIGA_ID 1
+#endif
+
+
 #endif /* ABI_SENDER_IDS_H */

@@ -79,6 +79,9 @@ static void sonar_cb(uint8_t sender_id, float distance);
 #ifndef INS_SONAR_MIN_RANGE
 #define INS_SONAR_MIN_RANGE 0.001
 #endif
+#ifndef INS_SONAR_MAX_RANGE
+#define INS_SONAR_MAX_RANGE 4.0
+#endif
 #define VFF_R_SONAR_0 0.1
 #ifndef VFF_R_SONAR_OF_M
 #define VFF_R_SONAR_OF_M 0.2
@@ -91,9 +94,15 @@ PRINT_CONFIG_MSG("INS_SONAR_UPDATE_ON_AGL defaulting to FALSE")
 
 #endif // USE_SONAR
 
+#if USE_GPS
 #ifndef INS_VFF_R_GPS
 #define INS_VFF_R_GPS 2.0
 #endif
+
+#ifndef INS_VFF_VZ_R_GPS
+#define INS_VFF_VZ_R_GPS 2.0
+#endif
+#endif // USE_GPS
 
 /** maximum number of propagation steps without any updates in between */
 #ifndef INS_MAX_PROPAGATION_STEPS
@@ -127,8 +136,21 @@ static void baro_cb(uint8_t sender_id, float pressure);
 #ifndef INS_INT_IMU_ID
 #define INS_INT_IMU_ID ABI_BROADCAST
 #endif
+#ifndef INS_INT_GPS_ID
+#define INS_INT_GPS_ID ABI_BROADCAST
+#endif
 static abi_event accel_ev;
 static abi_event gps_ev;
+
+
+/** ABI binding for VELOCITY_ESTIMATE.
+ * Usually this is coming from opticflow.
+ */
+#ifndef INS_INT_VEL_ID
+#define INS_INT_VEL_ID ABI_BROADCAST
+#endif
+static abi_event vel_est_ev;
+static void vel_est_cb(uint8_t sender_id, uint32_t stamp, float x, float y, float z, float noise);
 
 struct InsInt ins_int;
 
@@ -205,9 +227,9 @@ void ins_int_init(void)
   INT32_VECT3_ZERO(ins_int.ltp_accel);
 
 #if PERIODIC_TELEMETRY
-  register_periodic_telemetry(DefaultPeriodic, "INS", send_ins);
-  register_periodic_telemetry(DefaultPeriodic, "INS_Z", send_ins_z);
-  register_periodic_telemetry(DefaultPeriodic, "INS_REF", send_ins_ref);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_INS, send_ins);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_INS_Z, send_ins_z);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_INS_REF, send_ins_ref);
 #endif
 }
 
@@ -220,8 +242,7 @@ void ins_reset_local_origin(void)
     ins_int.ltp_def.hmsl = gps.hmsl;
     ins_int.ltp_initialized = TRUE;
     stateSetLocalOrigin_i(&ins_int.ltp_def);
-  }
-  else {
+  } else {
     ins_int.ltp_initialized = FALSE;
   }
 #else
@@ -288,7 +309,7 @@ void ins_int_propagate(struct Int32Vect3 *accel, float dt)
   ins_ned_to_state();
 
   /* increment the propagation counter, while making sure it doesn't overflow */
-  if (ins_int.propagation_cnt < 100*INS_MAX_PROPAGATION_STEPS) {
+  if (ins_int.propagation_cnt < 100 * INS_MAX_PROPAGATION_STEPS) {
     ins_int.propagation_cnt++;
   }
 }
@@ -359,6 +380,9 @@ void ins_int_update_gps(struct GpsState *gps_s)
 
 #if INS_USE_GPS_ALT
   vff_update_z_conf(((float)gps_pos_cm_ned.z) / 100.0, INS_VFF_R_GPS);
+#endif
+#if INS_USE_GPS_ALT_SPEED
+  vff_update_vz_conf(((float)gps_speed_cm_s_ned.z) / 100.0, INS_VFF_VZ_R_GPS);
 #endif
 
 #if USE_HFF
@@ -503,6 +527,51 @@ static void gps_cb(uint8_t sender_id __attribute__((unused)),
   ins_int_update_gps(gps_s);
 }
 
+static void vel_est_cb(uint8_t sender_id __attribute__((unused)),
+                       uint32_t stamp,
+                       float x, float y, float z,
+                       float noise __attribute__((unused)))
+{
+
+  struct FloatVect3 vel_body = {x, y, z};
+  static uint32_t last_stamp = 0;
+  float dt = 0;
+
+  /* rotate velocity estimate to nav/ltp frame */
+  struct FloatQuat q_b2n = *stateGetNedToBodyQuat_f();
+  QUAT_INVERT(q_b2n, q_b2n);
+  struct FloatVect3 vel_ned;
+  float_quat_vmult(&vel_ned, &q_b2n, &vel_body);
+
+  if (last_stamp > 0) {
+    dt = (float)(stamp - last_stamp) * 1e-6;
+  }
+
+  last_stamp = stamp;
+
+#if USE_HFF
+  (void)dt; //dt is unused variable in this define
+
+  struct FloatVect2 vel = {vel_ned.x, vel_ned.y};
+  struct FloatVect2 Rvel = {noise, noise};
+
+  b2_hff_update_vel(vel,  Rvel);
+  ins_update_from_hff();
+#else
+  ins_int.ltp_speed.x = SPEED_BFP_OF_REAL(vel_ned.x);
+  ins_int.ltp_speed.y = SPEED_BFP_OF_REAL(vel_ned.y);
+  if (last_stamp > 0) {
+    ins_int.ltp_pos.x = ins_int.ltp_pos.x + POS_BFP_OF_REAL(dt * vel_ned.x);
+    ins_int.ltp_pos.y = ins_int.ltp_pos.y + POS_BFP_OF_REAL(dt * vel_ned.y);
+  }
+#endif
+
+  ins_ned_to_state();
+
+  /* reset the counter to indicate we just had a measurement update */
+  ins_int.propagation_cnt = 0;
+}
+
 void ins_int_register(void)
 {
   ins_register_impl(ins_int_init);
@@ -511,5 +580,6 @@ void ins_int_register(void)
    * Subscribe to scaled IMU measurements and attach callbacks
    */
   AbiBindMsgIMU_ACCEL_INT32(INS_INT_IMU_ID, &accel_ev, accel_cb);
-  AbiBindMsgGPS(ABI_BROADCAST, &gps_ev, gps_cb);
+  AbiBindMsgGPS(INS_INT_GPS_ID, &gps_ev, gps_cb);
+  AbiBindMsgVELOCITY_ESTIMATE(INS_INT_VEL_ID, &vel_est_ev, vel_est_cb);
 }

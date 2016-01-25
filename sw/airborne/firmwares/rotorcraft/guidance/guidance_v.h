@@ -40,6 +40,7 @@
 #define GUIDANCE_V_MODE_NAV       5
 #define GUIDANCE_V_MODE_MODULE    6
 #define GUIDANCE_V_MODE_FLIP      7
+#define GUIDANCE_V_MODE_GUIDED    8
 
 extern uint8_t guidance_v_mode;
 
@@ -93,6 +94,7 @@ extern float guidance_v_nominal_throttle;
  */
 extern bool_t guidance_v_adapt_throttle_enabled;
 
+extern bool_t guidance_v_guided_vel_enabled;
 
 extern int32_t guidance_v_thrust_coeff;
 
@@ -105,6 +107,18 @@ extern void guidance_v_read_rc(void);
 extern void guidance_v_mode_changed(uint8_t new_mode);
 extern void guidance_v_notify_in_flight(bool_t in_flight);
 extern void guidance_v_run(bool_t in_flight);
+
+/** Set z setpoint in GUIDED mode.
+ * @param z Setpoint (down is positive) in meters.
+ * @return TRUE if setpoint was set (currently in GUIDANCE_V_MODE_GUIDED)
+ */
+extern bool_t guidance_v_set_guided_z(float z);
+
+/** Set z velocity setpoint in GUIDED mode.
+ * @param vz Setpoint (down is positive) in meters/second.
+ * @return TRUE if setpoint was set (currently in GUIDANCE_V_MODE_GUIDED)
+ */
+extern bool_t guidance_v_set_guided_vz(float vz);
 
 #define guidance_v_SetKi(_val) {      \
     guidance_v_ki = _val;       \

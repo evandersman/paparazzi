@@ -37,7 +37,8 @@ use IPC::Run qw( run );
 use Cwd;
 
 $|++;
-my $xmlSimple = XML::Simple->new(ForceArray => 1);
+# make sure that all elements are arrays and only fold arrays on name for aircraft, firmware and target
+my $xmlSimple = XML::Simple->new(ForceArray => 1, KeyAttr => {aircraft => 'name', firmware => 'name', target => 'name'});
 my $conf_xml_file = $ENV{'CONF_XML'};
 if ($conf_xml_file eq "") {
     $conf_xml_file = "$ENV{'PAPARAZZI_HOME'}/conf/conf.xml";
@@ -52,7 +53,7 @@ sub get_num_targets
     {
         my $airframe = $conf->{'aircraft'}->{$aircraft}->{'airframe'};
         my $airframe_config = eval { $xmlSimple->XMLin("$ENV{'PAPARAZZI_HOME'}/conf/$airframe") };
-        warn $@ if ($@);
+        warn "Parsing airframe $airframe: $@" if ($@);
         foreach my $process (sort keys %{$airframe_config->{'firmware'}})
         {
             foreach my $target (sort keys %{$airframe_config->{'firmware'}->{$process}->{'target'}})
@@ -63,20 +64,27 @@ sub get_num_targets
     }
     return $num_targets;
 }
-plan tests => get_num_targets()+1;
+plan tests => get_num_targets()+2;
 
 ok(1, "Parsed the $conf_xml_file configuration file");
+
+my @invalid_airframes;
+
 foreach my $aircraft (sort keys%{$conf->{'aircraft'}})
 {
     my $airframe = $conf->{'aircraft'}->{$aircraft}->{'airframe'};
     my $airframe_config = eval { $xmlSimple->XMLin("$ENV{'PAPARAZZI_HOME'}/conf/$airframe") };
-    warn "Skipping aircraft $aircraft: $@" if ($@);
+    if ($@)
+    {
+        warn "Skipping aircraft $aircraft: $@";
+        push @invalid_airframes, "$airframe: $@";
+    }
     foreach my $process (sort keys %{$airframe_config->{'firmware'}})
     {
         #warn "EX: [$aircraft] ". Dumper($airframe_config->{'firmware'}->{$process}->{'target'});
         foreach my $target (sort keys %{$airframe_config->{'firmware'}->{$process}->{'target'}})
         {
-            #warn "AIRCRAFT: [$aircraft] TARGET: [$target]\n";
+            diag("compiling AIRCRAFT: [$aircraft] TARGET: [$target]");
             my $make_options = "AIRCRAFT=$aircraft clean_ac $target.compile";
             my ($exit_status, $warnings, $output) = run_program(
                 "Attempting to build the firmware $target for the aircraft $aircraft.",
@@ -108,6 +116,10 @@ foreach my $aircraft (sort keys%{$conf->{'aircraft'}})
         }
     }
 }
+
+# check if we had missing/invalid airframe files in conf
+ok(scalar @invalid_airframes eq 0, "All airframe files are valid.");
+foreach (@invalid_airframes) { warn "Missing or invalid airframe file '$_'\n" }
 
 done_testing();
 
