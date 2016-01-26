@@ -62,9 +62,9 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_ready = FALSE;
 
     /* Data which will be logged for servo model */
-    high_speed_logger_spi_link_data.pot        	    = potentiometer_adc_raw;
-    high_speed_logger_spi_link_data.roll_setpoint   = commands[1];
-    high_speed_logger_spi_link_data.phi        	    = stateGetNedToBodyEulers_i()->phi;
+    high_speed_logger_spi_link_data.uin        = ANGLE_BFP_OF_REAL(indi.u_in.p);
+    high_speed_logger_spi_link_data.uact       = ANGLE_BFP_OF_REAL(indi.u_act_dyn.p);
+    high_speed_logger_spi_link_data.servo      = ANGLE_BFP_OF_REAL(servo_delayed_input);
     // probe calibration and gain
     high_speed_logger_spi_link_data.offset_pl  = potentiometer_adc_raw;
     high_speed_logger_spi_link_data.offset_al  = potentiometer_adc_raw;

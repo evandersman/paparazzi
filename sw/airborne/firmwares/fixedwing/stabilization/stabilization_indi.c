@@ -42,6 +42,11 @@ float indi_omega;
 float indi_zeta;
 float indi_omega_r;
 
+float servo_input[SERVO_DELAY];
+float servo_delayed_input;
+uint8_t servo_delay;
+uint8_t delay;
+
 struct ReferenceSystem reference_acceleration = {STABILIZATION_INDI_REF_ERR_P,
          STABILIZATION_INDI_REF_ERR_Q,
          STABILIZATION_INDI_REF_ERR_R,
@@ -233,6 +238,14 @@ void h_ctl_init(void)
 #if PERIODIC_TELEMETRY
   register_periodic_telemetry(DefaultPeriodic, "CALIBRATION", send_calibration);
 #endif
+
+  servo_delay = SERVO_DELAY;
+  delay = 0;
+  servo_delayed_input = 0.;
+  for(int8_t i = 0; i < servo_delay - 1; i++){
+    servo_input[i] = 0.;
+    delay = i;
+  }
 }
 
 /**
@@ -401,9 +414,27 @@ inline static void h_ctl_roll_loop(void)
   // Bound the total control input
   Bound(indi.u_in.p, -4500, 4500);
 
+  servo_input[delay] = indi.u_in.p;
+
+  if (delay < servo_delay - 1) {
+  delay++;
+  } else {
+  delay = 0;
+  }
+  servo_delayed_input = servo_input[delay];
+
+  indi.u_act_dyn.p = indi.u_act_dyn.p + 0.117 * (servo_delayed_input - indi.u_act_dyn.p);
+  if (indi.u_act_dyn.p > indi.u_act_dyn.p + 0.098){
+    indi.u_act_dyn.p = indi.u_act_dyn.p + 0.098;
+  }
+  if (indi.u_act_dyn.p < indi.u_act_dyn.p - 0.098){
+    indi.u_act_dyn.p = indi.u_act_dyn.p - 0.098;
+  }
+
   // Propagate input filters
   // First order actuator dynamics
-  indi.u_act_dyn.p = indi.u_act_dyn.p + tau_act_dyn_p * (indi.u_in.p - indi.u_act_dyn.p);
+  //indi.u_act_dyn.p = indi.u_act_dyn.p + tau_act_dyn_p * (indi.u_in.p - indi.u_act_dyn.p);
+  
 
   // Sensor filter
   indi.u.p = indi.u.p + indi.udot.p * 1.0 / CONTROL_FREQUENCY;
@@ -423,7 +454,7 @@ inline static void h_ctl_roll_loop(void)
   /* INDI feedback */
   h_ctl_aileron_setpoint = TRIM_PPRZ(indi.u_in.p);
 
-  RunOnceEvery(50, DOWNLINK_SEND_STAB_ATTITUDE_INDI(DefaultChannel, DefaultDevice, &indi.angular_accel_ref.p, &indi.angular_accel_ref.q, &indi.angular_accel_ref.r, &indi.du.p, &indi.du.q, &indi.du.r, &indi.u_in.p, &indi.u_in.q, &indi.u_in.r));
+  //RunOnceEvery(50, DOWNLINK_SEND_STAB_ATTITUDE_INDI(DefaultChannel, DefaultDevice, &indi.angular_accel_ref.p, &indi.angular_accel_ref.q, &indi.angular_accel_ref.r, &indi.du.p, &indi.du.q, &indi.du.r, &indi.u_in.p, &indi.u_in.q, &indi.u_in.r));
 
 }
 

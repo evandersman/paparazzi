@@ -40,6 +40,10 @@ extern float tau_act_dyn_p;
 extern float indi_omega;
 extern float indi_zeta;
 extern float indi_omega_r;
+extern float servo_input[SERVO_DELAY];
+extern float servo_delayed_input;
+extern uint8_t servo_delay;
+extern uint8_t delay;
 
 struct ReferenceSystem {
   float err_p;

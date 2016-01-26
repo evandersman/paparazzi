@@ -27,8 +27,6 @@
 #include "mcu_periph/adc.h"
 #include "mcu_periph/uart.h"
 #include BOARD_CONFIG
-#include "messages.h"
-#include "subsystems/datalink/downlink.h"
 #include "generated/airframe.h"
 #include "state.h"
 #include <stdio.h>

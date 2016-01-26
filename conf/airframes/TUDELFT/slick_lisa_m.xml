@@ -1,4 +1,4 @@
-<!DOCTYPE airframe SYSTEM "../../airframe.dtd">
+<!DOCTYPE airframe SYSTEM "../airframe.dtd">
 
 <!-- Edge540 HobbyKing
      Lisa/M v2.0 board (http://wiki.paparazziuav.org/wiki/Lisa/M_v2)
@@ -6,11 +6,11 @@
      Xbee modem in xbee api mode
 -->
 
-<airframe name="Edge540 Lisa/M 2.1">
+<airframe name="Edge540 Lisa/M 2.0">
 
   <firmware name="fixedwing">
-    <target name="ap" board="lisa_m_2.1">
-      <configure name="FLASH_MODE" value="SWD"/>
+    <target name="ap" board="lisa_m_2.0">
+      <configure name="FLASH_MODE" value="JTAG_BMP"/>
       <configure name="PERIODIC_FREQUENCY" value="120"/>
       <configure name="AHRS_PROPAGATE_FREQUENCY" value="100"/>
       <configure name="AHRS_CORRECT_FREQUENCY" value="100"/>
@@ -32,7 +32,7 @@
     <subsystem name="telemetry" type="xbee_api"/>
 
     <!-- Sensors -->
-    <subsystem name="imu" type="aspirin_v2.2"/>
+    <subsystem name="imu" type="aspirin_v2.1"/>
     <subsystem name="gps" type="ublox"/>
 
     <subsystem name="ahrs" type="int_cmpl_quat"/>
@@ -43,17 +43,16 @@
     </subsystem>
   </firmware>
 
-  <modules main_freq="100">
-    <load name="turbulence_adc.xml"/>
-    <!--load name="logger_spi_link.xml"/-->
+  <modules main_freq="512">
+    <load name="logger_spi_link.xml"/>
   </modules>
 
   <servos>
     <servo name="THROTTLE" no="0" min="1100" neutral="1100" max="1900"/>
-    <servo name="AILERON_LEFT" no="1" min="2000" neutral="1500" max="1000"/>
-    <servo name="AILERON_RIGHT" no="2" min="2000" neutral="1500" max="1000"/>
-    <servo name="ELEVATOR" no="3" min="1800" neutral="1300" max="800"/>
-    <servo name="RUDDER" no="4" min="2000" neutral="1500" max="1000"/>
+    <servo name="AILERON_LEFT" no="1" min="2100" neutral="1530" max="800"/>
+    <servo name="AILERON_RIGHT" no="2" min="2200" neutral="1500" max="900"/>
+    <servo name="ELEVATOR" no="3" min="1960" neutral="1355" max="800"/>
+    <servo name="RUDDER" no="4" min="2200" neutral="1408" max="700"/>
   </servos>
 
   <commands>
@@ -61,8 +60,6 @@
     <axis name="ROLL" failsafe_value="0"/>
     <axis name="PITCH" failsafe_value="0"/>
     <axis name="YAW" failsafe_value="0"/>
-    <axis name="TURB_LEFT" failsafe_value="0"/>
-    <axis name="TURB_RIGHT" failsafe_value="0"/>
   </commands>
 
   <rc_commands>
@@ -80,8 +77,8 @@
     <set servo="THROTTLE" value="@THROTTLE"/>
     <set servo="ELEVATOR" value="@PITCH"/>
     <set servo="RUDDER" value="@YAW"/>
-    <set servo="AILERON_LEFT" value="@ROLL + @TURB_LEFT"/>
-    <set servo="AILERON_RIGHT" value="@ROLL + @TURB_RIGHT"/>
+    <set servo="AILERON_LEFT" value="@ROLL"/>
+    <set servo="AILERON_RIGHT" value="@ROLL"/>
   </command_laws>
 
   <section name="IMU" prefix="IMU_">
@@ -97,7 +94,7 @@
 
     <define name="BODY_TO_IMU_PHI" value="0." unit="deg"/>
     <define name="BODY_TO_IMU_THETA" value="0." unit="deg"/>
-    <define name="BODY_TO_IMU_PSI" value="180." unit="deg"/>
+    <define name="BODY_TO_IMU_PSI" value="90." unit="deg"/>
   </section>
 
   <section name="INS" prefix="INS_">
@@ -127,38 +124,18 @@
     <define name="COURSE_DGAIN" value="0.3"/>
 
     <define name="ROLL_MAX_SETPOINT" value="35" unit="deg"/>
-    <define name="PITCH_MAX_SETPOINT" value="60" unit="deg"/>
-    <define name="PITCH_MIN_SETPOINT" value="-60" unit="deg"/>
+    <define name="PITCH_MAX_SETPOINT" value="30" unit="deg"/>
+    <define name="PITCH_MIN_SETPOINT" value="-30" unit="deg"/>
 
-    <define name="PITCH_PGAIN" value="4500."/>
+    <define name="PITCH_PGAIN" value="12000."/>
     <define name="PITCH_DGAIN" value="1.5"/>
 
     <define name="ELEVATOR_OF_ROLL" value="1250"/>
 
     <define name="ROLL_SLEW" value="0.1"/>
 
-    <define name="ROLL_ATTITUDE_GAIN" value="12500"/>
-    <define name="ROLL_RATE_GAIN" value="700"/>
-  </section>
-
-  <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
-    <!-- control effectiveness -->
-    <define name="G" value="0.019"/>
-
-    <!-- reference acceleration for attitude control -->
-    <define name="REF_ERR_P" value="69.6"/>
-    <define name="REF_ERR_Q" value="600.0"/>
-    <define name="REF_ERR_R" value="600.0"/>
-    <define name="REF_RATE_P" value="15.0"/>
-    <define name="REF_RATE_Q" value="28.0"/>
-    <define name="REF_RATE_R" value="28.0"/>
-
-    <!-- second order filter parameters -->
-    <define name="FILT_OMEGA" value="35.0"/>
-    <define name="FILT_ZETA" value="0.65"/>
-
-    <!-- first order actuator dynamics -->
-    <define name="ACT_DYN_P" value="0.35"/>
+    <define name="ROLL_ATTITUDE_GAIN" value="4079"/>
+    <define name="ROLL_RATE_GAIN" value="711"/>
   </section>
 
   <section name="AGGRESSIVE" prefix="AGR_">
@@ -181,7 +158,7 @@
 
   <section name="AUTO1" prefix="AUTO1_">
     <define name="MAX_ROLL" value="60." unit="deg"/>
-    <define name="MAX_PITCH" value="60." unit="deg"/>
+    <define name="MAX_PITCH" value="35." unit="deg"/>
   </section>
 
   <section name="BAT">
@@ -190,7 +167,6 @@
     <define name="CRITIC_BAT_LEVEL" value="10.4" unit="V"/>
     <define name="LOW_BAT_LEVEL" value="10.8" unit="V"/>
     <define name="MAX_BAT_LEVEL" value="12.4" unit="V"/>
-    <define name="VoltageOfAdc(adc)" value="(0.006665*adc)"/>
   </section>
 
   <section name="MISC">
@@ -198,15 +174,7 @@
     <define name="CARROT" value="5." unit="s"/>
     <define name="KILL_MODE_DISTANCE" value="(1.5*MAX_DIST_FROM_HOME)"/>
     <define name="CONTROL_FREQUENCY" value="100" unit="Hz"/>
-    <define name="DEFAULT_CIRCLE_RADIUS" value="80."/>  
-    <define name="AIRSPEED_LEFT_OFFSET" value="69"/>
-    <define name="PITCH_LEFT_OFFSET" value="69"/>
-    <define name="AIRSPEED_RIGHT_OFFSET" value="69"/>
-    <define name="PITCH_RIGHT_OFFSET" value="69"/>
-    <define name="TURB_PGAIN" value="14000"/>
-    <define name="PITCH_OMEGA" value="1"/>
-    <define name="PITCH_ZETA" value="0.7"/>
-    <define name="COMMAND_PITCH_TRIM" value="0."/>
+    <define name="DEFAULT_CIRCLE_RADIUS" value="80."/>
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">

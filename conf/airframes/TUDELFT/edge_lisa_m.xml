@@ -1,15 +1,15 @@
-<!DOCTYPE airframe SYSTEM "../../airframe.dtd">
+<!DOCTYPE airframe SYSTEM "../airframe.dtd">
 
 <!-- Edge540 HobbyKing
-     Lisa/M v2.0 board (http://wiki.paparazziuav.org/wiki/Lisa/M_v2)
-     Aspirin IMU v2.1 with MS5611 barometer
+     Lisa/M v2.1 board (http://wiki.paparazziuav.org/wiki/Lisa/M_v21) with modified R17 to 16k
+     Aspirin IMU v2.2 with MS5611 barometer
      Xbee modem in xbee api mode
 -->
 
-<airframe name="Edge540 Lisa/M 2.0">
+<airframe name="Edge540 Lisa/M 2.1">
 
   <firmware name="fixedwing">
-    <target name="ap" board="lisa_m_2.0">
+    <target name="ap" board="lisa_m_2.1">
       <configure name="FLASH_MODE" value="JTAG_BMP"/>
       <configure name="PERIODIC_FREQUENCY" value="120"/>
       <configure name="AHRS_PROPAGATE_FREQUENCY" value="100"/>
@@ -32,7 +32,7 @@
     <subsystem name="telemetry" type="xbee_api"/>
 
     <!-- Sensors -->
-    <subsystem name="imu" type="aspirin_v2.1"/>
+    <subsystem name="imu" type="aspirin_v2.2"/>
     <subsystem name="gps" type="ublox"/>
 
     <subsystem name="ahrs" type="int_cmpl_quat"/>
@@ -43,16 +43,34 @@
     </subsystem>
   </firmware>
 
-  <modules main_freq="512">
-    <load name="logger_spi_link.xml"/>
+  <modules>
+    <!--load name="sys_mon.xml"/-->
+    <load name="turbulence_adc.xml"/>
+    <load name="air_data.xml">
+      <define name="AIR_DATA_CALC_AMSL_BARO" value="TRUE"/>
+    </load>
+
+    <!-- extra navigation routines -->
+    <load name="nav_bungee_takeoff.xml"/>
+    <load name="nav_line.xml"/>
+    <load name="nav_line_border.xml"/>
+    <load name="nav_line_osam.xml"/>
+    <load name="nav_flower.xml"/>
+    <load name="nav_smooth.xml"/>
+    <load name="nav_survey_polygon.xml"/>
+    <load name="nav_survey_poly_osam.xml"/>
+    <load name="nav_survey_zamboni.xml"/>
+    <load name="nav_vertical_raster.xml"/>
+    <load name="nav_spiral.xml"/>
+
   </modules>
 
   <servos>
     <servo name="THROTTLE" no="0" min="1100" neutral="1100" max="1900"/>
-    <servo name="AILERON_LEFT" no="1" min="2100" neutral="1530" max="800"/>
-    <servo name="AILERON_RIGHT" no="2" min="2200" neutral="1500" max="900"/>
-    <servo name="ELEVATOR" no="3" min="1960" neutral="1355" max="800"/>
-    <servo name="RUDDER" no="4" min="2200" neutral="1408" max="700"/>
+    <servo name="AILERON_LEFT" no="1" min="1000" neutral="1520" max="2000"/>
+    <servo name="AILERON_RIGHT" no="2" min="1000" neutral="1520" max="2000"/>
+    <servo name="ELEVATOR" no="4" min="2000" neutral="1500" max="1000"/>
+    <servo name="RUDDER" no="3" min="1000" neutral="1500" max="2000"/>
   </servos>
 
   <commands>
@@ -94,7 +112,7 @@
 
     <define name="BODY_TO_IMU_PHI" value="0." unit="deg"/>
     <define name="BODY_TO_IMU_THETA" value="0." unit="deg"/>
-    <define name="BODY_TO_IMU_PSI" value="90." unit="deg"/>
+    <define name="BODY_TO_IMU_PSI" value="180." unit="deg"/>
   </section>
 
   <section name="INS" prefix="INS_">
@@ -110,7 +128,7 @@
     <define name="ALTITUDE_MAX_CLIMB" value="2."/>
 
     <!-- auto throttle inner loop -->
-    <define name="AUTO_THROTTLE_NOMINAL_CRUISE_THROTTLE" value="0.6"/>
+    <define name="AUTO_THROTTLE_NOMINAL_CRUISE_THROTTLE" value="0.4"/>
     <define name="AUTO_THROTTLE_MIN_CRUISE_THROTTLE" value="0.25"/>
     <define name="AUTO_THROTTLE_MAX_CRUISE_THROTTLE" value="0.65"/>
     <define name="AUTO_THROTTLE_CLIMB_THROTTLE_INCREMENT" value="0.1" unit="%/(m/s)"/>
@@ -163,17 +181,18 @@
 
   <section name="BAT">
     <define name="MILLIAMP_AT_FULL_THROTTLE" value="2000"/>
-    <define name="CATASTROPHIC_BAT_LEVEL" value="9.4" unit="V"/>
-    <define name="CRITIC_BAT_LEVEL" value="10.4" unit="V"/>
-    <define name="LOW_BAT_LEVEL" value="10.8" unit="V"/>
-    <define name="MAX_BAT_LEVEL" value="12.4" unit="V"/>
+    <define name="CATASTROPHIC_BAT_LEVEL" value="14.2" unit="V"/>
+    <define name="CRITIC_BAT_LEVEL" value="14.5" unit="V"/>
+    <define name="LOW_BAT_LEVEL" value="14.8" unit="V"/>
+    <define name="MAX_BAT_LEVEL" value="16.8" unit="V"/>
+    <define name="VoltageOfAdc(adc)" value="(0.006665*adc)"/>
   </section>
 
   <section name="MISC">
     <define name="NOMINAL_AIRSPEED" value="13." unit="m/s"/>
     <define name="CARROT" value="5." unit="s"/>
     <define name="KILL_MODE_DISTANCE" value="(1.5*MAX_DIST_FROM_HOME)"/>
-    <define name="CONTROL_FREQUENCY" value="100" unit="Hz"/>
+    <define name="CONTROL_FREQUENCY" value="60" unit="Hz"/>
     <define name="DEFAULT_CIRCLE_RADIUS" value="80."/>
   </section>
 

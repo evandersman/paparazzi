@@ -34,9 +34,9 @@ struct PACKED high_speed_logger_spi_link_data {
 
 
   int32_t id;           // 1
-  int32_t pot;          // 2
-  int32_t roll_setpoint;
-  int32_t phi;
+  int32_t uin;          // 2
+  int32_t uact;
+  int32_t servo;
 /*
   int32_t phi;          // 2
   int32_t p;

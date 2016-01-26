@@ -88,6 +88,17 @@
    gui_color="#ffffbc3bce5b"
   />
   <aircraft
+   name="Edge"
+   ac_id="51"
+   airframe="airframes/TUDelft/airframes/slick_lisa_m_probes.xml"
+   radio="radios/spektrum.xml"
+   telemetry="telemetry/default_fixedwing.xml"
+   flight_plan="flight_plans/basic.xml"
+   settings="settings/fixedwing_basic.xml settings/control/ctl_basic.xml"
+   settings_modules="modules/turbulence_adc.xml"
+   gui_color="#ffffffffffff"
+  />
+  <aircraft
    name="Heli450"
    ac_id="99"
    airframe="airframes/TUDELFT/tudelft_heli450.xml"
@@ -154,18 +165,6 @@
    gui_color="#8c63ffff8e00"
   />
   <aircraft
-   name="MAVTec5_Freek"
-   ac_id="35"
-   airframe="airframes/TUDelft/airframes/mavtec5.xml"
-   radio="radios/dummy.xml"
-   telemetry="telemetry/default_rotorcraft.xml"
-   flight_plan="flight_plans/Tudelft/rotorcraft_survey_competition.xml"
-   settings="settings/rotorcraft_basic.xml settings/control/stabilization_att_int.xml settings/modules/config_asctec_v2.xml settings/control/rotorcraft_guidance.xml"
-   settings_modules="[modules/geo_mag.xml] [modules/air_data.xml] modules/servo_switch.xml [modules/nav_survey_rectangle_rotorcraft.xml] [modules/nav_survey_poly_rotorcraft.xml] modules/drop_zone.xml modules/gps_ubx_ucenter.xml"
-   gui_color="blue"
-  />
-<aircraft name="Edge" ac_id="3" airframe="airframes/TUDelft/airframes/edge_lisa_m.xml" radio="radios/spektrum.xml" telemetry="telemetry/default_fixedwing.xml" flight_plan="flight_plans/basic.xml" settings="settings/fixedwing_basic.xml settings/control/ctl_basic.xml" settings_modules="modules/air_data.xml modules/nav_smooth.xml modules/nav_survey_poly_osam.xml" gui_color="#ffffffffffff"/>
-  <aircraft
    name="MentorEnergy"
    ac_id="1"
    airframe="airframes/examples/MentorEnergy.xml"
@@ -197,6 +196,17 @@
    settings="settings/fixedwing_basic.xml settings/control/ctl_basic.xml settings/estimation/ins_neutrals.xml settings/control/tune_agr_climb.xml"
    settings_modules="modules/light.xml modules/digital_cam.xml"
    gui_color="#b748fe64fe64"
+  />
+  <aircraft
+   name="Slick"
+   ac_id="52"
+   airframe="airframes/TUDELFT/slick_lisa_m_probes_2.xml"
+   radio="radios/spektrum.xml"
+   telemetry="telemetry/xbee_900.xml"
+   flight_plan="flight_plans/basic.xml"
+   settings="settings/fixedwing_basic.xml settings/control/ctl_basic.xml"
+   settings_modules=""
+   gui_color="blue"
   />
   <aircraft
    name="bebop2_22"
