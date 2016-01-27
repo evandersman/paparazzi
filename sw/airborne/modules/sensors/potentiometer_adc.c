@@ -34,20 +34,25 @@
 #include "inter_mcu.h"
 
 #ifndef ADC_CHANNEL_POTENTIOMETER_NB_SAMPLES
-#define ADC_CHANNEL_POTENTIOMETER_NB_SAMPLES 1
+#define ADC_CHANNEL_POTENTIOMETER_NB_SAMPLES 10
 #endif
 
 
-static struct adc_buf buf_potentiometer;
-uint16_t potentiometer_adc_raw;
+static struct adc_buf buf_potentiometer_left;
+static struct adc_buf buf_potentiometer_right;
+
+uint16_t potentiometer_adc_raw_left;
+uint16_t potentiometer_adc_raw_right;
 
 void potentiometer_adc_init(void)
 {
-  adc_buf_channel(ADC_CHANNEL_POTENTIOMETER, &buf_potentiometer, ADC_CHANNEL_POTENTIOMETER_NB_SAMPLES);
+  adc_buf_channel(ADC_CHANNEL_POTENTIOMETER_LEFT, &buf_potentiometer_left, ADC_CHANNEL_POTENTIOMETER_NB_SAMPLES);
+  adc_buf_channel(ADC_CHANNEL_POTENTIOMETER_RIGHT, &buf_potentiometer_right, ADC_CHANNEL_POTENTIOMETER_NB_SAMPLES);
 }
 
 void potentiometer_adc_update(void)
 {
   // 12bit adc values
-  potentiometer_adc_raw = buf_potentiometer.sum / buf_potentiometer.av_nb_sample;
+  potentiometer_adc_raw_left = buf_potentiometer_left.sum / buf_potentiometer_left.av_nb_sample;
+  potentiometer_adc_raw_right = buf_potentiometer_right.sum / buf_potentiometer_right.av_nb_sample;
 }

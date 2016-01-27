@@ -64,23 +64,9 @@ void high_speed_logger_spi_link_periodic(void)
     /* Data which will be logged for servo model */
     high_speed_logger_spi_link_data.uin        = ANGLE_BFP_OF_REAL(indi.u_in.p);
     high_speed_logger_spi_link_data.uact       = ANGLE_BFP_OF_REAL(indi.u_act_dyn.p);
-    high_speed_logger_spi_link_data.servo      = ANGLE_BFP_OF_REAL(servo_delayed_input);
-    // probe calibration and gain
-    high_speed_logger_spi_link_data.offset_pl  = potentiometer_adc_raw;
-    high_speed_logger_spi_link_data.offset_al  = potentiometer_adc_raw;
-    high_speed_logger_spi_link_data.offset_pr  = potentiometer_adc_raw;
-    high_speed_logger_spi_link_data.offset_ar  = potentiometer_adc_raw;
-    high_speed_logger_spi_link_data.pprobes    = potentiometer_adc_raw;
-    // gains
-    high_speed_logger_spi_link_data.pgain      = potentiometer_adc_raw;
-    high_speed_logger_spi_link_data.dgain      = potentiometer_adc_raw;
-    // probe pressures differentials in millipascals
-    high_speed_logger_spi_link_data.probe_press_l = potentiometer_adc_raw;
-    high_speed_logger_spi_link_data.probe_press_r = potentiometer_adc_raw;
-    // commands
-    high_speed_logger_spi_link_data.command_roll   = potentiometer_adc_raw;
-    high_speed_logger_spi_link_data.command_turb_l = potentiometer_adc_raw;
-    high_speed_logger_spi_link_data.command_turb_r = potentiometer_adc_raw;
+    high_speed_logger_spi_link_data.udelay     = ANGLE_BFP_OF_REAL(servo_delayed_input);
+    high_speed_logger_spi_link_data.potleft    = potentiometer_adc_raw_left;
+    high_speed_logger_spi_link_data.potright   = potentiometer_adc_raw_right;
 
     /* Data which will be logged for both pid and indi */
 /*

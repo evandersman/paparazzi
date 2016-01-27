@@ -3,7 +3,8 @@
 <module name="potentiometer_adc" dir="sensors">
   <doc>
     <description>module for reading pressure servo potentiometer data</description>
-      <configure name="ADC_CHANNEL_POTENTIOMETER" value="ADCX" description="choose which ADC is used for servo potentiometer"/>
+      <configure name="ADC_CHANNEL_POTENTIOMETER_LEFT" value="ADCX" description="choose which ADC is used for servo potentiometer"/>
+      <configure name="ADC_CHANNEL_POTENTIOMETER_RIGHT" value="ADCX" description="choose which ADC is used for servo potentiometer"/>
   </doc>
   <header>
     <file name="potentiometer_adc.h"/>
@@ -13,9 +14,10 @@
   <makefile target="ap">
     <file name="potentiometer_adc.c"/>
     <raw>
-ADC_CHANNEL_POTENTIOMETER ?= ADC_2
-
-POT_ADC_FLAGS = -DADC_CHANNEL_POTENTIOMETER=$(ADC_CHANNEL_POTENTIOMETER) -DUSE_$(ADC_CHANNEL_POTENTIOMETER)
+ADC_CHANNEL_POTENTIOMETER_LEFT ?= ADC_2
+ADC_CHANNEL_POTENTIOMETER_RIGHT ?= ADC_3
+POT_ADC_FLAGS = -DADC_CHANNEL_POTENTIOMETER_LEFT=$(ADC_CHANNEL_POTENTIOMETER_LEFT) -DUSE_$(ADC_CHANNEL_POTENTIOMETER_LEFT)
+POT_ADC_FLAGS += -DADC_CHANNEL_POTENTIOMETER_RIGHT=$(ADC_CHANNEL_POTENTIOMETER_RIGHT) -DUSE_$(ADC_CHANNEL_POTENTIOMETER_RIGHT)
 ap.CFLAGS += $(POT_ADC_FLAGS)
   </raw>
   </makefile>

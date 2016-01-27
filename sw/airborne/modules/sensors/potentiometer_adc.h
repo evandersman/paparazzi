@@ -28,7 +28,8 @@
 
 #include <inttypes.h>
 
-extern uint16_t potentiometer_adc_raw;
+extern uint16_t potentiometer_adc_raw_left;
+extern uint16_t potentiometer_adc_raw_right;
 
 void potentiometer_adc_init(void);
 void potentiometer_adc_update(void);
