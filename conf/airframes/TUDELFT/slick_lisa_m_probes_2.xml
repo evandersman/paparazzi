@@ -27,6 +27,9 @@
     <define name="STRONG_WIND"/-->
 
     <subsystem name="radio_control" type="spektrum"/>
+    <subsystem name="actuators"     type="pwm">
+      <define name="SERVO_HZ" value="400"/>
+    </subsystem>
 
     <!-- Communication -->
     <subsystem name="telemetry" type="xbee_api"/>
@@ -207,7 +210,7 @@
     <define name="TURB_ACC_GAIN" value="1"/>
     <define name="PITCH_OMEGA" value="0.5"/>
     <define name="PITCH_ZETA" value="1"/>
-    <define name="SERVO_DELAY" value="10"/>
+    <define name="SERVO_DELAY" value="7"/>
     <!--define name="PROBES_FF_ANG_ACC" value="1"/-->
     <define name="COMMAND_PITCH_TRIM" value="0."/>
   </section>

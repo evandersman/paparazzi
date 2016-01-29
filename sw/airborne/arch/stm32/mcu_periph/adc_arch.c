@@ -152,7 +152,7 @@ PRINT_CONFIG_MSG("Analog to Digital Coverter 3 active")
 #endif
 
 #ifndef ADC_TIMER_PERIOD
-#define ADC_TIMER_PERIOD 5000
+#define ADC_TIMER_PERIOD 390
 #endif
 
 /** Timer frequency for ADC
