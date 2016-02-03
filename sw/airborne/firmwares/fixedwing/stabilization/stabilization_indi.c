@@ -442,19 +442,22 @@ inline static void h_ctl_roll_loop(void)
   indi.udotdot.p = -indi.udot.p * 2 * indi_zeta * indi_omega   + (indi.u_act_dyn.p - indi.u.p) * omega2;
 
   // Don't increment if thrust is off
-  if (v_ctl_throttle_setpoint < 100) {
+  if (v_ctl_throttle_setpoint < 2500) {
     FLOAT_RATES_ZERO(indi.u);
     FLOAT_RATES_ZERO(indi.du);
     FLOAT_RATES_ZERO(indi.u_act_dyn);
     FLOAT_RATES_ZERO(indi.u_in);
     FLOAT_RATES_ZERO(indi.udot);
     FLOAT_RATES_ZERO(indi.udotdot);
+    float cmd = h_ctl_roll_attitude_gain * err + h_ctl_roll_rate_gain * stateGetBodyRates_f()->p;
+    h_ctl_aileron_setpoint = TRIM_PPRZ(cmd);
+  }
+  else {
+  /* INDI feedback */
+    h_ctl_aileron_setpoint = TRIM_PPRZ(indi.u_in.p);
   }
 
-  /* INDI feedback */
-  h_ctl_aileron_setpoint = TRIM_PPRZ(indi.u_in.p);
-
-  //RunOnceEvery(50, DOWNLINK_SEND_STAB_ATTITUDE_INDI(DefaultChannel, DefaultDevice, &indi.angular_accel_ref.p, &indi.angular_accel_ref.q, &indi.angular_accel_ref.r, &indi.du.p, &indi.du.q, &indi.du.r, &indi.u_in.p, &indi.u_in.q, &indi.u_in.r));
+  //RunOnceEvery(500, DOWNLINK_SEND_STAB_ATTITUDE_INDI(DefaultChannel, DefaultDevice, &indi.angular_accel_ref.p, &indi.angular_accel_ref.q, &indi.angular_accel_ref.r, &indi.du.p, &indi.du.q, &indi.du.r, &indi.u_in.p, &indi.u_in.q, &indi.u_in.r));
 
 }
 

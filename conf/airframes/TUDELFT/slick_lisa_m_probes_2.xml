@@ -26,7 +26,10 @@
     <define name="LOITER_TRIM"/>
     <define name="STRONG_WIND"/-->
 
-    <subsystem name="radio_control" type="spektrum"/>
+    <subsystem name="radio_control" type="spektrum">
+      <define name="RADIO_KILL_SWITCH" value="RADIO_AUX2"/>
+      <define name="RADIO_MODE" value="RADIO_GEAR"/>
+    </subsystem>
     <subsystem name="actuators"     type="pwm">
       <define name="SERVO_HZ" value="400"/>
     </subsystem>
@@ -36,7 +39,7 @@
 
     <!-- Sensors -->
     <subsystem name="imu" type="aspirin_v2.1"/>
-    <subsystem name="gps" type="ublox"/>
+    <subsystem name="gps" type="datalink"/>
 
     <subsystem name="ahrs" type="int_cmpl_quat"/>
     <subsystem name="control" type="indi"/>
@@ -150,10 +153,10 @@
     <define name="G" value="0.019"/>
 
     <!-- reference acceleration for attitude control -->
-    <define name="REF_ERR_P" value="69.6"/>
+    <define name="REF_ERR_P" value="420"/>
     <define name="REF_ERR_Q" value="600.0"/>
     <define name="REF_ERR_R" value="600.0"/>
-    <define name="REF_RATE_P" value="15.0"/>
+    <define name="REF_RATE_P" value="20.0"/>
     <define name="REF_RATE_Q" value="28.0"/>
     <define name="REF_RATE_R" value="28.0"/>
 
@@ -195,7 +198,7 @@
     <define name="LOW_BAT_LEVEL" value="10.8" unit="V"/>
     <define name="MAX_BAT_LEVEL" value="12.4" unit="V"/>
   </section>
-
+744
   <section name="MISC">
     <define name="NOMINAL_AIRSPEED" value="13." unit="m/s"/>
     <define name="CARROT" value="5." unit="s"/>

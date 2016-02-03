@@ -62,21 +62,19 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_ready = FALSE;
 
     /* Data which will be logged for servo model */
-    high_speed_logger_spi_link_data.uin        = ANGLE_BFP_OF_REAL(indi.u_in.p);
     high_speed_logger_spi_link_data.uact       = ANGLE_BFP_OF_REAL(indi.u_act_dyn.p);
     high_speed_logger_spi_link_data.udelay     = ANGLE_BFP_OF_REAL(servo_delayed_input);
     high_speed_logger_spi_link_data.potleft    = potentiometer_adc_raw_left;
     high_speed_logger_spi_link_data.potright   = potentiometer_adc_raw_right;
 
     /* Data which will be logged for both pid and indi */
-/*
+
     high_speed_logger_spi_link_data.phi        	    = stateGetNedToBodyEulers_i()->phi;
     high_speed_logger_spi_link_data.p               = state.body_rates_i.p;
     high_speed_logger_spi_link_data.roll_setpoint   = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);
-*/
 
     /* Indi parameters */
-/*
+
     // outer loop gains
     high_speed_logger_spi_link_data.pgain      = ANGLE_BFP_OF_REAL(reference_acceleration.err_p);
     high_speed_logger_spi_link_data.dgain      = ANGLE_BFP_OF_REAL(reference_acceleration.rate_p);
@@ -84,16 +82,12 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.ref_acc    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);
     high_speed_logger_spi_link_data.filt_acc   = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.p);
     // indi paramters
-    high_speed_logger_spi_link_data.act_dyn_p  = ANGLE_BFP_OF_REAL(tau_act_dyn_p);
+    high_speed_logger_spi_link_data.command_t  = commands[0];
     high_speed_logger_spi_link_data.g          = ANGLE_BFP_OF_REAL(G);
     // indi commands
-    high_speed_logger_spi_link_data.du_p         = ANGLE_BFP_OF_REAL(indi.du.p);
-    high_speed_logger_spi_link_data.u_p          = ANGLE_BFP_OF_REAL(indi.u.p);
-    high_speed_logger_spi_link_data.u_in_p       = ANGLE_BFP_OF_REAL(indi.u_in.p);
-    high_speed_logger_spi_link_data.u_act_dyn    = ANGLE_BFP_OF_REAL(indi.u_act_dyn.p);
-    high_speed_logger_spi_link_data.probes_acc   = ANGLE_BFP_OF_REAL(probes_ang_acc);
-    high_speed_logger_spi_link_data.command_roll = commands[1];
-*/
+    high_speed_logger_spi_link_data.u_p        = ANGLE_BFP_OF_REAL(indi.u.p);
+    high_speed_logger_spi_link_data.uin        = ANGLE_BFP_OF_REAL(indi.u_in.p);
+
     /* Pid parameters */
 /*
     // probe calibration and gain

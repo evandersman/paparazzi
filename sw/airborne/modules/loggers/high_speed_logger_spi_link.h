@@ -34,42 +34,24 @@ struct PACKED high_speed_logger_spi_link_data {
 
 
   int32_t id;           // 1
-  int32_t uin;          // 2
   int32_t uact;
   int32_t udelay;
   int32_t potleft;
   int32_t potright;
 
-  int32_t offset_pr;
-  int32_t offset_ar;
-  int32_t pprobes;      // 9
-  int32_t pgain;
-  int32_t dgain;
-  int32_t probe_press_l;    // 12
-  int32_t probe_press_r;
-  int32_t command_roll;     // 14
-  int32_t command_turb_l;   // 15
-  int32_t command_turb_r;   // 16
-
-/*
-  int32_t phi;          // 2
+  int32_t phi;          // 6
   int32_t p;
   int32_t roll_setpoint;
-*/
-/*
-  int32_t pgain;        // 5
+
+  int32_t pgain;        // 9
   int32_t dgain;
   int32_t ref_acc;
-  int32_t filt_acc;     // 8
-  int32_t act_dyn_p;
+  int32_t filt_acc;     // 12
+  int32_t command_t;
   int32_t g;
-  int32_t du_p;         // 11
   int32_t u_p;
-  int32_t u_in_p;
-  int32_t u_act_dyn;    // 14
-  int32_t probes_acc;   // 15
-  int32_t command_roll; // 16
-*/
+  int32_t uin;
+
 /*
   int32_t offset_pl;      // 5
   int32_t offset_al;
