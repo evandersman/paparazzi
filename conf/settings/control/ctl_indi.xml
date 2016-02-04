@@ -11,7 +11,6 @@
         <dl_setting MAX="10" MIN="0" STEP="0.01" VAR="tau_act_dyn_p" shortname="act_dyn_p"  param="STABILIZATION_INDI_ACT_DYN_P" module="stabilization/stabilization_indi"/>
         <dl_setting MAX="100" MIN="0" STEP="1" VAR="indi_omega" shortname="omega"  param="STABILIZATION_INDI_FILT_OMEGA" module="stabilization/stabilization_indi"/>
         <dl_setting MAX="1" MIN="0" STEP="0.01" VAR="indi_zeta" shortname="zeta"  param="STABILIZATION_INDI_FILT_ZETA" module="stabilization/stabilization_indi"/>
-        <dl_setting MAX="100" MIN="0" STEP="1" VAR="indi_omega_r" shortname="omega_r"  param="STABILIZATION_INDI_FILT_OMEGA_R" module="stabilization/stabilization_indi"/>
     </dl_settings>
   </dl_settings>
 </settings>
