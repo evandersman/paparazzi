@@ -29,6 +29,8 @@
 #include "firmwares/fixedwing/stabilization/stabilization_indi.h"
 #include "modules/sensors/turbulence_adc.h"
 #include "modules/sensors/potentiometer_adc.h"
+#include "modules/servo_controller/servo_controller.h"
+#include "arch/stm32/subsystems/actuators/actuators_pwm_arch.h"
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
 struct spi_transaction high_speed_logger_spi_link_transaction;
@@ -62,21 +64,31 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_ready = FALSE;
 
     /* Data which will be logged for servo model */
-    high_speed_logger_spi_link_data.uact       = ANGLE_BFP_OF_REAL(indi.u_act_dyn.p);
+    high_speed_logger_spi_link_data.cw           = ANGLE_BFP_OF_REAL(left_wing.pwm_cw);
+    high_speed_logger_spi_link_data.ccw          = ANGLE_BFP_OF_REAL(left_wing.pwm_ccw);
+    high_speed_logger_spi_link_data.potscaled    = ANGLE_BFP_OF_REAL(pot_left_wing_scaled);
+    high_speed_logger_spi_link_data.potraw       = potentiometer_adc_raw_left;
+    high_speed_logger_spi_link_data.servoerr     = ANGLE_BFP_OF_REAL(left_wing.err);
+    high_speed_logger_spi_link_data.pwml         = actuators_pwm_values[PWM_SERVO_2];
+    high_speed_logger_spi_link_data.pwmr         = actuators_pwm_values[PWM_SERVO_3];
+    high_speed_logger_spi_link_data.cmd_roll     = commands[1];
+
+    /* Data which will be logged for servo model */
+    /*high_speed_logger_spi_link_data.uact       = ANGLE_BFP_OF_REAL(indi.u_act_dyn.p);
     high_speed_logger_spi_link_data.udelay     = ANGLE_BFP_OF_REAL(servo_delayed_input);
     high_speed_logger_spi_link_data.potleft    = potentiometer_adc_raw_left;
-    high_speed_logger_spi_link_data.potright   = potentiometer_adc_raw_right;
+    high_speed_logger_spi_link_data.potright   = potentiometer_adc_raw_right;*/
 
     /* Data which will be logged for both pid and indi */
 
-    high_speed_logger_spi_link_data.phi        	    = stateGetNedToBodyEulers_i()->phi;
+    /*high_speed_logger_spi_link_data.phi        	    = stateGetNedToBodyEulers_i()->phi;
     high_speed_logger_spi_link_data.p               = state.body_rates_i.p;
-    high_speed_logger_spi_link_data.roll_setpoint   = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);
+    high_speed_logger_spi_link_data.cmd_roll        = commands[1];*/
 
     /* Indi parameters */
 
     // outer loop gains
-    high_speed_logger_spi_link_data.pgain      = ANGLE_BFP_OF_REAL(reference_acceleration.err_p);
+    //high_speed_logger_spi_link_data.pgain      = ANGLE_BFP_OF_REAL(reference_acceleration.err_p);
     high_speed_logger_spi_link_data.dgain      = ANGLE_BFP_OF_REAL(reference_acceleration.rate_p);
     // accelerations
     high_speed_logger_spi_link_data.ref_acc    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);

@@ -33,17 +33,28 @@ extern void high_speed_logger_spi_link_periodic(void);
 struct PACKED high_speed_logger_spi_link_data {
 
 
+
   int32_t id;           // 1
-  int32_t uact;
+
+  int32_t cw;
+  int32_t ccw;
+  int32_t potscaled;
+  int32_t potraw;
+  int32_t servoerr;
+  int32_t pwml;
+  int32_t pwmr;
+  int32_t cmd_roll;
+
+/*  int32_t uact;
   int32_t udelay;
   int32_t potleft;
   int32_t potright;
 
   int32_t phi;          // 6
   int32_t p;
-  int32_t roll_setpoint;
+  int32_t cmd_roll;*/
 
-  int32_t pgain;        // 9
+  //int32_t pgain;        // 9
   int32_t dgain;
   int32_t ref_acc;
   int32_t filt_acc;     // 12

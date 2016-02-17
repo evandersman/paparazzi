@@ -1,0 +1,14 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="servo_controller" dir="servo_controller">
+  <doc>
+    <description>module for servo controller throught servo pins on lisa m and potentiometer data from adc</description>
+  </doc>
+  <header>
+    <file name="servo_controller.h"/>
+  </header>
+  <init fun="servo_controller_init()"/>
+  <makefile target="ap">
+    <file name="servo_controller.c"/>
+  </makefile>
+</module>
