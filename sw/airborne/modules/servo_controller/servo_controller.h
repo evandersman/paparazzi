@@ -32,10 +32,12 @@ struct servo_data {
   float offset;
   float gain;
   float err;
+  float d_err;
   float sum_err;
   float pwm_cw;
   float pwm_ccw;
   float pgain;
+  float dgain;
   float igain;
 };
 
@@ -43,6 +45,7 @@ extern struct servo_data left_wing;
 extern struct servo_data right_wing;
 extern float pot_left_wing_scaled;
 extern float pot_right_wing_scaled;
+extern float left_wing_last_err;
 
 void servo_controller_init(void);
 void servo_controller_update(void);
