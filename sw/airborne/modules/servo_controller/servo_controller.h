@@ -34,6 +34,7 @@ struct servo_data {
   float err;
   float d_err;
   float sum_err;
+  float cmd;
   float pwm_cw;
   float pwm_ccw;
   float pgain;

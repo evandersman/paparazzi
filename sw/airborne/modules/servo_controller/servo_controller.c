@@ -49,6 +49,9 @@ void servo_controller_init(void)
   pot_left_wing_scaled  = 0.;
   pot_right_wing_scaled = 0.;
   left_wing_last_err    = 0.;
+  left_wing.err         = 0.;
+  left_wing.d_err       = 0.;
+  left_wing.cmd         = 0.;
 
   servo_count           = 0;
 
@@ -85,6 +88,28 @@ void servo_controller_update(void)
   }
 */
 
+  // position error
+  left_wing.err = pot_left_wing_scaled - commands[1];
+
+  // change in error
+  left_wing.d_err = left_wing.err - left_wing_last_err;
+  left_wing_last_err = left_wing.err;
+
+  // command
+  left_wing.cmd = left_wing.err * left_wing.pgain + left_wing.d_err * left_wing.dgain;
+
+  // determine whether to turn clockwise or counterclockwise
+  if (left_wing.cmd > 0) {
+    left_wing.pwm_ccw = left_wing.cmd - 9600;
+    Bound(left_wing.pwm_ccw, -9600, 9600); 
+    left_wing.pwm_cw = -9600.;
+  }
+  else {
+    left_wing.pwm_cw = -left_wing.cmd - 9600;
+    Bound(left_wing.pwm_cw, -9600, 9600);
+    left_wing.pwm_ccw = -9600.;
+  }
+/*
   // the error
   left_wing.err = abs(pot_left_wing_scaled - commands[1]);
   right_wing.err = abs(pot_right_wing_scaled - commands[1]);
@@ -105,7 +130,7 @@ void servo_controller_update(void)
     Bound(left_wing.pwm_cw, -9600, 9600);
     left_wing.pwm_ccw = -9600.;
   }
-  
+*/  
   if (pot_right_wing_scaled - commands[1] > 0) {
     right_wing.pwm_cw = right_wing.err * right_wing.pgain;
     Bound(right_wing.pwm_cw, -9600, 9600);
