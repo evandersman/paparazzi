@@ -233,7 +233,7 @@
     <!--define name="PROBES_FF_ANG_ACC" value="1"/-->
     <define name="COMMAND_PITCH_TRIM" value="0."/>
     <define name="SERVO_PGAIN" value="6."/>
-    <define name="SERVO_DGAIN" value="25."/>
+    <define name="SERVO_DGAIN" value="30."/>
     <define name="SERVO_IGAIN" value="0."/>
     <define name="POT_LEFT_OFFSET" value="1735."/>
     <define name="POT_LEFT_GAIN" value="16.8"/>
