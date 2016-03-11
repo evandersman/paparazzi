@@ -44,9 +44,12 @@ struct servo_data {
 
 extern struct servo_data left_wing;
 extern struct servo_data right_wing;
+
 extern float pot_left_wing_scaled;
 extern float pot_right_wing_scaled;
+
 extern float left_wing_last_err;
+extern float right_wing_last_err;
 
 void servo_controller_init(void);
 void servo_controller_update(void);

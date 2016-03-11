@@ -42,16 +42,24 @@ uint16_t servo_count;
 
 float pot_left_wing_scaled;
 float pot_right_wing_scaled;
+
 float left_wing_last_err;
+float right_wing_last_err;
 
 void servo_controller_init(void)
 {
   pot_left_wing_scaled  = 0.;
   pot_right_wing_scaled = 0.;
+
   left_wing_last_err    = 0.;
   left_wing.err         = 0.;
   left_wing.d_err       = 0.;
   left_wing.cmd         = 0.;
+
+  right_wing_last_err    = 0.;
+  right_wing.err         = 0.;
+  right_wing.d_err       = 0.;
+  right_wing.cmd         = 0.;
 
   servo_count           = 0;
 
@@ -62,6 +70,7 @@ void servo_controller_init(void)
   left_wing.gain        = POT_LEFT_GAIN;
 
   right_wing.pgain      = SERVO_PGAIN;
+  right_wing.dgain      = SERVO_DGAIN;
   right_wing.igain      = SERVO_IGAIN;
   right_wing.offset     = POT_RIGHT_OFFSET;
   right_wing.gain       = POT_RIGHT_GAIN;
@@ -69,34 +78,44 @@ void servo_controller_init(void)
 
 void servo_controller_update(void)
 {
+
+  // potentiometer value
   pot_left_wing_scaled = -(potentiometer_adc_raw_left - left_wing.offset) * left_wing.gain;
-  //Bound(pot_right_wing_scaled, -9600, 9600);
   pot_right_wing_scaled = -(potentiometer_adc_raw_right - right_wing.offset) * right_wing.gain;
-  //Bound(pot_right_wing_scaled, -9600, 9600);
-  
-  // debug
-/*
-  if (servo_count < 1) {
-  left_wing.pwm_cw = -8000;
-  left_wing.pwm_ccw = -9600;
-  servo_count = 1;
+
+#ifdef SERVO_DEBUG
+  if (servo_count < 1000) {
+
+  if (servo_count < 500) {
+    left_wing.pwm_cw = -6000;
+    left_wing.pwm_ccw = -9600;
+  }
+  if (servo_count > 499) {
+  left_wing.pwm_cw = -9600;
+  left_wing.pwm_ccw = -6000;
+  }
+  servo_count++;
   }
   else {
-  left_wing.pwm_cw = -9600;
-  left_wing.pwm_ccw = -8000;
   servo_count = 0;
   }
-*/
+
+#else
 
   // position error
   left_wing.err = pot_left_wing_scaled - commands[1];
+  right_wing.err = pot_right_wing_scaled - commands[1];
 
   // change in error
   left_wing.d_err = left_wing.err - left_wing_last_err;
   left_wing_last_err = left_wing.err;
 
+  right_wing.d_err = right_wing.err - right_wing_last_err;
+  right_wing_last_err = right_wing.err;
+
   // command
   left_wing.cmd = left_wing.err * left_wing.pgain + left_wing.d_err * left_wing.dgain;
+  right_wing.cmd = right_wing.err * right_wing.pgain + right_wing.d_err * right_wing.dgain;
 
   // determine whether to turn clockwise or counterclockwise
   if (left_wing.cmd > 0) {
@@ -109,37 +128,17 @@ void servo_controller_update(void)
     Bound(left_wing.pwm_cw, -9600, 9600);
     left_wing.pwm_ccw = -9600.;
   }
-/*
-  // the error
-  left_wing.err = abs(pot_left_wing_scaled - commands[1]);
-  right_wing.err = abs(pot_right_wing_scaled - commands[1]);
-  // change in error
-  left_wing.d_err = left_wing.err - left_wing_last_err;
-  left_wing_last_err = left_wing.err;
-  // sum error
-  left_wing.sum_err = left_wing.err + left_wing.err *  1.0 / CONTROL_FREQUENCY;
-
-  // decide to turn cw or ccw
-  if (pot_left_wing_scaled - commands[1] > 0) {
-    left_wing.pwm_ccw = (left_wing.err * left_wing.pgain + left_wing.d_err * left_wing.dgain) - 9600;
-    Bound(left_wing.pwm_ccw, -9600, 9600); 
-    left_wing.pwm_cw = -9600.;
+ 
+  if (right_wing.cmd > 0) {
+    right_wing.pwm_ccw = right_wing.cmd - 9600;
+    Bound(right_wing.pwm_ccw, -9600, 9600); 
+    right_wing.pwm_cw = -9600.;
   }
   else {
-    left_wing.pwm_cw = (left_wing.err * left_wing.pgain + left_wing.d_err * left_wing.dgain) - 9600;
-    Bound(left_wing.pwm_cw, -9600, 9600);
-    left_wing.pwm_ccw = -9600.;
-  }
-*/  
-  if (pot_right_wing_scaled - commands[1] > 0) {
-    right_wing.pwm_cw = right_wing.err * right_wing.pgain;
+    right_wing.pwm_cw = -right_wing.cmd - 9600;
     Bound(right_wing.pwm_cw, -9600, 9600);
-    right_wing.pwm_ccw = -9600;
+    right_wing.pwm_ccw = -9600.;
   }
-  else {
-    right_wing.pwm_ccw = right_wing.err * left_wing.pgain;
-    Bound(right_wing.pwm_ccw, -9600, 9600);
-    right_wing.pwm_cw = -9600;
-  }
+#endif
 
 }
