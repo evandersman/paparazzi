@@ -25,6 +25,7 @@
     <!--define name="AGR_CLIMB"/>
     <define name="LOITER_TRIM"/-->
     <define name="STRONG_WIND"/>
+    <!--define name="SERVO_DEBUG"/-->
 
     <subsystem name="radio_control" type="spektrum">
       <define name="RADIO_KILL_SWITCH" value="RADIO_AUX2"/>
@@ -232,8 +233,11 @@
     <define name="SERVO_DELAY" value="7"/>
     <!--define name="PROBES_FF_ANG_ACC" value="1"/-->
     <define name="COMMAND_PITCH_TRIM" value="0."/>
-    <define name="SERVO_PGAIN" value="6."/>
+    <!--define name="SERVO_PGAIN" value="6."/>
     <define name="SERVO_DGAIN" value="30."/>
+    <define name="SERVO_IGAIN" value="0."/-->
+    <define name="SERVO_PGAIN" value="18."/>
+    <define name="SERVO_DGAIN" value="50."/>
     <define name="SERVO_IGAIN" value="0."/>
     <define name="POT_LEFT_OFFSET" value="1735."/>
     <define name="POT_LEFT_GAIN" value="16.8"/>
