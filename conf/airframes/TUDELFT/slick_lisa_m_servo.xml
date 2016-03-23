@@ -44,7 +44,7 @@
 
     <!-- Sensors -->
     <subsystem name="imu" type="aspirin_v2.1"/>
-    <subsystem name="gps" type="ublox"/>
+    <subsystem name="gps" type="datalink"/>
 
     <subsystem name="ahrs" type="int_cmpl_quat"/>
     <subsystem name="control" type="indi"/>

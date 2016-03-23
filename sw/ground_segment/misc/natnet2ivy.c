@@ -584,8 +584,8 @@ gboolean timeout_transmit_callback(gpointer data)
                  (int)(ecef_pos.x * 100.0),              //int32 ECEF X in CM
                  (int)(ecef_pos.y * 100.0),              //int32 ECEF Y in CM
                  (int)(ecef_pos.z * 100.0),              //int32 ECEF Z in CM
-                 (int)(lla_pos.lat * 10000000.0),        //int32 LLA latitude in rad*1e7
-                 (int)(lla_pos.lon * 10000000.0),        //int32 LLA longitude in rad*1e7
+                 (int)(DegOfRad(lla_pos.lat) * 10000000.0),        //int32 LLA latitude in rad*1e7
+                 (int)(DegOfRad(lla_pos.lon) * 10000000.0),        //int32 LLA longitude in rad*1e7
                  (int)(lla_pos.alt*1000.0),              //int32 LLA altitude in mm above elipsoid
                  (int)(rigidBodies[i].z * 1000.0),       //int32 HMSL height above mean sea level in mm
                  (int)(rigidBodies[i].ecef_vel.x * 100.0), //int32 ECEF velocity X in m/s
