@@ -137,7 +137,7 @@ static void baro_cb(uint8_t sender_id, float pressure);
 #define INS_INT_IMU_ID ABI_BROADCAST
 #endif
 #ifndef INS_INT_GPS_ID
-#define INS_INT_GPS_ID ABI_BROADCAST
+#define INS_INT_GPS_ID GPS_MULTI_ID
 #endif
 static abi_event accel_ev;
 static abi_event gps_ev;
@@ -383,6 +383,7 @@ void ins_int_update_gps(struct GpsState *gps_s)
 #endif
 #if INS_USE_GPS_ALT_SPEED
   vff_update_vz_conf(((float)gps_speed_cm_s_ned.z) / 100.0, INS_VFF_VZ_R_GPS);
+  ins_int.propagation_cnt = 0;
 #endif
 
 #if USE_HFF

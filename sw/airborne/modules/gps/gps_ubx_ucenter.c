@@ -58,7 +58,7 @@ static bool_t gps_ubx_ucenter_configure(uint8_t nr);
 #define GPS_UBX_UCENTER_REPLY_CFG_PRT     4
 
 // Target baudrate for the module
-#define UBX_GPS_BAUD (GPS_LINK).baudrate
+#define UBX_GPS_BAUD (UBX_GPS_LINK).baudrate
 
 // All U-Center data
 struct gps_ubx_ucenter_struct gps_ubx_ucenter;
@@ -87,7 +87,7 @@ void gps_ubx_ucenter_init(void)
     gps_ubx_ucenter.replies[i] = 0;
   }
 
-  gps_ubx_ucenter.dev = &(GPS_LINK).device;
+  gps_ubx_ucenter.dev = &(UBX_GPS_LINK).device;
 }
 
 
@@ -236,7 +236,7 @@ static bool_t gps_ubx_ucenter_autobaud(uint8_t nr)
       break;
     case 2:
       gps_ubx_ucenter.reply = GPS_UBX_UCENTER_REPLY_NONE;
-      uart_periph_set_baudrate(&(GPS_LINK), B38400); // Try the most common first?
+      uart_periph_set_baudrate(&(UBX_GPS_LINK), B38400); // Try the most common first?
       gps_ubx_ucenter_config_port_poll();
       break;
     case 3:
@@ -245,7 +245,7 @@ static bool_t gps_ubx_ucenter_autobaud(uint8_t nr)
         return FALSE;
       }
       gps_ubx_ucenter.reply = GPS_UBX_UCENTER_REPLY_NONE;
-      uart_periph_set_baudrate(&(GPS_LINK), B9600); // Maybe the factory default?
+      uart_periph_set_baudrate(&(UBX_GPS_LINK), B9600); // Maybe the factory default?
       gps_ubx_ucenter_config_port_poll();
       break;
     case 4:
@@ -254,7 +254,7 @@ static bool_t gps_ubx_ucenter_autobaud(uint8_t nr)
         return FALSE;
       }
       gps_ubx_ucenter.reply = GPS_UBX_UCENTER_REPLY_NONE;
-      uart_periph_set_baudrate(&(GPS_LINK), B57600); // The high-rate default?
+      uart_periph_set_baudrate(&(UBX_GPS_LINK), B57600); // The high-rate default?
       gps_ubx_ucenter_config_port_poll();
       break;
     case 5:
@@ -263,7 +263,7 @@ static bool_t gps_ubx_ucenter_autobaud(uint8_t nr)
         return FALSE;
       }
       gps_ubx_ucenter.reply = GPS_UBX_UCENTER_REPLY_NONE;
-      uart_periph_set_baudrate(&(GPS_LINK), B4800); // Default NMEA baudrate?
+      uart_periph_set_baudrate(&(UBX_GPS_LINK), B4800); // Default NMEA baudrate?
       gps_ubx_ucenter_config_port_poll();
       break;
     case 6:
@@ -272,7 +272,7 @@ static bool_t gps_ubx_ucenter_autobaud(uint8_t nr)
         return FALSE;
       }
       gps_ubx_ucenter.reply = GPS_UBX_UCENTER_REPLY_NONE;
-      uart_periph_set_baudrate(&(GPS_LINK), B115200); // Last possible option for ublox
+      uart_periph_set_baudrate(&(UBX_GPS_LINK), B115200); // Last possible option for ublox
       gps_ubx_ucenter_config_port_poll();
       break;
      case 7:
@@ -281,7 +281,7 @@ static bool_t gps_ubx_ucenter_autobaud(uint8_t nr)
         return FALSE;
       }
       gps_ubx_ucenter.reply = GPS_UBX_UCENTER_REPLY_NONE;
-      uart_periph_set_baudrate(&(GPS_LINK), B230400); // Last possible option for ublox
+      uart_periph_set_baudrate(&(UBX_GPS_LINK), B230400); // Last possible option for ublox
       gps_ubx_ucenter_config_port_poll();
       break;
     case 8:
@@ -293,7 +293,7 @@ static bool_t gps_ubx_ucenter_autobaud(uint8_t nr)
       // Autoconfig Failed... let's setup the failsafe baudrate
       // Should we try even a different baudrate?
       gps_ubx_ucenter.baud_init = 0; // Set as zero to indicate that we couldn't verify the baudrate
-      uart_periph_set_baudrate(&(GPS_LINK), B9600);
+      uart_periph_set_baudrate(&(UBX_GPS_LINK), B9600);
       return FALSE;
     default:
       break;
@@ -393,7 +393,7 @@ static inline void gps_ubx_ucenter_config_port(void)
       // I2C Interface
     case GPS_PORT_DDC:
 #ifdef GPS_I2C
-      UbxSend_CFG_PRT(gps_ubx_ucenter.dev, gps_ubx_ucenter.port_id, 0x0, 0x0, GPS_I2C_SLAVE_ADDR, 0x0, UBX_PROTO_MASK, UBX_PROTO_MASK, 0x0, 0x0);
+      UbxSend_CFG_PRT(gps_ubx_ucenter.dev, gps_ubx_ucenter.port_id, 0x0, 0x0, GPS_I2C_SLAVE_ADDR, 0x0, UBX_PROTO_MASK | NMEA_PROTO_MASK, UBX_PROTO_MASK| NMEA_PROTO_MASK, 0x0, 0x0);
 #else
       DEBUG_PRINT("WARNING: Please include the gps_i2c module.\n");
 #endif
@@ -403,14 +403,14 @@ static inline void gps_ubx_ucenter_config_port(void)
     case GPS_PORT_UART2:
       UbxSend_CFG_PRT(gps_ubx_ucenter.dev,
           gps_ubx_ucenter.port_id, 0x0, 0x0,
-          UBX_UART_MODE_MASK, UART_SPEED(gps_ubx_ucenter.baud_target), UBX_PROTO_MASK,
-          UBX_PROTO_MASK, 0x0, 0x0);
+          UBX_UART_MODE_MASK, UART_SPEED(gps_ubx_ucenter.baud_target), UBX_PROTO_MASK | NMEA_PROTO_MASK,
+          UBX_PROTO_MASK| NMEA_PROTO_MASK, 0x0, 0x0);
       break;
       // USB Interface
     case GPS_PORT_USB:
       UbxSend_CFG_PRT(gps_ubx_ucenter.dev,
           gps_ubx_ucenter.port_id, 0x0, 0x0, 0x0, 0x0,
-          UBX_PROTO_MASK, UBX_PROTO_MASK, 0x0, 0x0);
+          UBX_PROTO_MASK | NMEA_PROTO_MASK, UBX_PROTO_MASK| NMEA_PROTO_MASK, 0x0, 0x0);
       break;
     case GPS_PORT_SPI:
       DEBUG_PRINT("WARNING: ublox SPI port is currently not supported.\n");
@@ -465,7 +465,7 @@ static bool_t gps_ubx_ucenter_configure(uint8_t nr)
       }
 #endif
       // Now the GPS baudrate should have changed
-      uart_periph_set_baudrate(&(GPS_LINK), gps_ubx_ucenter.baud_target);
+      uart_periph_set_baudrate(&(UBX_GPS_LINK), gps_ubx_ucenter.baud_target);
       gps_ubx_ucenter.baud_run = UART_SPEED(gps_ubx_ucenter.baud_target);
       UbxSend_MON_GET_VER(gps_ubx_ucenter.dev);
       break;
@@ -559,4 +559,3 @@ static bool_t gps_ubx_ucenter_configure(uint8_t nr)
   gps_ubx_ucenter.reply = GPS_UBX_UCENTER_REPLY_NONE;
   return TRUE; // Continue, except for the last case
 }
-
