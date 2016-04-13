@@ -23,7 +23,14 @@
 #include "high_speed_logger_spi_link.h"
 
 #include "subsystems/imu.h"
+#include "subsystems/commands.h"
 #include "mcu_periph/spi.h"
+#include "state.h"
+#include "firmwares/fixedwing/stabilization/stabilization_indi.h"
+#include "modules/sensors/turbulence_adc.h"
+#include "modules/sensors/potentiometer_adc.h"
+#include "modules/servo_controller/servo_controller.h"
+#include "arch/stm32/subsystems/actuators/actuators_pwm_arch.h"
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
 struct spi_transaction high_speed_logger_spi_link_transaction;
