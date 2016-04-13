@@ -40,7 +40,9 @@
     </subsystem>
 
     <!-- Communication -->
-    <subsystem name="telemetry" type="xbee_api"/>
+    <subsystem name="telemetry" type="transparent">
+      <configure name="MODEM_BAUD" value="B115200"/>
+    </subsystem>
 
     <!-- Sensors -->
     <subsystem name="imu" type="aspirin_v2.1"/>
