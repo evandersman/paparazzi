@@ -23,19 +23,12 @@
 #include "high_speed_logger_spi_link.h"
 
 #include "subsystems/imu.h"
-#include "subsystems/commands.h"
 #include "mcu_periph/spi.h"
-#include "state.h"
-#include "firmwares/fixedwing/stabilization/stabilization_indi.h"
-#include "modules/sensors/turbulence_adc.h"
-#include "modules/sensors/potentiometer_adc.h"
-#include "modules/servo_controller/servo_controller.h"
-#include "arch/stm32/subsystems/actuators/actuators_pwm_arch.h"
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
 struct spi_transaction high_speed_logger_spi_link_transaction;
 
-static volatile bool_t high_speed_logger_spi_link_ready = TRUE;
+static volatile bool high_speed_logger_spi_link_ready = true;
 
 static void high_speed_logger_spi_link_trans_cb(struct spi_transaction *trans);
 
@@ -61,9 +54,9 @@ void high_speed_logger_spi_link_init(void)
 void high_speed_logger_spi_link_periodic(void)
 {
   if (high_speed_logger_spi_link_ready) {
-    high_speed_logger_spi_link_ready = FALSE;
+    high_speed_logger_spi_link_ready = false;
 
-    /* Data which will be logged for servo model */
+/* Data which will be logged for servo model */
     high_speed_logger_spi_link_data.cw           = ANGLE_BFP_OF_REAL(left_wing.pwm_cw);
     high_speed_logger_spi_link_data.ccw          = ANGLE_BFP_OF_REAL(left_wing.pwm_ccw);
     high_speed_logger_spi_link_data.potscaled    = ANGLE_BFP_OF_REAL(pot_left_wing_scaled);
@@ -119,7 +112,6 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.command_turb_l = commands[4];
     high_speed_logger_spi_link_data.command_turb_r = commands[5];
 */
-
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
   }
 
@@ -128,7 +120,7 @@ void high_speed_logger_spi_link_periodic(void)
 
 static void high_speed_logger_spi_link_trans_cb(struct spi_transaction *trans __attribute__((unused)))
 {
-  high_speed_logger_spi_link_ready = TRUE;
+  high_speed_logger_spi_link_ready = true;
 }
 
 
