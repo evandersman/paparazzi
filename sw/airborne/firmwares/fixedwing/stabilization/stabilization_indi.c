@@ -36,16 +36,18 @@
 #include CTRL_TYPE_H
 #include "firmwares/fixedwing/autopilot.h"
 
-float G;
+float G_ROLL;
+float G_PITCH;
 float tau_act_dyn_p;
 float indi_omega;
 float indi_zeta;
 float indi_omega_r;
 
-float servo_input[SERVO_DELAY];
-float servo_delayed_input;
+struct servo_input[SERVO_DELAY];
+struct servo_delayed_input;
 uint8_t servo_delay;
-uint8_t delay;
+uint8_t delay_p;
+uint8_t delay_q;
 
 struct ReferenceSystem reference_acceleration = {STABILIZATION_INDI_REF_ERR_P,
          STABILIZATION_INDI_REF_ERR_Q,
@@ -218,7 +220,8 @@ void h_ctl_init(void)
   nav_ratio = 0;
 #endif
 
-  G = STABILIZATION_INDI_G;
+  G_ROLL = STABILIZATION_INDI_G_ROLL;
+  G_PITCH = STABILIZATION_INDI_G_PITCH;
   tau_act_dyn_p = STABILIZATION_INDI_ACT_DYN_P;
   indi_omega = STABILIZATION_INDI_FILT_OMEGA;
   indi_zeta = STABILIZATION_INDI_FILT_ZETA;
@@ -240,11 +243,15 @@ void h_ctl_init(void)
 #endif
 
   servo_delay = SERVO_DELAY;
-  delay = 0;
-  servo_delayed_input = 0.;
+  delay_p = 0;
+  delay_q = 0;
+  servo_delayed_input.p = 0.;
+  servo_delayed_input.q = 0.;
   for(int8_t i = 0; i < servo_delay - 1; i++){
-    servo_input[i] = 0.;
-    delay = i;
+    servo_input[i].p = 0.;
+    servo_input[i].q = 0.;
+    delay_p = i;
+    delay_q = i;
   }
 }
 
@@ -403,9 +410,9 @@ inline static void h_ctl_roll_loop(void)
 
   // Incremented in angular acceleration requires increment in control input
   #if PROBES_FF_ANG_ACC
-  indi.du.p = 1.0/G * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p - probes_ang_acc);
+  indi.du.p = 1.0/G_ROLL * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p - probes_ang_acc);
   #else
-  indi.du.p = 1.0/G * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p);
+  indi.du.p = 1.0/G_ROLL * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p);
   #endif
 
   // Add the increment to the total control input
@@ -414,27 +421,22 @@ inline static void h_ctl_roll_loop(void)
   // Bound the total control input
   Bound(indi.u_in.p, -4500, 4500);
 
-  servo_input[delay] = indi.u_in.p;
+  servo_input[delay_p].p = indi.u_in.p;
 
-  if (delay < servo_delay - 1) {
-  delay++;
+  if (delay_p < servo_delay - 1) {
+  delay_p++;
   } else {
-  delay = 0;
+  delay_p = 0;
   }
-  servo_delayed_input = servo_input[delay];
+  servo_delayed_input.p = servo_input[delay_p].p;
 
-  indi.u_act_dyn.p = indi.u_act_dyn.p + 0.117 * (servo_delayed_input - indi.u_act_dyn.p);
+  indi.u_act_dyn.p = indi.u_act_dyn.p + 0.117 * (servo_delayed_input.p - indi.u_act_dyn.p);
   if (indi.u_act_dyn.p > indi.u_act_dyn.p + 0.098){
     indi.u_act_dyn.p = indi.u_act_dyn.p + 0.098;
   }
   if (indi.u_act_dyn.p < indi.u_act_dyn.p - 0.098){
     indi.u_act_dyn.p = indi.u_act_dyn.p - 0.098;
   }
-
-  // Propagate input filters
-  // First order actuator dynamics
-  //indi.u_act_dyn.p = indi.u_act_dyn.p + tau_act_dyn_p * (indi.u_in.p - indi.u_act_dyn.p);
-  
 
   // Sensor filter
   indi.u.p = indi.u.p + indi.udot.p * 1.0 / CONTROL_FREQUENCY;
@@ -460,20 +462,6 @@ inline static void h_ctl_roll_loop(void)
   //RunOnceEvery(500, DOWNLINK_SEND_STAB_ATTITUDE_INDI(DefaultChannel, DefaultDevice, &indi.angular_accel_ref.p, &indi.angular_accel_ref.q, &indi.angular_accel_ref.r, &indi.du.p, &indi.du.q, &indi.du.r, &indi.u_in.p, &indi.u_in.q, &indi.u_in.r));
 
 }
-
-// This is a simple second order low pass filter
-/*void stabilization_indi_second_order_filter(struct FloatRates *input, struct FloatRates *filter_ddx,
-    struct FloatRates *filter_dx, struct FloatRates *filter_x, float omega, float zeta, float omega_r)
-{
-  float_rates_integrate_fi(filter_x, filter_dx, 1.0 / PERIODIC_FREQUENCY);
-  float_rates_integrate_fi(filter_dx, filter_ddx, 1.0 / PERIODIC_FREQUENCY);
-  float omega2 = omega * omega;
-  float omega2_r = omega_r * omega_r;
-
-  filter_ddx->p = -filter_dx->p * 2 * zeta * omega   + (input->p - filter_x->p) * omega2;    \
-  filter_ddx->q = -filter_dx->q * 2 * zeta * omega   + (input->q - filter_x->q) * omega2;    \
-  filter_ddx->r = -filter_dx->r * 2 * zeta * omega_r + (input->r - filter_x->r) * omega2_r;
-}*/
 
 #ifdef LOITER_TRIM
 
@@ -507,37 +495,73 @@ inline static void h_ctl_pitch_loop(void)
 {
   static float last_err;
   struct FloatEulers *att = stateGetNedToBodyEulers_f();
-  /* sanity check */
+  float err = 0;
+
+  // calculate the attitude error
+  // sanity check
   if (h_ctl_elevator_of_roll < 0.) {
     h_ctl_elevator_of_roll = 0.;
   }
-
   h_ctl_pitch_loop_setpoint =  h_ctl_pitch_setpoint + h_ctl_elevator_of_roll / h_ctl_pitch_pgain * fabs(att->phi);
-
-  float err = 0;
-
-#ifdef USE_AOA
-  switch (h_ctl_pitch_mode) {
-    case H_CTL_PITCH_MODE_THETA:
-      err = att->theta - h_ctl_pitch_loop_setpoint;
-      break;
-    case H_CTL_PITCH_MODE_AOA:
-      err = stateGetAngleOfAttack_f() - h_ctl_pitch_loop_setpoint;
-      break;
-    default:
-      err = att->theta - h_ctl_pitch_loop_setpoint;
-      break;
-  }
-#else //NO_AOA
   err = att->theta - h_ctl_pitch_loop_setpoint;
-#endif
 
+  //Propagate the second order filter on the gyroscopes
+  float omega2 = indi_omega * indi_omega;
+  indi.filtered_rate.q = indi.filtered_rate.q + indi.filtered_rate_deriv.q * 1.0 / CONTROL_FREQUENCY;
+  indi.filtered_rate_deriv.q =  indi.filtered_rate_deriv.q + indi.filtered_rate_2deriv.q * 1.0 / CONTROL_FREQUENCY;
+  indi.filtered_rate_2deriv.q = -indi.filtered_rate_deriv.q * 2 * indi_zeta * indi_omega   + (stateGetBodyRates_f()->q - indi.filtered_rate.q) * omega2;
 
-  float d_err = err - last_err;
-  last_err = err;
-  float cmd = -h_ctl_pitch_pgain * (err + h_ctl_pitch_dgain * d_err);
-#ifdef LOITER_TRIM
-  cmd += loiter();
-#endif
-  h_ctl_elevator_setpoint = TRIM_PPRZ(cmd);
+  // Calculate required angular acceleration
+  indi.angular_accel_ref.q = reference_acceleration.err_q * err
+                             + reference_acceleration.rate_q * stateGetBodyRates_f()->q;
+
+  // Incremented in angular acceleration requires increment in control input
+  indi.du.q = 1.0/G_PITCH * (indi.angular_accel_ref.q + indi.filtered_rate_deriv.q);
+
+  // Add the increment to the total control input
+  indi.u_in.q = indi.u.q + indi.du.q;
+
+  // Bound the total control input
+  Bound(indi.u_in.q, -4500, 4500);
+
+  servo_input.q[delay_q] = indi.u_in.q;
+
+  if (delay_q < servo_delay - 1) {
+  delay_q++;
+  } else {
+  delay_q = 0;
+  }
+  servo_delayed_input.q = servo_input.q[delay_q];
+
+  indi.u_act_dyn.q = indi.u_act_dyn.q + 0.117 * (servo_delayed_input.q - indi.u_act_dyn.q);
+  if (indi.u_act_dyn.q > indi.u_act_dyn.q + 0.098){
+    indi.u_act_dyn.q = indi.u_act_dyn.q + 0.098;
+  }
+  if (indi.u_act_dyn.q < indi.u_act_dyn.q - 0.098){
+    indi.u_act_dyn.q = indi.u_act_dyn.q - 0.098;
+  }
+  
+  // Sensor filter
+  indi.u.q = indi.u.q + indi.udot.q * 1.0 / CONTROL_FREQUENCY;
+  indi.udot.q =  indi.udot.q + indi.udotdot.q * 1.0 / CONTROL_FREQUENCY;
+  indi.udotdot.q = -indi.udot.q * 2 * indi_zeta * indi_omega   + (indi.u_act_dyn.q - indi.u.q) * omega2;
+
+  // Don't increment if thrust is off
+  if (v_ctl_throttle_setpoint < 2500) {
+    FLOAT_RATES_ZERO(indi.u);
+    FLOAT_RATES_ZERO(indi.du);
+    FLOAT_RATES_ZERO(indi.u_act_dyn);
+    FLOAT_RATES_ZERO(indi.u_in);
+    FLOAT_RATES_ZERO(indi.udot);
+    FLOAT_RATES_ZERO(indi.udotdot);
+    float d_err = err - last_err;
+    last_err = err;
+    float cmd = -h_ctl_pitch_pgain * (err + h_ctl_pitch_dgain * d_err);
+    h_ctl_elevator_setpoint = TRIM_PPRZ(cmd);
+  }
+  else {
+  /* INDI feedback */
+    h_ctl_aileron_setpoint = TRIM_PPRZ(indi.u_in.q);
+  }
+
 }
