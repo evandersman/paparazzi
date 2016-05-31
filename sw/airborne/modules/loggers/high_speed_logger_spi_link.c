@@ -63,15 +63,18 @@ void high_speed_logger_spi_link_periodic(void)
   if (high_speed_logger_spi_link_ready) {
     high_speed_logger_spi_link_ready = false;
 
-/* Data which will be logged for servo model */
-    high_speed_logger_spi_link_data.cw           = ANGLE_BFP_OF_REAL(left_wing.pwm_cw);
+    /* Data which will be logged for servo model */
+    /*high_speed_logger_spi_link_data.cw           = ANGLE_BFP_OF_REAL(left_wing.pwm_cw);
     high_speed_logger_spi_link_data.ccw          = ANGLE_BFP_OF_REAL(left_wing.pwm_ccw);
     high_speed_logger_spi_link_data.potscaled    = ANGLE_BFP_OF_REAL(pot_left_wing_scaled);
     high_speed_logger_spi_link_data.potraw       = potentiometer_adc_raw_left;
     high_speed_logger_spi_link_data.servoerr     = ANGLE_BFP_OF_REAL(left_wing.err);
     high_speed_logger_spi_link_data.pwml         = actuators_pwm_values[PWM_SERVO_2];
     high_speed_logger_spi_link_data.pwmr         = actuators_pwm_values[PWM_SERVO_3];
+    high_speed_logger_spi_link_data.cmd_throttle = commands[0];
     high_speed_logger_spi_link_data.cmd_roll     = commands[1];
+    high_speed_logger_spi_link_data.cmd_pitch    = commands[2];
+    high_speed_logger_spi_link_data.cmd_yaw      = commands[3];*/
 
     /* Data which will be logged for servo model */
     /*high_speed_logger_spi_link_data.uact       = ANGLE_BFP_OF_REAL(indi.u_act_dyn.p);
@@ -83,12 +86,14 @@ void high_speed_logger_spi_link_periodic(void)
 
     /*high_speed_logger_spi_link_data.phi        	    = stateGetNedToBodyEulers_i()->phi;
     high_speed_logger_spi_link_data.p               = state.body_rates_i.p;
+    high_speed_logger_spi_link_data.q               = state.body_rates_i.q;
+    high_speed_logger_spi_link_data.r               = state.body_rates_i.r;
     high_speed_logger_spi_link_data.cmd_roll        = commands[1];*/
 
     /* Indi parameters */
 
-    // outer loop gains
-    //high_speed_logger_spi_link_data.pgain      = ANGLE_BFP_OF_REAL(reference_acceleration.err_p);
+    /*// outer loop gains
+    high_speed_logger_spi_link_data.pgain      = ANGLE_BFP_OF_REAL(reference_acceleration.err_p);
     high_speed_logger_spi_link_data.dgain      = ANGLE_BFP_OF_REAL(reference_acceleration.rate_p);
     // accelerations
     high_speed_logger_spi_link_data.ref_acc    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);
@@ -98,7 +103,7 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.g          = ANGLE_BFP_OF_REAL(G);
     // indi commands
     high_speed_logger_spi_link_data.u_p        = ANGLE_BFP_OF_REAL(indi.u.p);
-    high_speed_logger_spi_link_data.uin        = ANGLE_BFP_OF_REAL(indi.u_in.p);
+    high_speed_logger_spi_link_data.uin        = ANGLE_BFP_OF_REAL(indi.u_in.p);*/
 
     /* Pid parameters */
 /*
@@ -119,6 +124,29 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.command_turb_l = commands[4];
     high_speed_logger_spi_link_data.command_turb_r = commands[5];
 */
+
+    //Data which will be logged for pitch and outer loop control
+    high_speed_logger_spi_link_data.phi        	    = stateGetNedToBodyEulers_i()->phi;
+    high_speed_logger_spi_link_data.theta           = stateGetNedToBodyEulers_i()->theta;
+    high_speed_logger_spi_link_data.psi        	    = stateGetNedToBodyEulers_i()->psi;
+
+    high_speed_logger_spi_link_data.p               = state.body_rates_i.p;
+    high_speed_logger_spi_link_data.q               = state.body_rates_i.q;
+    high_speed_logger_spi_link_data.r               = state.body_rates_i.r;
+
+    high_speed_logger_spi_link_data.cmd_throttle    = commands[0];
+    high_speed_logger_spi_link_data.cmd_roll        = commands[1];
+    high_speed_logger_spi_link_data.cmd_pitch       = commands[2];
+
+    high_speed_logger_spi_link_data.pot_elev        = potentiometer_adc_raw_right;
+
+    high_speed_logger_spi_link_data.acc_ned_x       = stateGetAccelNed_f()->x;
+    high_speed_logger_spi_link_data.acc_ned_y       = stateGetAccelNed_f()->y;
+    high_speed_logger_spi_link_data.acc_ned_z       = stateGetAccelNed_f()->z;
+
+    high_speed_logger_spi_link_data.probe_press_l   = ANGLE_BFP_OF_REAL(pitch_left_adc.scaled);
+    high_speed_logger_spi_link_data.airspeed_r      = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);
+
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
   }
 

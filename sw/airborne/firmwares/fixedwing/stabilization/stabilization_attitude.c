@@ -34,6 +34,7 @@
 #include "generated/airframe.h"
 #include CTRL_TYPE_H
 #include "firmwares/fixedwing/autopilot.h"
+#include "subsystems/radio_control.h"
 
 /* outer loop parameters */
 float h_ctl_course_setpoint; /* rad, CW/north */
@@ -48,6 +49,7 @@ bool h_ctl_disabled;
 
 /* AUTO1 rate mode */
 bool h_ctl_auto1_rate;
+int32_t step_timer;
 
 
 /* inner roll loop parameters */
@@ -471,12 +473,47 @@ inline static void h_ctl_pitch_loop(void)
   err = att->theta - h_ctl_pitch_loop_setpoint;
 #endif
 
-
   float d_err = err - last_err;
   last_err = err;
   float cmd = -h_ctl_pitch_pgain * (err + h_ctl_pitch_dgain * d_err);
 #ifdef LOITER_TRIM
   cmd += loiter();
+#endif
+
+#ifdef STEP_INPUT_AUTO1_PITCH
+#warning "Using step input on auto1!!! Only for testing/experiment!!"
+  if((radio_control.values[6] > 0) && (step_timer < 4096)) {
+    if(step_timer < 512) {
+      cmd = -4500;
+    }
+    else if(step_timer > 511 && step_timer < 1024)  {
+      cmd = 0;
+    }
+    else if(step_timer > 1023 && step_timer < 1536)  {
+      cmd = 4500;
+    }
+    else if(step_timer > 1535 && step_timer < 2048)  {
+      cmd = 0;
+    }
+    else if(step_timer > 2047 && step_timer < 2560)  {
+      cmd = 4500;
+    }
+    else if(step_timer > 2559 && step_timer < 3072)  {
+      cmd = -4500;
+    }
+    else if(step_timer > 3071 && step_timer < 3584)  {
+      cmd = 4500;
+    }
+    else if(step_timer > 3583 && step_timer < 4096)  {
+      cmd = 0;
+    }
+    step_timer = step_timer + 1;
+    h_ctl_elevator_setpoint = TRIM_PPRZ(cmd);
+  }
+  else if(radio_control.values[6] < 0) {
+    //normal flying
+    step_timer = 0;
+  }
 #endif
   h_ctl_elevator_setpoint = TRIM_PPRZ(cmd);
 }

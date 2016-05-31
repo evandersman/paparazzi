@@ -35,7 +35,7 @@ struct PACKED high_speed_logger_spi_link_data {
 
 
   int32_t id;           // 1
-
+/*
   int32_t cw;
   int32_t ccw;
   int32_t potscaled;
@@ -43,25 +43,30 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t servoerr;
   int32_t pwml;
   int32_t pwmr;
+  int32_t cmd_throttle;
   int32_t cmd_roll;
-
+  int32_t cmd_pitch;
+  int32_t cmd_yaw;
+*/
 /*  int32_t uact;
   int32_t udelay;
   int32_t potleft;
-  int32_t potright;
-
+  int32_t potright;*/
+/*
   int32_t phi;          // 6
   int32_t p;
-  int32_t cmd_roll;*/
-
-  //int32_t pgain;        // 9
+  int32_t q;
+  int32_t r;
+  int32_t cmd_roll;
+*/
+  /*int32_t pgain;        // 9
   int32_t dgain;
   int32_t ref_acc;
   int32_t filt_acc;     // 12
   int32_t command_t;
   int32_t g;
   int32_t u_p;
-  int32_t uin;
+  int32_t uin;*/
 
 /*
   int32_t offset_pl;      // 5
@@ -77,6 +82,24 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t command_turb_l;   // 15
   int32_t command_turb_r;   // 16
 */
+
+//logging for outer loop control
+
+  int32_t phi;
+  int32_t theta;
+  int32_t psi;
+  int32_t p;
+  int32_t q;
+  int32_t r;
+  int32_t cmd_throttle;
+  int32_t cmd_roll;
+  int32_t cmd_pitch;
+  int32_t pot_elev;
+  int32_t acc_ned_x;
+  int32_t acc_ned_y;
+  int32_t acc_ned_z;
+  int32_t probe_press_l;
+  int32_t airspeed_r;
 };
 
 #endif /* HIGH_SPEED_LOGGER_SPI_LINK_H_ */

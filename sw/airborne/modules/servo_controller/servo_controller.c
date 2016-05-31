@@ -84,13 +84,13 @@ void servo_controller_update(void)
   pot_right_wing_scaled = -(potentiometer_adc_raw_right - right_wing.offset) * right_wing.gain;
 
 #ifdef SERVO_DEBUG
-  if (servo_count < 1000) {
-
   if (servo_count < 500) {
+
+  if (servo_count < 250) {
     left_wing.pwm_cw = -6000;
     left_wing.pwm_ccw = -9600;
   }
-  if (servo_count > 499) {
+  if (servo_count > 249) {
   left_wing.pwm_cw = -9600;
   left_wing.pwm_ccw = -6000;
   }
@@ -140,5 +140,38 @@ void servo_controller_update(void)
     right_wing.pwm_ccw = -9600.;
   }
 #endif
+/*
+  // position error
+  left_wing.err = pot_left_wing_scaled - commands[1];
+  right_wing.err = pot_right_wing_scaled - commands[1];
+
+  //Propagate the second order filter on the potentiometer output
+  float omega2 = indi_omega * indi_omega;
+  filtered_pos.left_wing  = filtered_pos.left_wing + filtered_rate.left_wing * 1.0 / CONTROL_FREQUENCY;
+  filtered_rate.left_wing = filtered_rate.left_wing + filtered_acc.left_wing * 1.0 / CONTROL_FREQUENCY;
+  filtered_acc.left_wing  = -filtered_rate.left_wing * 2 * indi_zeta * indi_omega   + (pot_left_wing_scaled - filtered_pos.left_wing) * omega2;
+
+  // Calculate required servo rate
+  rate_ref.left_wing = reference_rate.err_p * left_wing.err;
+
+  // Increments in rate require increments in pwm
+  dpwm.left_wing = 1.0/G_SERVO * (rate_ref.left_wing - filtered_rate.left_wing);
+
+  // Add the increment to the total control input
+  pwm_in.left_wing = pwm.left_wing + dpwm.left_wing;
+
+  // Bound the total control input
+  Bound(pwm_in.left_wing, -4500, 4500);
+
+  // First order actuator dynamics
+  motor_dyn.left_wing = motor_dyn.left_wing + tau_act_dyn_p * (pwm_in.left_wing - motor_dyn.left_wing);
+
+  // Sensor filter
+  pwm.left_wing = pwm.left_wing + pwmdot.left_wing * 1.0 / CONTROL_FREQUENCY;
+  pwmdot.left_wing =  pwmdot.left_wing + pwmdotdot.left_wing * 1.0 / CONTROL_FREQUENCY;
+  pwmdotdot.left_wing = -pwmdot.left_wing * 2 * indi_zeta * indi_omega   + (motor_dyn.left_wing - pwm.left_wing) * omega2;
+
+  // INDI feedback
+  left_wing.cmd = pwm_in.left_wing;*/
 
 }

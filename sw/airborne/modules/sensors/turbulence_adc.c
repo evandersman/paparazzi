@@ -27,7 +27,7 @@
 #include "mcu_periph/adc.h"
 #include "mcu_periph/uart.h"
 #include BOARD_CONFIG
-#include "messages.h"
+#include "pprzlink/messages.h"
 #include "subsystems/datalink/downlink.h"
 #include "generated/airframe.h"
 #include "state.h"
@@ -173,7 +173,7 @@ void turbulence_adc_update(void)
   ap_state->commands[COMMAND_TURB_RIGHT] = cmd_trimmed_right;
   #endif
 
-  RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &pitch_left_adc.filtered, &pitch_left_adc.scaled, &pitch_right_adc.filtered, &pitch_right_adc.scaled));
+  RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &airspeed_left_adc.scaled, &pitch_left_adc.scaled, &airspeed_right_adc.scaled, &pitch_right_adc.scaled));
   //DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.calibration, &pitch_left_adc.calibration, &airspeed_right_adc.calibration, &pitch_right_adc.calibration);
   //DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &cmd_trimmed_left, &cmd_left, &cmd_trimmed_right, &cmd_right);
 
