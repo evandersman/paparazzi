@@ -69,10 +69,12 @@
 
   <servos driver="Pwm">
     <servo name="THROTTLE" no="0" min="0" neutral="500" max="1000"/>
-    <servo name="LEFTCW" no="1" min="0" neutral="500" max="1000"/>
-    <servo name="LEFTCCW" no="2" min="0" neutral="500" max="1000"/>
-    <servo name="ELEVATOR" no="3" min="0" neutral="500" max="1000"/>
-    <servo name="RUDDER" no="4" min="0" neutral="500" max="1000"/>
+    <servo name="LEFTCW" no="2" min="0" neutral="500" max="1000"/>
+    <servo name="LEFTCCW" no="3" min="0" neutral="500" max="1000"/>
+    <servo name="RIGHTCW" no="4" min="0" neutral="500" max="1000"/>
+    <servo name="RIGHTCCW" no="5" min="0" neutral="500" max="1000"/>
+    <servo name="ELEVATOR" no="6" min="0" neutral="500" max="1000"/>
+    <servo name="RUDDER" no="7" min="0" neutral="500" max="1000"/>
   </servos>
 
   <!--servos>
@@ -107,6 +109,8 @@
     <call fun="servo_controller_update()"/>
     <set servo="LEFTCW" value="left_wing.pwm_cw"/>
     <set servo="LEFTCCW" value="left_wing.pwm_ccw"/>
+    <set servo="RIGHTCW" value="right_wing.pwm_cw"/>
+    <set servo="RIGHTCCW" value="right_wing.pwm_ccw"/>
     <set servo="THROTTLE" value="@THROTTLE"/>
     <set servo="ELEVATOR" value="@PITCH"/>
     <set servo="RUDDER" value="@YAW"/>
@@ -239,16 +243,16 @@
     <define name="SERVO_DELAY" value="7"/>
     <!--define name="PROBES_FF_ANG_ACC" value="1"/-->
     <define name="COMMAND_PITCH_TRIM" value="0."/>
-    <!--define name="SERVO_PGAIN" value="6."/>
+    <define name="SERVO_PGAIN" value="6."/>
+    <define name="SERVO_DGAIN" value="30."/>
+    <define name="SERVO_IGAIN" value="0."/>
+    <!--define name="SERVO_PGAIN" value="10."/>
     <define name="SERVO_DGAIN" value="30."/>
     <define name="SERVO_IGAIN" value="0."/-->
-    <define name="SERVO_PGAIN" value="18."/>
-    <define name="SERVO_DGAIN" value="50."/>
-    <define name="SERVO_IGAIN" value="0."/>
     <define name="POT_LEFT_OFFSET" value="1735."/>
     <define name="POT_LEFT_GAIN" value="16.8"/>
-    <define name="POT_RIGHT_OFFSET" value="0."/>
-    <define name="POT_RIGHT_GAIN" value="1."/>
+    <define name="POT_RIGHT_OFFSET" value="1735."/>
+    <define name="POT_RIGHT_GAIN" value="16.8"/>
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">
