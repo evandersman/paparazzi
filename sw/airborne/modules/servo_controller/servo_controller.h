@@ -31,15 +31,29 @@
 struct servo_data {
   float offset;
   float gain;
+
   float err;
   float d_err;
   float sum_err;
+
   float cmd;
   float pwm_cw;
   float pwm_ccw;
+
   float pgain;
   float dgain;
   float igain;
+
+  float filtered_pos;
+  float filtered_rate;
+  float filtered_acc;
+  float rate_ref;
+  float dpwm;
+  float pwm;
+  float pwmdot;
+  float pwmdotdot;
+  float pwm_in;
+  float motor_dyn;
 };
 
 extern struct servo_data left_wing;
@@ -47,6 +61,9 @@ extern struct servo_data right_wing;
 
 extern float pot_left_wing_scaled;
 extern float pot_right_wing_scaled;
+
+extern float reference_rate_pgain;
+extern float tau_motor_dyn_p;
 
 extern float left_wing_last_err;
 extern float right_wing_last_err;

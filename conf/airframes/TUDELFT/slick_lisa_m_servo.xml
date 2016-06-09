@@ -26,6 +26,7 @@
     <define name="LOITER_TRIM"/-->
     <!--define name="STRONG_WIND"/-->
     <!--define name="SERVO_DEBUG"/-->
+    <define name="INDI_SERVO_CONTROL"/>
 
     <subsystem name="radio_control" type="spektrum">
       <define name="RADIO_KILL_SWITCH" value="RADIO_AUX2"/>
@@ -63,7 +64,7 @@
   <modules main_freq="512">
     <!--load name="turbulence_adc.xml"/-->
     <load name="potentiometer_adc.xml"/>
-    <!--load name="logger_spi_link.xml"/-->
+    <load name="logger_spi_link.xml"/>
     <load name="servo_controller.xml"/>
   </modules>
 
@@ -244,15 +245,21 @@
     <!--define name="PROBES_FF_ANG_ACC" value="1"/-->
     <define name="COMMAND_PITCH_TRIM" value="0."/>
     <define name="SERVO_PGAIN" value="6."/>
-    <define name="SERVO_DGAIN" value="30."/>
-    <define name="SERVO_IGAIN" value="0."/>
+    <define name="SERVO_DGAIN" value="25."/>
+    <define name="SERVO_IGAIN" value="2."/>
+    <define name="SERVO_SUM_ERR_MAX" value="3000"/>
     <!--define name="SERVO_PGAIN" value="10."/>
     <define name="SERVO_DGAIN" value="30."/>
     <define name="SERVO_IGAIN" value="0."/-->
-    <define name="POT_LEFT_OFFSET" value="1735."/>
+    <define name="POT_LEFT_OFFSET" value="1741."/>
     <define name="POT_LEFT_GAIN" value="16.8"/>
-    <define name="POT_RIGHT_OFFSET" value="1735."/>
+    <define name="POT_RIGHT_OFFSET" value="1733."/>
     <define name="POT_RIGHT_GAIN" value="16.8"/>
+    <define name="INDI_SERVO_PGAIN" value="60.0"/>
+    <define name="TAU_SERVO_MOTOR" value="0.19"/>
+    <define name="G_SERVO" value="13.0"/>
+    <define name="SERVO_OMEGA" value="20.0"/>
+    <define name="SERVO_ZETA" value="0.65"/>
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">
