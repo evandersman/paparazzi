@@ -35,6 +35,7 @@
 #include "generated/airframe.h"
 #include CTRL_TYPE_H
 #include "firmwares/fixedwing/autopilot.h"
+#include "subsystems/radio_control.h"
 
 float G_ROLL;
 float G_PITCH;
@@ -43,8 +44,8 @@ float indi_omega;
 float indi_zeta;
 float indi_omega_r;
 
-struct servo_input[SERVO_DELAY];
-struct servo_delayed_input;
+struct FloatRates servo_input[SERVO_DELAY];
+struct FloatRates servo_delayed_input;
 uint8_t servo_delay;
 uint8_t delay_p;
 uint8_t delay_q;
@@ -239,7 +240,7 @@ void h_ctl_init(void)
   FLOAT_RATES_ZERO(indi.udotdot);
 
 #if PERIODIC_TELEMETRY
-  register_periodic_telemetry(DefaultPeriodic, "CALIBRATION", send_calibration);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_CALIBRATION, send_calibration);
 #endif
 
   servo_delay = SERVO_DELAY;
@@ -444,7 +445,7 @@ inline static void h_ctl_roll_loop(void)
   indi.udotdot.p = -indi.udot.p * 2 * indi_zeta * indi_omega   + (indi.u_act_dyn.p - indi.u.p) * omega2;
 
   // Don't increment if thrust is off
-  if (v_ctl_throttle_setpoint < 2500) {
+  if (v_ctl_throttle_setpoint < 2500 || radio_control.values[6] < 0) {
     FLOAT_RATES_ZERO(indi.u);
     FLOAT_RATES_ZERO(indi.du);
     FLOAT_RATES_ZERO(indi.u_act_dyn);
@@ -460,7 +461,6 @@ inline static void h_ctl_roll_loop(void)
   }
 
   //RunOnceEvery(500, DOWNLINK_SEND_STAB_ATTITUDE_INDI(DefaultChannel, DefaultDevice, &indi.angular_accel_ref.p, &indi.angular_accel_ref.q, &indi.angular_accel_ref.r, &indi.du.p, &indi.du.q, &indi.du.r, &indi.u_in.p, &indi.u_in.q, &indi.u_in.r));
-
 }
 
 #ifdef LOITER_TRIM
@@ -503,7 +503,7 @@ inline static void h_ctl_pitch_loop(void)
     h_ctl_elevator_of_roll = 0.;
   }
   h_ctl_pitch_loop_setpoint =  h_ctl_pitch_setpoint + h_ctl_elevator_of_roll / h_ctl_pitch_pgain * fabs(att->phi);
-  err = att->theta - h_ctl_pitch_loop_setpoint;
+  err = h_ctl_pitch_loop_setpoint - att->theta;
 
   //Propagate the second order filter on the gyroscopes
   float omega2 = indi_omega * indi_omega;
@@ -513,10 +513,10 @@ inline static void h_ctl_pitch_loop(void)
 
   // Calculate required angular acceleration
   indi.angular_accel_ref.q = reference_acceleration.err_q * err
-                             + reference_acceleration.rate_q * stateGetBodyRates_f()->q;
+                             - reference_acceleration.rate_q * stateGetBodyRates_f()->q;
 
   // Incremented in angular acceleration requires increment in control input
-  indi.du.q = 1.0/G_PITCH * (indi.angular_accel_ref.q + indi.filtered_rate_deriv.q);
+  indi.du.q = 1.0/G_PITCH * (indi.angular_accel_ref.q - indi.filtered_rate_deriv.q); // THIS SHOULD HAVE BEEN A MINUS! CHECK THE SIGNS!
 
   // Add the increment to the total control input
   indi.u_in.q = indi.u.q + indi.du.q;
@@ -524,14 +524,14 @@ inline static void h_ctl_pitch_loop(void)
   // Bound the total control input
   Bound(indi.u_in.q, -4500, 4500);
 
-  servo_input.q[delay_q] = indi.u_in.q;
+  servo_input[delay_q].q = indi.u_in.q;
 
   if (delay_q < servo_delay - 1) {
   delay_q++;
   } else {
   delay_q = 0;
   }
-  servo_delayed_input.q = servo_input.q[delay_q];
+  servo_delayed_input.q = servo_input[delay_q].q;
 
   indi.u_act_dyn.q = indi.u_act_dyn.q + 0.117 * (servo_delayed_input.q - indi.u_act_dyn.q);
   if (indi.u_act_dyn.q > indi.u_act_dyn.q + 0.098){
@@ -547,13 +547,14 @@ inline static void h_ctl_pitch_loop(void)
   indi.udotdot.q = -indi.udot.q * 2 * indi_zeta * indi_omega   + (indi.u_act_dyn.q - indi.u.q) * omega2;
 
   // Don't increment if thrust is off
-  if (v_ctl_throttle_setpoint < 2500) {
+  if (v_ctl_throttle_setpoint < 2500 || radio_control.values[6] < 0) {
     FLOAT_RATES_ZERO(indi.u);
     FLOAT_RATES_ZERO(indi.du);
     FLOAT_RATES_ZERO(indi.u_act_dyn);
     FLOAT_RATES_ZERO(indi.u_in);
     FLOAT_RATES_ZERO(indi.udot);
     FLOAT_RATES_ZERO(indi.udotdot);
+    err =  att->theta - h_ctl_pitch_loop_setpoint;
     float d_err = err - last_err;
     last_err = err;
     float cmd = -h_ctl_pitch_pgain * (err + h_ctl_pitch_dgain * d_err);
@@ -561,7 +562,7 @@ inline static void h_ctl_pitch_loop(void)
   }
   else {
   /* INDI feedback */
-    h_ctl_aileron_setpoint = TRIM_PPRZ(indi.u_in.q);
+    h_ctl_elevator_setpoint = TRIM_PPRZ(indi.u_in.q);
   }
 
 }

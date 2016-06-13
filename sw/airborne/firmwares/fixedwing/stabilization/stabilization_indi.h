@@ -45,8 +45,8 @@ extern float indi_omega_r;
 extern uint8_t servo_delay;
 extern uint8_t delay_p;
 extern uint8_t delay_q;
-struct FloatRates servo_input[SERVO_DELAY];
-struct FloatRates servo_delayed_input;
+extern struct FloatRates servo_input[SERVO_DELAY];
+extern struct FloatRates servo_delayed_input;
 
 struct ReferenceSystem {
   float err_p;
