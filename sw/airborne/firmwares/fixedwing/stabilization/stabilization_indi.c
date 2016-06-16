@@ -27,6 +27,7 @@
  */
 
 #include "firmwares/fixedwing/stabilization/stabilization_indi.h"
+#include "firmwares/fixedwing/stabilization/stabilization_attitude.h"
 #include "modules/sensors/turbulence_adc.h"
 #include "std.h"
 #include "led.h"

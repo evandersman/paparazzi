@@ -27,11 +27,13 @@
 #include "mcu_periph/spi.h"
 #include "state.h"
 #include "firmwares/fixedwing/stabilization/stabilization_indi.h"
+#include "firmwares/fixedwing/stabilization/stabilization_attitude.h"
 #include "modules/sensors/turbulence_adc.h"
 #include "modules/sensors/potentiometer_adc.h"
 #include "modules/servo_controller/servo_controller.h"
 #include "arch/stm32/subsystems/actuators/actuators_pwm_arch.h"
 #include "subsystems/radio_control.h"
+#include "firmwares/fixedwing/guidance/energy_ctrl.h"
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
 struct spi_transaction high_speed_logger_spi_link_transaction;
@@ -138,27 +140,74 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.command_turb_r = commands[5];
 */
 
-    //Data which will be logged for pitch and outer loop control
-    high_speed_logger_spi_link_data.phi        	    = stateGetNedToBodyEulers_i()->phi;
-    high_speed_logger_spi_link_data.theta           = stateGetNedToBodyEulers_i()->theta;
-
+    //Data which will be logged for roll INDI loop control
+    /*high_speed_logger_spi_link_data.phi        	    = stateGetNedToBodyEulers_i()->phi;
     high_speed_logger_spi_link_data.p               = state.body_rates_i.p;
+
+    high_speed_logger_spi_link_data.cmd_throttle    = commands[0];
+    high_speed_logger_spi_link_data.cmd_roll        = commands[1];
+    high_speed_logger_spi_link_data.cmd_indi        = radio_control.values[6];
+
+    high_speed_logger_spi_link_data.pot_ail         = potentiometer_adc_raw_right;
+
+    high_speed_logger_spi_link_data.filt_acc_p      = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.p);
+    high_speed_logger_spi_link_data.ref_acc_p       = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);
+
+    high_speed_logger_spi_link_data.g_roll          = ANGLE_BFP_OF_REAL(G_ROLL);
+    high_speed_logger_spi_link_data.omega           = ANGLE_BFP_OF_REAL(indi_omega);
+    high_speed_logger_spi_link_data.zeta            = ANGLE_BFP_OF_REAL(indi_zeta);
+
+    high_speed_logger_spi_link_data.u_p             = ANGLE_BFP_OF_REAL(indi.u.p);
+    high_speed_logger_spi_link_data.u_dyn_p         = ANGLE_BFP_OF_REAL(indi.u_act_dyn.p);
+
+
+    high_speed_logger_spi_link_data.probe_press_l   = ANGLE_BFP_OF_REAL(pitch_left_adc.scaled);
+    high_speed_logger_spi_link_data.airspeed_r      = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);*/
+
+    //Data which will be logged for pitch INDI loop control
+    /*high_speed_logger_spi_link_data.theta           = stateGetNedToBodyEulers_i()->theta;
     high_speed_logger_spi_link_data.q               = state.body_rates_i.q;
+
+    high_speed_logger_spi_link_data.cmd_throttle    = commands[0];
+    high_speed_logger_spi_link_data.cmd_pitch       = commands[2];
+    high_speed_logger_spi_link_data.cmd_indi        = radio_control.values[6];
+
+    high_speed_logger_spi_link_data.pot_elev         = potentiometer_adc_raw_right;
+
+    high_speed_logger_spi_link_data.filt_acc_q      = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.q);
+    high_speed_logger_spi_link_data.ref_acc_q       = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.q);
+
+    high_speed_logger_spi_link_data.g_pitch         = ANGLE_BFP_OF_REAL(G_PITCH);
+    high_speed_logger_spi_link_data.omega           = ANGLE_BFP_OF_REAL(INDI_OMEGA);
+    high_speed_logger_spi_link_data.zeta            = ANGLE_BFP_OF_REAL(INDI_ZETA);
+
+    high_speed_logger_spi_link_data.u_q             = ANGLE_BFP_OF_REAL(indi.u.q);
+    high_speed_logger_spi_link_data.u_dyn_q         = ANGLE_BFP_OF_REAL(indi.u_act_dyn.q);
+
+
+    high_speed_logger_spi_link_data.probe_press_l   = ANGLE_BFP_OF_REAL(pitch_left_adc.scaled);
+    high_speed_logger_spi_link_data.airspeed_r      = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);*/
+
+    //Data which will be logged for outer loop control
+    high_speed_logger_spi_link_data.phi             = stateGetNedToBodyEulers_i()->phi;
+    high_speed_logger_spi_link_data.theta           = stateGetNedToBodyEulers_i()->theta;
+    high_speed_logger_spi_link_data.psi             = stateGetNedToBodyEulers_i()->psi;
 
     high_speed_logger_spi_link_data.cmd_throttle    = commands[0];
     high_speed_logger_spi_link_data.cmd_roll        = commands[1];
     high_speed_logger_spi_link_data.cmd_pitch       = commands[2];
     high_speed_logger_spi_link_data.cmd_indi        = radio_control.values[6];
 
-    high_speed_logger_spi_link_data.pot_elev        = potentiometer_adc_raw_right;
+    high_speed_logger_spi_link_data.pot_elev          = potentiometer_adc_raw_right;
 
-    high_speed_logger_spi_link_data.filt_acc_p      = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.p);
-    high_speed_logger_spi_link_data.ref_acc_p       = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);
-    high_speed_logger_spi_link_data.filt_acc_q      = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.q);
-    high_speed_logger_spi_link_data.ref_acc_q       = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.q);
+    high_speed_logger_spi_link_data.alt_set           = ANGLE_BFP_OF_REAL(v_ctl_altitude_setpoint);
+    high_speed_logger_spi_link_data.climb_set         = ANGLE_BFP_OF_REAL(v_ctl_climb_setpoint);
+    high_speed_logger_spi_link_data.pitch_set         = ANGLE_BFP_OF_REAL(v_ctl_pitch_setpoint);
+    high_speed_logger_spi_link_data.throttle_set      = ANGLE_BFP_OF_REAL(v_ctl_throttle_setpoint);
+    high_speed_logger_spi_link_data.roll_set          = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);
 
-    high_speed_logger_spi_link_data.probe_press_l   = ANGLE_BFP_OF_REAL(pitch_left_adc.scaled);
-    high_speed_logger_spi_link_data.airspeed_r      = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);
+    high_speed_logger_spi_link_data.probe_press_l    = ANGLE_BFP_OF_REAL(pitch_left_adc.scaled);
+    high_speed_logger_spi_link_data.airspeed_r       = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);
 
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
   }
