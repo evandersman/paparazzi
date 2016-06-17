@@ -150,8 +150,8 @@
     <define name="COURSE_DGAIN" value="0.3"/>
 
     <define name="ROLL_MAX_SETPOINT" value="35" unit="deg"/>
-    <define name="PITCH_MAX_SETPOINT" value="60" unit="deg"/>
-    <define name="PITCH_MIN_SETPOINT" value="-60" unit="deg"/>
+    <define name="PITCH_MAX_SETPOINT" value="80" unit="deg"/>
+    <define name="PITCH_MIN_SETPOINT" value="-80" unit="deg"/>
 
     <define name="PITCH_PGAIN" value="4500."/>
     <define name="PITCH_DGAIN" value="1.5"/>
@@ -167,7 +167,7 @@
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
     <define name="G_ROLL" value="0.019"/>
-    <define name="G_PITCH" value="0.0048"/>
+    <define name="G_PITCH" value="0.012"/>
 
     <!-- reference acceleration for attitude control -->
     <define name="REF_ERR_P" value="420.0"/>

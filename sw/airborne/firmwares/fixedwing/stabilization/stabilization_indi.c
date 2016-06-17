@@ -408,7 +408,7 @@ inline static void h_ctl_roll_loop(void)
 
   // Calculate required angular acceleration
   indi.angular_accel_ref.p = reference_acceleration.err_p * err
-                             + reference_acceleration.rate_p * stateGetBodyRates_f()->p;
+                             + reference_acceleration.rate_p * stateGetBodyRates_f()->p; // p is too noisy to be used when motor is running, a filter should be applied
 
   // Incremented in angular acceleration requires increment in control input
   #if PROBES_FF_ANG_ACC
