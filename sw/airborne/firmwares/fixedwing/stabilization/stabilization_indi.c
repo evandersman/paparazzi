@@ -47,6 +47,7 @@ float indi_omega_r;
 
 struct FloatRates servo_input[SERVO_DELAY];
 struct FloatRates servo_delayed_input;
+struct FloatRates u_act_dyn_previous;
 uint8_t servo_delay;
 uint8_t delay_p;
 uint8_t delay_q;
@@ -431,13 +432,13 @@ inline static void h_ctl_roll_loop(void)
   delay_p = 0;
   }
   servo_delayed_input.p = servo_input[delay_p].p;
-
+  u_act_dyn_previous.p = indi.u_act_dyn.p;
   indi.u_act_dyn.p = indi.u_act_dyn.p + 0.117 * (servo_delayed_input.p - indi.u_act_dyn.p);
-  if (indi.u_act_dyn.p > indi.u_act_dyn.p + 0.098){
-    indi.u_act_dyn.p = indi.u_act_dyn.p + 0.098;
+  if (indi.u_act_dyn.p > u_act_dyn_previous.p + 500){
+    indi.u_act_dyn.p = u_act_dyn_previous.p + 500;
   }
-  if (indi.u_act_dyn.p < indi.u_act_dyn.p - 0.098){
-    indi.u_act_dyn.p = indi.u_act_dyn.p - 0.098;
+  if (indi.u_act_dyn.p < u_act_dyn_previous.p - 500){
+    indi.u_act_dyn.p = u_act_dyn_previous.p - 500;
   }
 
   // Sensor filter
@@ -523,7 +524,7 @@ inline static void h_ctl_pitch_loop(void)
   indi.u_in.q = indi.u.q + indi.du.q;
 
   // Bound the total control input
-  Bound(indi.u_in.q, -4500, 4500);
+  Bound(indi.u_in.q, -7500, 7500);
 
   servo_input[delay_q].q = indi.u_in.q;
 
@@ -533,13 +534,13 @@ inline static void h_ctl_pitch_loop(void)
   delay_q = 0;
   }
   servo_delayed_input.q = servo_input[delay_q].q;
-
+  u_act_dyn_previous.q = indi.u_act_dyn.q;
   indi.u_act_dyn.q = indi.u_act_dyn.q + 0.117 * (servo_delayed_input.q - indi.u_act_dyn.q);
-  if (indi.u_act_dyn.q > indi.u_act_dyn.q + 0.098){
-    indi.u_act_dyn.q = indi.u_act_dyn.q + 0.098;
+  if (indi.u_act_dyn.q > u_act_dyn_previous.q + 500){
+    indi.u_act_dyn.q = u_act_dyn_previous.q + 500;
   }
-  if (indi.u_act_dyn.q < indi.u_act_dyn.q - 0.098){
-    indi.u_act_dyn.q = indi.u_act_dyn.q - 0.098;
+  if (indi.u_act_dyn.q < u_act_dyn_previous.q - 500){
+    indi.u_act_dyn.q = u_act_dyn_previous.q - 500;
   }
   
   // Sensor filter

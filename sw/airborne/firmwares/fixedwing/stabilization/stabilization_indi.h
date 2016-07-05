@@ -47,6 +47,7 @@ extern uint8_t delay_p;
 extern uint8_t delay_q;
 extern struct FloatRates servo_input[SERVO_DELAY];
 extern struct FloatRates servo_delayed_input;
+extern struct FloatRates u_act_dyn_previous;
 
 struct ReferenceSystem {
   float err_p;

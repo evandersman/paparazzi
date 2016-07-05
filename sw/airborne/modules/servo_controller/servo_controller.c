@@ -130,7 +130,7 @@ void servo_controller_update(void)
 #else
 
   #ifdef INDI_SERVO_CONTROL
-  // position error
+  // position error WHY NOT CHANGE THE SIGN FOR BOTH THIS AND THE INCREMENT CALCULATION?? has to be tried
   left_wing.err = pot_left_wing_scaled - commands[1];
 
   //Propagate the second order filter on the potentiometer output
@@ -149,15 +149,16 @@ void servo_controller_update(void)
   left_wing.pwm_in = left_wing.pwm + left_wing.dpwm;
 
   // Bound the total control input
-  Bound(left_wing.pwm_in, -4500, 4500);
+  Bound(left_wing.pwm_in, -9000, 9000);
 
-  // First order actuator dynamics
+  // First order actuator dynamics DATA OBTAINED BASED ON MATLAB SCRIPT servo_pid_controller.m with servo_open_loop.txt
+  left_wing_motor_dyn_previous = left_wing.motor_dyn;
   left_wing.motor_dyn = left_wing.motor_dyn + tau_motor_dyn_p * (left_wing.pwm_in - left_wing.motor_dyn);
-  if (left_wing.motor_dyn > left_wing.motor_dyn + 0.05){
-    left_wing.motor_dyn = left_wing.motor_dyn + 0.05;
+  if (left_wing.motor_dyn > left_wing_motor_dyn_previous + 240){
+    left_wing.motor_dyn = left_wing_motor_dyn_previous + 240;
   }
-  if (left_wing.motor_dyn < left_wing.motor_dyn - 0.05){
-    left_wing.motor_dyn = left_wing.motor_dyn - 0.05;
+  if (left_wing.motor_dyn < left_wing_motor_dyn_previous - 240){
+    left_wing.motor_dyn = left_wing_motor_dyn_previous - 240;
   }
 
   // Sensor filter

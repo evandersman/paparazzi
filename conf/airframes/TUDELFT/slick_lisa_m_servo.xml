@@ -257,7 +257,7 @@
     <define name="POT_RIGHT_GAIN" value="16.8"/>
     <define name="INDI_SERVO_PGAIN" value="60.0"/>
     <define name="TAU_SERVO_MOTOR" value="0.19"/>
-    <define name="G_SERVO" value="13.0"/>
+    <define name="G_SERVO" value="17.0"/>
     <define name="SERVO_OMEGA" value="20.0"/>
     <define name="SERVO_ZETA" value="0.65"/>
   </section>
