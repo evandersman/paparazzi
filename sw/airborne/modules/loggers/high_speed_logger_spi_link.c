@@ -165,14 +165,13 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.airspeed_r      = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);*/
 
     //Data which will be logged for pitch INDI loop control ----  ADD SETPOINT!!!!
-    /*high_speed_logger_spi_link_data.theta           = stateGetNedToBodyEulers_i()->theta;
+    high_speed_logger_spi_link_data.theta         = stateGetNedToBodyEulers_i()->theta;
+    high_speed_logger_spi_link_data.phi        	    = stateGetNedToBodyEulers_i()->phi;
     high_speed_logger_spi_link_data.q               = state.body_rates_i.q;
 
     high_speed_logger_spi_link_data.cmd_throttle    = commands[0];
     high_speed_logger_spi_link_data.cmd_pitch       = commands[2];
     high_speed_logger_spi_link_data.cmd_indi        = radio_control.values[6];
-
-    high_speed_logger_spi_link_data.pot_elev         = potentiometer_adc_raw_right;
 
     high_speed_logger_spi_link_data.filt_acc_q      = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.q);
     high_speed_logger_spi_link_data.ref_acc_q       = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.q);
@@ -183,10 +182,8 @@ void high_speed_logger_spi_link_periodic(void)
 
     high_speed_logger_spi_link_data.u_q             = ANGLE_BFP_OF_REAL(indi.u.q);
     high_speed_logger_spi_link_data.u_dyn_q         = ANGLE_BFP_OF_REAL(indi.u_act_dyn.q);
-
-
-    high_speed_logger_spi_link_data.probe_press_l   = ANGLE_BFP_OF_REAL(pitch_left_adc.scaled);
-    high_speed_logger_spi_link_data.airspeed_r      = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);*/
+    high_speed_logger_spi_link_data.roll_setpoint   = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);
+    high_speed_logger_spi_link_data.pitch_setpoint  = ANGLE_BFP_OF_REAL(h_ctl_pitch_loop_setpoint);
 
     //Data which will be logged for outer loop control
 /*    high_speed_logger_spi_link_data.phi             = stateGetNedToBodyEulers_i()->phi;
@@ -210,7 +207,7 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.airspeed_r       = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);*/
 
     //Data which will be logged for pressure probe calibration
-    high_speed_logger_spi_link_data.phi           = stateGetNedToBodyEulers_i()->phi;
+    /*high_speed_logger_spi_link_data.phi           = stateGetNedToBodyEulers_i()->phi;
     high_speed_logger_spi_link_data.theta         = stateGetNedToBodyEulers_i()->theta;
     high_speed_logger_spi_link_data.psi           = stateGetNedToBodyEulers_i()->psi;
 
@@ -229,7 +226,7 @@ void high_speed_logger_spi_link_periodic(void)
 
 
     high_speed_logger_spi_link_data.probe_press   = ANGLE_BFP_OF_REAL(pitch_right_adc.scaled);
-    high_speed_logger_spi_link_data.airspeed      = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);
+    high_speed_logger_spi_link_data.airspeed      = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);*/
 
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
   }

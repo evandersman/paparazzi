@@ -113,12 +113,12 @@ struct PACKED high_speed_logger_spi_link_data {
 
 //logging for pitch INDI loop control
 
-/*  int32_t theta;
+  int32_t theta;
+  int32_t phi;
   int32_t q;
   int32_t cmd_throttle;
   int32_t cmd_pitch;
   int32_t cmd_indi;
-  int32_t pot_elev;
   int32_t ref_acc_q;
   int32_t filt_acc_q;
   int32_t g_pitch;
@@ -126,8 +126,8 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t zeta;
   int32_t u_q;
   int32_t u_dyn_q;
-  int32_t probe_press_l;
-  int32_t airspeed_r;*/
+  int32_t roll_setpoint;
+  int32_t pitch_setpoint;
 
 //logging for outer loop control
 /*
@@ -148,7 +148,7 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t airspeed_r;*/
 
 //logging for probe calibration
-  int32_t phi;
+/*  int32_t phi;
   int32_t theta;
   int32_t psi;
 
@@ -166,7 +166,7 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t az;
 
   int32_t probe_press;
-  int32_t airspeed;
+  int32_t airspeed;*/
 };
 
 #endif /* HIGH_SPEED_LOGGER_SPI_LINK_H_ */

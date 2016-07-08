@@ -50,22 +50,22 @@
     <subsystem name="gps" type="ublox"/>
 
     <subsystem name="ahrs" type="int_cmpl_quat">
-      <!--define name="USE_GPS" value="1"/-->
-      <!--define name="AHRS_USE_GPS_HEADING" value="1"/-->
+      <define name="USE_GPS" value="1"/>
+      <define name="AHRS_USE_GPS_HEADING" value="1"/>
       <define name="AHRS_GRAVITY_UPDATE_COORDINATED_TURN" value="1"/>
     </subsystem>
     <subsystem name="control" type="indi"/>
     <subsystem name="navigation"/>
     <subsystem name="ins" type="alt_float">
-      <define name="USE_BAROMETER" value="TRUE"/>
+      <!--define name="USE_BAROMETER" value="TRUE"/-->
     </subsystem>
   </firmware>
 
   <modules main_freq="512">
-    <load name="turbulence_adc.xml"/>
+    <!--load name="turbulence_adc.xml"/-->
     <!--load name="potentiometer_adc.xml"/-->
     <load name="logger_spi_link.xml"/>
-    <!--load name="gps_ubx_ucenter.xml"/-->
+    <load name="gps_ubx_ucenter.xml"/>
   </modules>
 
   <servos>
@@ -138,7 +138,7 @@
     <!-- auto throttle inner loop -->
     <define name="AUTO_THROTTLE_NOMINAL_CRUISE_THROTTLE" value="0.6"/>
     <define name="AUTO_THROTTLE_MIN_CRUISE_THROTTLE" value="0.25"/>
-    <define name="AUTO_THROTTLE_MAX_CRUISE_THROTTLE" value="0.65"/>
+    <define name="AUTO_THROTTLE_MAX_CRUISE_THROTTLE" value="0.85"/>
     <define name="AUTO_THROTTLE_CLIMB_THROTTLE_INCREMENT" value="0.1" unit="%/(m/s)"/>
     <define name="AUTO_THROTTLE_PGAIN" value="0.0"/>
     <define name="AUTO_THROTTLE_IGAIN" value="0.0"/>
@@ -166,12 +166,12 @@
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
-    <define name="G_ROLL" value="0.011"/>
+    <define name="G_ROLL" value="0.019"/>
     <define name="G_PITCH" value="0.013"/>
 
     <!-- reference acceleration for attitude control -->
     <define name="REF_ERR_P" value="420.0"/>
-    <define name="REF_ERR_Q" value="420.0"/>
+    <define name="REF_ERR_Q" value="410.0"/>
     <define name="REF_ERR_R" value="600.0"/>
     <define name="REF_RATE_P" value="20.0"/>
     <define name="REF_RATE_Q" value="20.0"/>
@@ -205,7 +205,7 @@
 
   <section name="AUTO1" prefix="AUTO1_">
     <define name="MAX_ROLL" value="60." unit="deg"/>
-    <define name="MAX_PITCH" value="60." unit="deg"/>
+    <define name="MAX_PITCH" value="70." unit="deg"/>
   </section>
 
   <section name="BAT">
