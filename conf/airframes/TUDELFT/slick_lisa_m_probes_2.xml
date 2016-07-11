@@ -36,18 +36,18 @@
 
     <!-- Communication -->
     <!-- WiFi module -->
-    <!--subsystem name="telemetry" type="transparent">
+    <subsystem name="telemetry" type="transparent">
       <configure name="MODEM_BAUD" value="B115200"/>
-    </subsystem-->
+    </subsystem>
     <!-- XBee -->
-    <subsystem name="telemetry" type="xbee_api"/>
+    <!--subsystem name="telemetry" type="xbee_api"/-->
 
     <!-- Sensors -->
     <subsystem name="imu" type="aspirin_v2.1"/>
     <!-- for optitrack with Wifi module -->
-    <!--subsystem name="gps" type="datalink"/-->
+    <subsystem name="gps" type="datalink"/>
     <!-- for outdoor flight -->
-    <subsystem name="gps" type="ublox"/>
+    <!--subsystem name="gps" type="ublox"/-->
 
     <subsystem name="ahrs" type="int_cmpl_quat">
       <define name="USE_GPS" value="1"/>
@@ -65,7 +65,7 @@
     <!--load name="turbulence_adc.xml"/-->
     <!--load name="potentiometer_adc.xml"/-->
     <load name="logger_spi_link.xml"/>
-    <load name="gps_ubx_ucenter.xml"/>
+    <!--load name="gps_ubx_ucenter.xml"/-->
   </modules>
 
   <servos>
