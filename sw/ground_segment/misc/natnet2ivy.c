@@ -916,10 +916,13 @@ int main(int argc, char **argv)
 {
   // Set the default tracking system position and angle
   struct LlaCoor_d tracking_lla;
-  tracking_lla.lat = RadOfDeg(51.9906340);
-  tracking_lla.lon = RadOfDeg(4.3767889);
+  //tracking_lla.lat = RadOfDeg(51.9906340);
+  //tracking_lla.lon = RadOfDeg(4.3767889);
+  tracking_lla.lat = RadOfDeg(51.989180);
+  tracking_lla.lon = RadOfDeg(4.376199);
   tracking_lla.alt = 45.103;
-  tracking_offset_angle = 33.0 / 57.6;
+  //tracking_offset_angle = 33.0 / 57.6;
+  tracking_offset_angle = 90.0 / 57.6;
   ltp_def_from_lla_d(&tracking_ltp, &tracking_lla);
 
   // Parse the options from cmdline

@@ -6,10 +6,11 @@
      Xbee modem in xbee api mode
 -->
 
-<airframe name="Slick540 Lisa/M 2.0">
+<airframe name="Slick360 Lisa/M 2.0">
 
   <firmware name="fixedwing">
     <target name="ap" board="lisa_m_2.0">
+      <define name="LISA_M_OR_MX_21"/>
       <configure name="FLASH_MODE" value="SWD"/>
       <configure name="PERIODIC_FREQUENCY" value="512"/>
       <configure name="AHRS_PROPAGATE_FREQUENCY" value="512"/>
@@ -118,9 +119,9 @@
     <define name="MAG_Y_SENS" value="4.71085671542" integer="16"/>
     <define name="MAG_Z_SENS" value="4.41585354498" integer="16"/>
 
-    <define name="BODY_TO_IMU_PHI" value="10." unit="deg"/>
-    <define name="BODY_TO_IMU_THETA" value="0." unit="deg"/>
-    <define name="BODY_TO_IMU_PSI" value="90." unit="deg"/>
+    <define name="BODY_TO_IMU_PHI" value="0." unit="deg"/>
+    <define name="BODY_TO_IMU_THETA" value="10." unit="deg"/>
+    <define name="BODY_TO_IMU_PSI" value="0." unit="deg"/>
   </section>
 
   <section name="INS" prefix="INS_">
