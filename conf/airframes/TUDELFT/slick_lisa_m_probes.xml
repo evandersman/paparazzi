@@ -6,14 +6,14 @@
      Xbee modem in xbee api mode
 -->
 
-<airframe name="Edge540 Lisa/M 2.1">
+<airframe name="Slick360 Lisa/M 2.1">
 
   <firmware name="fixedwing">
     <target name="ap" board="lisa_m_2.1">
       <configure name="FLASH_MODE" value="SWD"/>
-      <configure name="PERIODIC_FREQUENCY" value="120"/>
-      <configure name="AHRS_PROPAGATE_FREQUENCY" value="100"/>
-      <configure name="AHRS_CORRECT_FREQUENCY" value="100"/>
+      <configure name="PERIODIC_FREQUENCY" value="512"/>
+      <configure name="AHRS_PROPAGATE_FREQUENCY" value="512"/>
+      <configure name="AHRS_CORRECT_FREQUENCY" value="512"/>
     </target>
     <target name="sim" board="pc"/>
     <target name="nps" board="pc">
@@ -26,34 +26,52 @@
     <define name="LOITER_TRIM"/>
     <define name="STRONG_WIND"/-->
 
-    <subsystem name="radio_control" type="spektrum"/>
+    <subsystem name="radio_control" type="spektrum">
+      <!--define name="RADIO_KILL_SWITCH" value="RADIO_AUX2"/-->
+      <define name="RADIO_MODE" value="RADIO_GEAR"/>
+    </subsystem>
+    <subsystem name="actuators" type="pwm">
+      <define name="SERVO_HZ" value="400"/>
+    </subsystem>
 
     <!-- Communication -->
+    <!-- WiFi module -->
+    <!--subsystem name="telemetry" type="transparent">
+      <configure name="MODEM_BAUD" value="B115200"/>
+    </subsystem-->
+    <!-- XBee -->
     <subsystem name="telemetry" type="xbee_api"/>
 
     <!-- Sensors -->
     <subsystem name="imu" type="aspirin_v2.2"/>
+    <!-- for optitrack with Wifi module -->
+    <!--subsystem name="gps" type="datalink"/-->
+    <!-- for outdoor flight -->
     <subsystem name="gps" type="ublox"/>
 
-    <subsystem name="ahrs" type="int_cmpl_quat"/>
-    <subsystem name="control"/>
+    <subsystem name="ahrs" type="int_cmpl_quat">
+      <!--define name="USE_GPS" value="1"/-->
+      <!--define name="AHRS_USE_GPS_HEADING" value="1"/-->
+      <define name="AHRS_GRAVITY_UPDATE_COORDINATED_TURN" value="1"/>
+    </subsystem>
+    <subsystem name="control" type="indi"/>
     <subsystem name="navigation"/>
     <subsystem name="ins" type="alt_float">
       <define name="USE_BAROMETER" value="TRUE"/>
     </subsystem>
   </firmware>
 
-  <modules main_freq="100">
+  <modules main_freq="512">
     <load name="turbulence_adc.xml"/>
-    <!--load name="logger_spi_link.xml"/-->
+    <load name="logger_spi_link.xml"/>
   </modules>
 
   <servos>
     <servo name="THROTTLE" no="0" min="1100" neutral="1100" max="1900"/>
     <servo name="AILERON_LEFT" no="1" min="2000" neutral="1500" max="1000"/>
     <servo name="AILERON_RIGHT" no="2" min="2000" neutral="1500" max="1000"/>
-    <servo name="ELEVATOR" no="3" min="1800" neutral="1300" max="800"/>
-    <servo name="RUDDER" no="4" min="2000" neutral="1500" max="1000"/>
+    <servo name="ELEVATOR" no="4" min="2000" neutral="1500" max="1000"/>
+    <servo name="RUDDER" no="5" min="2000" neutral="1500" max="1000"/>
   </servos>
 
   <commands>
@@ -80,8 +98,11 @@
     <set servo="THROTTLE" value="@THROTTLE"/>
     <set servo="ELEVATOR" value="@PITCH"/>
     <set servo="RUDDER" value="@YAW"/>
-    <set servo="AILERON_LEFT" value="@ROLL + @TURB_LEFT"/>
-    <set servo="AILERON_RIGHT" value="@ROLL + @TURB_RIGHT"/>
+    <set servo="AILERON_LEFT" value="@ROLL"/>
+    <set servo="AILERON_RIGHT" value="@ROLL"/>
+    <!--with turbulence feedforward-->
+    <!--set servo="AILERON_LEFT" value="@ROLL + @TURB_LEFT"/>
+    <set servo="AILERON_RIGHT" value="@ROLL - @TURB_RIGHT"/-->
   </command_laws>
 
   <section name="IMU" prefix="IMU_">
@@ -127,8 +148,8 @@
     <define name="COURSE_DGAIN" value="0.3"/>
 
     <define name="ROLL_MAX_SETPOINT" value="35" unit="deg"/>
-    <define name="PITCH_MAX_SETPOINT" value="60" unit="deg"/>
-    <define name="PITCH_MIN_SETPOINT" value="-60" unit="deg"/>
+    <define name="PITCH_MAX_SETPOINT" value="80" unit="deg"/>
+    <define name="PITCH_MIN_SETPOINT" value="-80" unit="deg"/>
 
     <define name="PITCH_PGAIN" value="4500."/>
     <define name="PITCH_DGAIN" value="1.5"/>
@@ -143,18 +164,19 @@
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
-    <define name="G" value="0.019"/>
+    <define name="G_ROLL" value="0.019"/>
+    <define name="G_PITCH" value="0.012"/>
 
     <!-- reference acceleration for attitude control -->
-    <define name="REF_ERR_P" value="69.6"/>
-    <define name="REF_ERR_Q" value="600.0"/>
+    <define name="REF_ERR_P" value="420.0"/>
+    <define name="REF_ERR_Q" value="420.0"/>
     <define name="REF_ERR_R" value="600.0"/>
-    <define name="REF_RATE_P" value="15.0"/>
-    <define name="REF_RATE_Q" value="28.0"/>
+    <define name="REF_RATE_P" value="20.0"/>
+    <define name="REF_RATE_Q" value="20.0"/>
     <define name="REF_RATE_R" value="28.0"/>
 
     <!-- second order filter parameters -->
-    <define name="FILT_OMEGA" value="35.0"/>
+    <define name="FILT_OMEGA" value="25.0"/>
     <define name="FILT_ZETA" value="0.65"/>
 
     <!-- first order actuator dynamics -->
@@ -174,7 +196,7 @@
 
   <section name="FAILSAFE" prefix="FAILSAFE_">
     <define name="DELAY_WITHOUT_GPS" value="2" unit="s"/>
-    <define name="DEFAULT_THROTTLE" value="0.3" unit="%"/>
+    <define name="DEFAULT_THROTTLE" value="0.1" unit="%"/>
     <define name="DEFAULT_ROLL" value="0.3" unit="rad"/>
     <define name="DEFAULT_PITCH" value="0.5" unit="rad"/>
   </section>
@@ -190,23 +212,26 @@
     <define name="CRITIC_BAT_LEVEL" value="10.4" unit="V"/>
     <define name="LOW_BAT_LEVEL" value="10.8" unit="V"/>
     <define name="MAX_BAT_LEVEL" value="12.4" unit="V"/>
-    <define name="VoltageOfAdc(adc)" value="(0.006665*adc)"/>
   </section>
 
   <section name="MISC">
     <define name="NOMINAL_AIRSPEED" value="13." unit="m/s"/>
     <define name="CARROT" value="5." unit="s"/>
     <define name="KILL_MODE_DISTANCE" value="(1.5*MAX_DIST_FROM_HOME)"/>
-    <define name="CONTROL_FREQUENCY" value="100" unit="Hz"/>
+    <define name="CONTROL_FREQUENCY" value="512" unit="Hz"/>
     <define name="DEFAULT_CIRCLE_RADIUS" value="80."/>  
-    <define name="AIRSPEED_LEFT_OFFSET" value="69"/>
-    <define name="PITCH_LEFT_OFFSET" value="69"/>
-    <define name="AIRSPEED_RIGHT_OFFSET" value="69"/>
-    <define name="PITCH_RIGHT_OFFSET" value="69"/>
+    <define name="AIRSPEED_LEFT_OFFSET" value="30"/>
+    <define name="PITCH_LEFT_OFFSET" value="24"/>
+    <define name="AIRSPEED_RIGHT_OFFSET" value="30"/>
+    <define name="PITCH_RIGHT_OFFSET" value="35"/>
     <define name="TURB_PGAIN" value="14000"/>
-    <define name="PITCH_OMEGA" value="1"/>
-    <define name="PITCH_ZETA" value="0.7"/>
+    <define name="TURB_ACC_GAIN" value="1"/>
+    <define name="PITCH_OMEGA" value="0.5"/>
+    <define name="PITCH_ZETA" value="1"/>
+    <define name="SERVO_DELAY" value="7"/>
+    <!--define name="PROBES_FF_ANG_ACC" value="1"/-->
     <define name="COMMAND_PITCH_TRIM" value="0."/>
+    <define name="OUTBACK_CHALLENGE_DANGEROUS_RULE_RC_LOST_NO_AP" value="TRUE"/>
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">

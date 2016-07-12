@@ -482,29 +482,29 @@ inline static void h_ctl_pitch_loop(void)
 
 #ifdef STEP_INPUT_AUTO1_PITCH
 #warning "Using step input on auto1!!! Only for testing/experiment!!"
-  if((radio_control.values[6] > 0) && (step_timer < 4096)) {
-    if(step_timer < 512) {
-      cmd = -4500;
+  if((radio_control.values[6] > 0) && (step_timer < 2048)) {
+    if(step_timer < 256) {
+      cmd = -1500;
     }
-    else if(step_timer > 511 && step_timer < 1024)  {
+    else if(step_timer > 255 && step_timer < 512)  {
       cmd = 0;
     }
-    else if(step_timer > 1023 && step_timer < 1536)  {
-      cmd = 4500;
+    else if(step_timer > 511 && step_timer < 768)  {
+      cmd = 1500;
     }
-    else if(step_timer > 1535 && step_timer < 2048)  {
+    else if(step_timer > 767 && step_timer < 1024)  {
       cmd = 0;
     }
-    else if(step_timer > 2047 && step_timer < 2560)  {
-      cmd = 4500;
+    else if(step_timer > 1023 && step_timer < 1280)  {
+      cmd = 1500;
     }
-    else if(step_timer > 2559 && step_timer < 3072)  {
-      cmd = -4500;
+    else if(step_timer > 1279 && step_timer < 1536)  {
+      cmd = -1500;
     }
-    else if(step_timer > 3071 && step_timer < 3584)  {
-      cmd = 4500;
+    else if(step_timer > 1535 && step_timer < 1792)  {
+      cmd = 1500;
     }
-    else if(step_timer > 3583 && step_timer < 4096)  {
+    else if(step_timer > 1791 && step_timer < 2048)  {
       cmd = 0;
     }
     step_timer = step_timer + 1;

@@ -403,6 +403,16 @@ void v_ctl_climb_loop(void)
                               + v_ctl_auto_throttle_climb_throttle_increment * v_ctl_climb_setpoint
                               + v_ctl_auto_throttle_of_airspeed_pgain * speed_error
                               + v_ctl_energy_total_pgain * en_tot_err;
+  /*
+  // Indi Controller Throttle
+  acc_x_setpoint = v_ctl_indi_throttle_of_airspeed_pgain * speed_error;
+  d_throttle = 1.0/G_throttle * (h_ctl_acc_setpoint - accel_meas_body.x); //of moet het toch vdot zijn?
+  float controlled_throttle = d_throttle + controlled_throttle;
+  // Indi Controller Pitch
+  acc_z_setpoint = v_ctl_indi_pitch_pgain * (v_ctl_climb_setpoint - stateGetSpeedEnu_f()->z);
+  d_theta = 1.0/G_theta * (v_ctl_acc_setpoint - stateGetAccelEnu_f()->z);
+  float v_ctl_pitch_of_vz = d_theta + v_ctl_pitch_of_vz;
+  */
 
   if ((controlled_throttle >= 1.0f) || (controlled_throttle <= 0.0f) || (kill_throttle == 1)) {
     // If your energy supply is not sufficient, then neglect the climb requirement

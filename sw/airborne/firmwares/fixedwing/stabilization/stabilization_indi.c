@@ -505,6 +505,9 @@ inline static void h_ctl_pitch_loop(void)
     h_ctl_elevator_of_roll = 0.;
   }
   h_ctl_pitch_loop_setpoint =  h_ctl_pitch_setpoint + h_ctl_elevator_of_roll / h_ctl_pitch_pgain * fabs(att->phi);
+  // This parameter should be bounded otherwise the INDI controller will make the airplane stall
+  // At the moment only h_ctl_pitch_setpoint is bounded but not the combination of both
+  // Bound(h_ctl_pitch_loop_setpoint, H_CTL_PITCH_MIN_SETPOINT, H_CTL_PITCH_MAX_SETPOINT);
   err = h_ctl_pitch_loop_setpoint - att->theta;
 
   //Propagate the second order filter on the gyroscopes
