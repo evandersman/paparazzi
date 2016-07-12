@@ -212,6 +212,13 @@
 #define ADC_6_GPIO_PIN GPIO2
 #endif
 
+#if USE_ADC_7
+#define AD2_3_CHANNEL 9 /* derived from the schematics*/
+#define ADC_7 AD2_3
+#define ADC_7_GPIO_PORT GPIOB /* spi port letter from schematics */
+#define ADC_7_GPIO_PIN GPIO1 /* spi pin number from schematics */
+#endif
+
 /* allow to define ADC_CHANNEL_VSUPPLY in the airframe file*/
 #ifndef ADC_CHANNEL_VSUPPLY
 #define ADC_CHANNEL_VSUPPLY ADC_5

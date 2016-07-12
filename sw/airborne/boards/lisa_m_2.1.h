@@ -96,11 +96,11 @@
  */
 
 /* PB1, DRDY on EXT SPI connector*/
-#define LED_BODY_GPIO GPIOB
+/*#define LED_BODY_GPIO GPIOB
 #define LED_BODY_GPIO_PIN GPIO1
 #define LED_BODY_GPIO_ON gpio_set
 #define LED_BODY_GPIO_OFF gpio_clear
-#define LED_BODY_AFIO_REMAP ((void)0)
+#define LED_BODY_AFIO_REMAP ((void)0)*/
 
 /* PC12, on GPIO connector*/
 #define LED_12_GPIO GPIOC

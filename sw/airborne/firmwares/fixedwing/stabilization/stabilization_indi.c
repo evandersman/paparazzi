@@ -26,7 +26,9 @@
  *
  */
 
+#include "firmwares/fixedwing/stabilization/stabilization_indi.h"
 #include "firmwares/fixedwing/stabilization/stabilization_attitude.h"
+#include "modules/sensors/turbulence_adc.h"
 #include "std.h"
 #include "led.h"
 #include "state.h"
@@ -35,6 +37,58 @@
 #include CTRL_TYPE_H
 #include "firmwares/fixedwing/autopilot.h"
 #include "subsystems/radio_control.h"
+
+float G_ROLL;
+float G_PITCH;
+float tau_act_dyn_p;
+float indi_omega;
+float indi_zeta;
+float indi_omega_r;
+
+struct FloatRates servo_input[SERVO_DELAY];
+struct FloatRates servo_delayed_input;
+struct FloatRates u_act_dyn_previous;
+uint8_t servo_delay;
+uint8_t delay_p;
+uint8_t delay_q;
+
+struct ReferenceSystem reference_acceleration = {STABILIZATION_INDI_REF_ERR_P,
+         STABILIZATION_INDI_REF_ERR_Q,
+         STABILIZATION_INDI_REF_ERR_R,
+         STABILIZATION_INDI_REF_RATE_P,
+         STABILIZATION_INDI_REF_RATE_Q,
+         STABILIZATION_INDI_REF_RATE_R,
+};
+
+struct IndiVariables indi = {
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.},
+  {0., 0., 0.}
+};
+
+#ifndef STABILIZATION_INDI_FILT_OMEGA
+#define STABILIZATION_INDI_FILT_OMEGA 50.0
+#endif
+
+#ifndef STABILIZATION_INDI_FILT_ZETA
+#define STABILIZATION_INDI_FILT_ZETA 0.55
+#endif
+
+#define STABILIZATION_INDI_FILT_OMEGA2 (STABILIZATION_INDI_FILT_OMEGA*STABILIZATION_INDI_FILT_OMEGA)
+
+#ifndef STABILIZATION_INDI_FILT_OMEGA_R
+#define STABILIZATION_INDI_FILT_OMEGA_R STABILIZATION_INDI_FILT_OMEGA
+#define STABILIZATION_INDI_FILT_ZETA_R STABILIZATION_INDI_FILT_ZETA
+#endif
+
+#define STABILIZATION_INDI_FILT_OMEGA2_R (STABILIZATION_INDI_FILT_OMEGA_R*STABILIZATION_INDI_FILT_OMEGA_R)
 
 /* outer loop parameters */
 float h_ctl_course_setpoint; /* rad, CW/north */
@@ -49,7 +103,6 @@ bool h_ctl_disabled;
 
 /* AUTO1 rate mode */
 bool h_ctl_auto1_rate;
-int32_t step_timer;
 
 
 /* inner roll loop parameters */
@@ -83,17 +136,6 @@ uint8_t h_ctl_pitch_mode;
 /* inner loop pre-command */
 float h_ctl_aileron_of_throttle;
 float h_ctl_elevator_of_roll;
-
-/* rate loop */
-#ifdef H_CTL_RATE_LOOP
-float h_ctl_roll_rate_setpoint;
-float h_ctl_roll_rate_mode;
-float h_ctl_roll_rate_setpoint_pgain;
-float h_ctl_hi_throttle_roll_rate_pgain;
-float h_ctl_lo_throttle_roll_rate_pgain;
-float h_ctl_roll_rate_igain;
-float h_ctl_roll_rate_dgain;
-#endif
 
 #ifdef H_CTL_COURSE_SLEW_INCREMENT
 float h_ctl_course_slew_increment;
@@ -147,8 +189,7 @@ void h_ctl_init(void)
   h_ctl_pitch_mode = 0;
 #endif
 
-  h_ctl_disabled = false;
-
+  h_ctl_disabled = FALSE;
   h_ctl_roll_setpoint = 0.;
 #ifdef H_CTL_ROLL_PGAIN
   h_ctl_roll_pgain = H_CTL_ROLL_PGAIN;
@@ -164,15 +205,6 @@ void h_ctl_init(void)
   h_ctl_pitch_dgain = H_CTL_PITCH_DGAIN;
   h_ctl_elevator_setpoint = 0;
   h_ctl_elevator_of_roll = H_CTL_ELEVATOR_OF_ROLL;
-
-#ifdef H_CTL_RATE_LOOP
-  h_ctl_roll_rate_mode = H_CTL_ROLL_RATE_MODE_DEFAULT;
-  h_ctl_roll_rate_setpoint_pgain = H_CTL_ROLL_RATE_SETPOINT_PGAIN;
-  h_ctl_hi_throttle_roll_rate_pgain = H_CTL_HI_THROTTLE_ROLL_RATE_PGAIN;
-  h_ctl_lo_throttle_roll_rate_pgain = H_CTL_LO_THROTTLE_ROLL_RATE_PGAIN;
-  h_ctl_roll_rate_igain = H_CTL_ROLL_RATE_IGAIN;
-  h_ctl_roll_rate_dgain = H_CTL_ROLL_RATE_DGAIN;
-#endif
 
 #ifdef H_CTL_ROLL_SLEW
   h_ctl_roll_slew = H_CTL_ROLL_SLEW;
@@ -191,9 +223,39 @@ void h_ctl_init(void)
   nav_ratio = 0;
 #endif
 
+  G_ROLL = STABILIZATION_INDI_G_ROLL;
+  G_PITCH = STABILIZATION_INDI_G_PITCH;
+  tau_act_dyn_p = STABILIZATION_INDI_ACT_DYN_P;
+  indi_omega = STABILIZATION_INDI_FILT_OMEGA;
+  indi_zeta = STABILIZATION_INDI_FILT_ZETA;
+  indi_omega_r = STABILIZATION_INDI_FILT_OMEGA_R;
+
+  FLOAT_RATES_ZERO(indi.filtered_rate);
+  FLOAT_RATES_ZERO(indi.filtered_rate_deriv);
+  FLOAT_RATES_ZERO(indi.filtered_rate_2deriv);
+  FLOAT_RATES_ZERO(indi.angular_accel_ref);
+  FLOAT_RATES_ZERO(indi.u);
+  FLOAT_RATES_ZERO(indi.du);
+  FLOAT_RATES_ZERO(indi.u_act_dyn);
+  FLOAT_RATES_ZERO(indi.u_in);
+  FLOAT_RATES_ZERO(indi.udot);
+  FLOAT_RATES_ZERO(indi.udotdot);
+
 #if PERIODIC_TELEMETRY
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_CALIBRATION, send_calibration);
 #endif
+
+  servo_delay = SERVO_DELAY;
+  delay_p = 0;
+  delay_q = 0;
+  servo_delayed_input.p = 0.;
+  servo_delayed_input.q = 0.;
+  for(int8_t i = 0; i < servo_delay - 1; i++){
+    servo_input[i].p = 0.;
+    servo_input[i].q = 0.;
+    delay_p = i;
+    delay_q = i;
+  }
 }
 
 /**
@@ -333,88 +395,75 @@ void h_ctl_attitude_loop(void)
   }
 }
 
-
-#ifdef H_CTL_ROLL_ATTITUDE_GAIN
-inline static void h_ctl_roll_loop(void)
-{
-  float err = stateGetNedToBodyEulers_f()->phi - h_ctl_roll_setpoint;
-  struct FloatRates *body_rate = stateGetBodyRates_f();
-#ifdef SITL
-  static float last_err = 0;
-  body_rate->p = (err - last_err) / (1 / 60.);
-  last_err = err;
-#endif
-  float cmd = h_ctl_roll_attitude_gain * err
-              + h_ctl_roll_rate_gain * body_rate->p
-              + v_ctl_throttle_setpoint * h_ctl_aileron_of_throttle;
-
-  h_ctl_aileron_setpoint = TRIM_PPRZ(cmd);
-}
-
-#else // H_CTL_ROLL_ATTITUDE_GAIN
-
 /** Computes h_ctl_aileron_setpoint from h_ctl_roll_setpoint */
 inline static void h_ctl_roll_loop(void)
 {
+  //calculate the attitude error
   float err = stateGetNedToBodyEulers_f()->phi - h_ctl_roll_setpoint;
-  float cmd = h_ctl_roll_pgain * err
-              + v_ctl_throttle_setpoint * h_ctl_aileron_of_throttle;
-  h_ctl_aileron_setpoint = TRIM_PPRZ(cmd);
 
-#ifdef H_CTL_RATE_LOOP
-  if (h_ctl_auto1_rate) {
-    /** Runs only the roll rate loop */
-    h_ctl_roll_rate_setpoint = h_ctl_roll_setpoint * 10.;
-    h_ctl_roll_rate_loop();
+  //Propagate the second order filter on the gyroscopes
+  float omega2 = indi_omega * indi_omega;
+  indi.filtered_rate.p = indi.filtered_rate.p + indi.filtered_rate_deriv.p * 1.0 / CONTROL_FREQUENCY;
+  indi.filtered_rate_deriv.p =  indi.filtered_rate_deriv.p + indi.filtered_rate_2deriv.p * 1.0 / CONTROL_FREQUENCY;
+  indi.filtered_rate_2deriv.p = -indi.filtered_rate_deriv.p * 2 * indi_zeta * indi_omega   + (stateGetBodyRates_f()->p - indi.filtered_rate.p) * omega2;
+
+  // Calculate required angular acceleration
+  indi.angular_accel_ref.p = reference_acceleration.err_p * err
+                             + reference_acceleration.rate_p * stateGetBodyRates_f()->p; // p is too noisy to be used when motor is running, a filter should be applied
+
+  // Incremented in angular acceleration requires increment in control input
+  #if PROBES_FF_ANG_ACC
+  indi.du.p = 1.0/G_ROLL * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p - probes_ang_acc);
+  #else
+  indi.du.p = 1.0/G_ROLL * (indi.angular_accel_ref.p + indi.filtered_rate_deriv.p);
+  #endif
+
+  // Add the increment to the total control input
+  indi.u_in.p = indi.u.p + indi.du.p;
+
+  // Bound the total control input
+  Bound(indi.u_in.p, -4500, 4500);
+
+  servo_input[delay_p].p = indi.u_in.p;
+
+  if (delay_p < servo_delay - 1) {
+  delay_p++;
   } else {
-    h_ctl_roll_rate_setpoint = h_ctl_roll_rate_setpoint_pgain * err;
-    BoundAbs(h_ctl_roll_rate_setpoint, H_CTL_ROLL_RATE_MAX_SETPOINT);
-
-    float saved_aileron_setpoint = h_ctl_aileron_setpoint;
-    h_ctl_roll_rate_loop();
-    h_ctl_aileron_setpoint = Blend(h_ctl_aileron_setpoint, saved_aileron_setpoint, h_ctl_roll_rate_mode) ;
+  delay_p = 0;
   }
-#endif
+  servo_delayed_input.p = servo_input[delay_p].p;
+  u_act_dyn_previous.p = indi.u_act_dyn.p;
+  indi.u_act_dyn.p = indi.u_act_dyn.p + 0.117 * (servo_delayed_input.p - indi.u_act_dyn.p);
+  if (indi.u_act_dyn.p > u_act_dyn_previous.p + 500){
+    indi.u_act_dyn.p = u_act_dyn_previous.p + 500;
+  }
+  if (indi.u_act_dyn.p < u_act_dyn_previous.p - 500){
+    indi.u_act_dyn.p = u_act_dyn_previous.p - 500;
+  }
+
+  // Sensor filter
+  indi.u.p = indi.u.p + indi.udot.p * 1.0 / CONTROL_FREQUENCY;
+  indi.udot.p =  indi.udot.p + indi.udotdot.p * 1.0 / CONTROL_FREQUENCY;
+  indi.udotdot.p = -indi.udot.p * 2 * indi_zeta * indi_omega   + (indi.u_act_dyn.p - indi.u.p) * omega2;
+
+  // Don't increment if thrust is off
+  if (v_ctl_throttle_setpoint < 2500 || radio_control.values[6] < 0) {
+    FLOAT_RATES_ZERO(indi.u);
+    FLOAT_RATES_ZERO(indi.du);
+    FLOAT_RATES_ZERO(indi.u_act_dyn);
+    FLOAT_RATES_ZERO(indi.u_in);
+    FLOAT_RATES_ZERO(indi.udot);
+    FLOAT_RATES_ZERO(indi.udotdot);
+    float cmd = h_ctl_roll_attitude_gain * err + h_ctl_roll_rate_gain * stateGetBodyRates_f()->p;
+    h_ctl_aileron_setpoint = TRIM_PPRZ(cmd);
+  }
+  else {
+  /* INDI feedback */
+    h_ctl_aileron_setpoint = TRIM_PPRZ(indi.u_in.p);
+  }
+
+  //RunOnceEvery(500, DOWNLINK_SEND_STAB_ATTITUDE_INDI(DefaultChannel, DefaultDevice, &indi.angular_accel_ref.p, &indi.angular_accel_ref.q, &indi.angular_accel_ref.r, &indi.du.p, &indi.du.q, &indi.du.r, &indi.u_in.p, &indi.u_in.q, &indi.u_in.r));
 }
-
-#ifdef H_CTL_RATE_LOOP
-
-static inline void h_ctl_roll_rate_loop()
-{
-  float err = stateGetBodyRates_f()->p - h_ctl_roll_rate_setpoint;
-
-  /* I term calculation */
-  static float roll_rate_sum_err = 0.;
-  static uint8_t roll_rate_sum_idx = 0;
-  static float roll_rate_sum_values[H_CTL_ROLL_RATE_SUM_NB_SAMPLES];
-
-  roll_rate_sum_err -= roll_rate_sum_values[roll_rate_sum_idx];
-  roll_rate_sum_values[roll_rate_sum_idx] = err;
-  roll_rate_sum_err += err;
-  roll_rate_sum_idx++;
-  if (roll_rate_sum_idx >= H_CTL_ROLL_RATE_SUM_NB_SAMPLES) { roll_rate_sum_idx = 0; }
-
-  /* D term calculations */
-  static float last_err = 0;
-  float d_err = err - last_err;
-  last_err = err;
-
-  float throttle_dep_pgain =
-    Blend(h_ctl_hi_throttle_roll_rate_pgain, h_ctl_lo_throttle_roll_rate_pgain,
-          v_ctl_throttle_setpoint / ((float)MAX_PPRZ));
-  float cmd = throttle_dep_pgain * (err + h_ctl_roll_rate_igain * roll_rate_sum_err / H_CTL_ROLL_RATE_SUM_NB_SAMPLES +
-                                    h_ctl_roll_rate_dgain * d_err);
-
-  h_ctl_aileron_setpoint = TRIM_PPRZ(cmd);
-}
-#endif /* H_CTL_RATE_LOOP */
-
-#endif /* !H_CTL_ROLL_ATTITUDE_GAIN */
-
-
-
-
-
 
 #ifdef LOITER_TRIM
 
@@ -448,77 +497,77 @@ inline static void h_ctl_pitch_loop(void)
 {
   static float last_err;
   struct FloatEulers *att = stateGetNedToBodyEulers_f();
-  /* sanity check */
+  float err = 0;
+
+  // calculate the attitude error
+  // sanity check
   if (h_ctl_elevator_of_roll < 0.) {
     h_ctl_elevator_of_roll = 0.;
   }
+  h_ctl_pitch_loop_setpoint =  h_ctl_pitch_setpoint + h_ctl_elevator_of_roll / h_ctl_pitch_pgain * fabs(att->phi);
+  // This parameter should be bounded otherwise the INDI controller will make the airplane stall
+  // At the moment only h_ctl_pitch_setpoint is bounded but not the combination of both
+  // Bound(h_ctl_pitch_loop_setpoint, H_CTL_PITCH_MIN_SETPOINT, H_CTL_PITCH_MAX_SETPOINT);
+  err = h_ctl_pitch_loop_setpoint - att->theta;
 
-  if (v_ctl_mode == V_CTL_MODE_LANDING) {
-    h_ctl_pitch_loop_setpoint =  h_ctl_pitch_setpoint;
+  //Propagate the second order filter on the gyroscopes
+  float omega2 = indi_omega * indi_omega;
+  indi.filtered_rate.q = indi.filtered_rate.q + indi.filtered_rate_deriv.q * 1.0 / CONTROL_FREQUENCY;
+  indi.filtered_rate_deriv.q =  indi.filtered_rate_deriv.q + indi.filtered_rate_2deriv.q * 1.0 / CONTROL_FREQUENCY;
+  indi.filtered_rate_2deriv.q = -indi.filtered_rate_deriv.q * 2 * indi_zeta * indi_omega   + (stateGetBodyRates_f()->q - indi.filtered_rate.q) * omega2;
+
+  // Calculate required angular acceleration
+  indi.angular_accel_ref.q = reference_acceleration.err_q * err
+                             - reference_acceleration.rate_q * stateGetBodyRates_f()->q;
+
+  // Incremented in angular acceleration requires increment in control input
+  indi.du.q = 1.0/G_PITCH * (indi.angular_accel_ref.q - indi.filtered_rate_deriv.q); // THIS SHOULD HAVE BEEN A MINUS! CHECK THE SIGNS!
+
+  // Add the increment to the total control input
+  indi.u_in.q = indi.u.q + indi.du.q;
+
+  // Bound the total control input
+  Bound(indi.u_in.q, -7500, 7500);
+
+  servo_input[delay_q].q = indi.u_in.q;
+
+  if (delay_q < servo_delay - 1) {
+  delay_q++;
+  } else {
+  delay_q = 0;
   }
-  else {
-    h_ctl_pitch_loop_setpoint =  h_ctl_pitch_setpoint + h_ctl_elevator_of_roll / h_ctl_pitch_pgain * fabs(att->phi);
+  servo_delayed_input.q = servo_input[delay_q].q;
+  u_act_dyn_previous.q = indi.u_act_dyn.q;
+  indi.u_act_dyn.q = indi.u_act_dyn.q + 0.117 * (servo_delayed_input.q - indi.u_act_dyn.q);
+  if (indi.u_act_dyn.q > u_act_dyn_previous.q + 500){
+    indi.u_act_dyn.q = u_act_dyn_previous.q + 500;
   }
-
-  float err = 0;
-
-#ifdef USE_AOA
-  switch (h_ctl_pitch_mode) {
-    case H_CTL_PITCH_MODE_THETA:
-      err = att->theta - h_ctl_pitch_loop_setpoint;
-      break;
-    case H_CTL_PITCH_MODE_AOA:
-      err = stateGetAngleOfAttack_f() - h_ctl_pitch_loop_setpoint;
-      break;
-    default:
-      err = att->theta - h_ctl_pitch_loop_setpoint;
-      break;
+  if (indi.u_act_dyn.q < u_act_dyn_previous.q - 500){
+    indi.u_act_dyn.q = u_act_dyn_previous.q - 500;
   }
-#else //NO_AOA
-  err = att->theta - h_ctl_pitch_loop_setpoint;
-#endif
+  
+  // Sensor filter
+  indi.u.q = indi.u.q + indi.udot.q * 1.0 / CONTROL_FREQUENCY;
+  indi.udot.q =  indi.udot.q + indi.udotdot.q * 1.0 / CONTROL_FREQUENCY;
+  indi.udotdot.q = -indi.udot.q * 2 * indi_zeta * indi_omega   + (indi.u_act_dyn.q - indi.u.q) * omega2;
 
-  float d_err = err - last_err;
-  last_err = err;
-  float cmd = -h_ctl_pitch_pgain * (err + h_ctl_pitch_dgain * d_err);
-#ifdef LOITER_TRIM
-  cmd += loiter();
-#endif
-
-#ifdef STEP_INPUT_AUTO1_PITCH
-#warning "Using step input on auto1!!! Only for testing/experiment!!"
-  if((radio_control.values[6] > 0) && (step_timer < 2048)) {
-    if(step_timer < 256) {
-      cmd = -1500;
-    }
-    else if(step_timer > 255 && step_timer < 512)  {
-      cmd = 0;
-    }
-    else if(step_timer > 511 && step_timer < 768)  {
-      cmd = 1500;
-    }
-    else if(step_timer > 767 && step_timer < 1024)  {
-      cmd = 0;
-    }
-    else if(step_timer > 1023 && step_timer < 1280)  {
-      cmd = 1500;
-    }
-    else if(step_timer > 1279 && step_timer < 1536)  {
-      cmd = -1500;
-    }
-    else if(step_timer > 1535 && step_timer < 1792)  {
-      cmd = 1500;
-    }
-    else if(step_timer > 1791 && step_timer < 2048)  {
-      cmd = 0;
-    }
-    step_timer = step_timer + 1;
+  // Don't increment if thrust is off
+  if (v_ctl_throttle_setpoint < 2500 || radio_control.values[6] < 0) {
+    FLOAT_RATES_ZERO(indi.u);
+    FLOAT_RATES_ZERO(indi.du);
+    FLOAT_RATES_ZERO(indi.u_act_dyn);
+    FLOAT_RATES_ZERO(indi.u_in);
+    FLOAT_RATES_ZERO(indi.udot);
+    FLOAT_RATES_ZERO(indi.udotdot);
+    err =  att->theta - h_ctl_pitch_loop_setpoint;
+    float d_err = err - last_err;
+    last_err = err;
+    float cmd = -h_ctl_pitch_pgain * (err + h_ctl_pitch_dgain * d_err);
     h_ctl_elevator_setpoint = TRIM_PPRZ(cmd);
   }
-  else if(radio_control.values[6] < 0) {
-    //normal flying
-    step_timer = 0;
+  else {
+  /* INDI feedback */
+    h_ctl_elevator_setpoint = TRIM_PPRZ(indi.u_in.q);
   }
-#endif
-  h_ctl_elevator_setpoint = TRIM_PPRZ(cmd);
+
 }

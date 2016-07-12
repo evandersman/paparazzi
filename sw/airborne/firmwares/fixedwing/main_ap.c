@@ -518,7 +518,7 @@ void navigation_task(void)
 
   common_nav_periodic_task_4Hz();
   if (pprz_mode == PPRZ_MODE_HOME) {
-    nav_home();
+    nav_without_gps();
   } else if (pprz_mode == PPRZ_MODE_GPS_OUT_OF_ORDER) {
     nav_without_gps();
   } else {
