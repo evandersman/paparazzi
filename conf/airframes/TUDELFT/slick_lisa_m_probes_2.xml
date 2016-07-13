@@ -46,7 +46,7 @@
     <!-- Sensors -->
     <subsystem name="imu" type="aspirin_v2.1"/>
     <!-- for optitrack with Wifi module -->
-    <module name="gps" type="datalink"/>
+    <module name="gps" type="optitrack"/>
     <!-- for outdoor flight -->
     <!--subsystem name="gps" type="ublox"/-->
 
@@ -58,7 +58,6 @@
     <subsystem name="control" type="indi"/>
     <subsystem name="navigation"/>
     <module name="ins" type="alt_float">
-      <!--define name="USE_BAROMETER" value="TRUE"/-->
     </module>
   </firmware>
 

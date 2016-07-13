@@ -31,6 +31,14 @@ module LL = Latlong
 module U = Unix
 module Dl_Pprz = PprzLink.Messages (struct let name = "datalink" end)
 
+let pos_frac = 2. ** 8.
+
+let geo_hmsl_of_ltp = fun ned nav_ref d_hmsl ->
+  match nav_ref with
+    | Ltp nav_ref_ecef ->
+      let (geo, alt) = LL.geo_of_ecef LL.WGS84 (LL.ecef_of_ned nav_ref_ecef ned) in
+      (geo, alt +. d_hmsl)
+    | _ -> (LL.make_geo 0. 0., 0.)
 
 (* FIXME: bound the loop *)
 let rec norm_course =
@@ -356,4 +364,15 @@ let log_and_parse = fun ac_name (a:Aircraft.aircraft) msg values ->
       a.datalink_status.uplink_msgs <- ivalue "uplink_nb_msgs";
       a.datalink_status.downlink_rate <- ivalue "downlink_rate";
       a.datalink_status.downlink_msgs <- ivalue "downlink_nb_msgs"
+    | "WP_MOVED_ENU" ->
+      begin
+        match a.nav_ref with
+            Some nav_ref ->
+              let east  = fvalue "east"   /. pos_frac
+              and north = fvalue "north"  /. pos_frac
+              and up    = fvalue "up"     /. pos_frac in
+              let (geo, h) = geo_hmsl_of_ltp (LL.make_ned [| north; east; -. up |]) nav_ref a.d_hmsl in
+              update_waypoint a (ivalue "wp_id") geo h;
+          | None -> (); (** Can't use this message  *)
+      end
     | _ -> ()

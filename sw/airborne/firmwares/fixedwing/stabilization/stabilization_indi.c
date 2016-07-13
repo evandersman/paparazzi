@@ -272,7 +272,7 @@ void h_ctl_course_loop(void)
 
 #ifdef STRONG_WIND
   // Usefull path speed
-  const float reference_advance = (NOMINAL_AIRSPEED / 2.);
+  const float reference_advance = NOMINAL_AIRSPEED;
   float advance = cos(err) * stateGetHorizontalSpeedNorm_f() / reference_advance;
 
   if (
@@ -298,12 +298,10 @@ void h_ctl_course_loop(void)
     float herr = stateGetNedToBodyEulers_f()->psi - h_ctl_course_setpoint; //+crab);
     NormRadAngle(herr);
 
-    if (advance < -0.5) {            //<! moving in the wrong direction / big > 90 degree turn
+    if (advance < 0) {            //<! moving in the wrong direction / big > 90 degree turn
       err = herr;
-    } else if (advance < 0.) {       //<!
-      err = (-advance) * 2. * herr;
     } else {
-      err = advance * err;
+      err = herr*(1-advance) + err*advance;
     }
 
     // Reset differentiator when switching mode
