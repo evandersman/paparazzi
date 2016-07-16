@@ -104,6 +104,13 @@ bool h_ctl_disabled;
 /* AUTO1 rate mode */
 bool h_ctl_auto1_rate;
 
+#if STEP_INPUT_AUTO1_ROLL && STEP_INPUT_OPEN_LOOP_ROLL
+#error auto1 and open loop tests are not compatible: test reference tracking and open loop behaviour separately
+#endif
+
+#if STEP_INPUT_AUTO1_PITCH && STEP_INPUT_OPEN_LOOP_PITCH
+#error auto1 and open loop tests are not compatible: test reference tracking and open loop behaviour separately
+#endif
 
 /* inner roll loop parameters */
 float  h_ctl_roll_setpoint;
@@ -117,6 +124,8 @@ float  h_ctl_pitch_loop_setpoint;
 float  h_ctl_pitch_pgain;
 float  h_ctl_pitch_dgain;
 pprz_t h_ctl_elevator_setpoint;
+float  h_ctl_pitch_igain;
+float  pitch_sum_err;
 
 /* inner yaw loop parameters */
 #if H_CTL_YAW_LOOP
@@ -162,9 +171,19 @@ static inline void h_ctl_roll_rate_loop(void);
 
 float h_ctl_roll_attitude_gain;
 float h_ctl_roll_rate_gain;
+float h_ctl_roll_i_gain;
+float roll_sum_err;
 
 #ifdef AGR_CLIMB
 static float nav_ratio;
+#endif
+
+#ifdef STEP_INPUT_OPEN_LOOP_ROLL
+int32_t step_timer_roll;
+#endif
+
+#ifdef STEP_INPUT_OPEN_LOOP_PITCH
+int32_t step_timer_pitch;
 #endif
 
 #if PERIODIC_TELEMETRY
@@ -205,6 +224,8 @@ void h_ctl_init(void)
   h_ctl_pitch_dgain = H_CTL_PITCH_DGAIN;
   h_ctl_elevator_setpoint = 0;
   h_ctl_elevator_of_roll = H_CTL_ELEVATOR_OF_ROLL;
+  h_ctl_pitch_igain = H_CTL_PITCH_IGAIN;
+  pitch_sum_err = 0.;
 
 #ifdef H_CTL_ROLL_SLEW
   h_ctl_roll_slew = H_CTL_ROLL_SLEW;
@@ -217,11 +238,16 @@ void h_ctl_init(void)
 #ifdef H_CTL_ROLL_ATTITUDE_GAIN
   h_ctl_roll_attitude_gain = H_CTL_ROLL_ATTITUDE_GAIN;
   h_ctl_roll_rate_gain = H_CTL_ROLL_RATE_GAIN;
+  h_ctl_roll_i_gain = H_CTL_ROLL_I_GAIN;
+  roll_sum_err = 0.;
 #endif
 
 #ifdef AGR_CLIMB
   nav_ratio = 0;
 #endif
+  
+  step_timer_roll = 0;
+  step_timer_pitch = 0;
 
   G_ROLL = STABILIZATION_INDI_G_ROLL;
   G_PITCH = STABILIZATION_INDI_G_PITCH;
@@ -396,6 +422,26 @@ void h_ctl_attitude_loop(void)
 /** Computes h_ctl_aileron_setpoint from h_ctl_roll_setpoint */
 inline static void h_ctl_roll_loop(void)
 {
+#if STEP_INPUT_AUTO1_ROLL
+#warning "Using step input on setpoint roll!! Only for testing/experiment!!"
+  if((radio_control.values[8] > 0) && (step_timer_roll < 768)) {
+    if(step_timer_roll < 256) {
+      h_ctl_roll_setpoint = 0.1;
+    }
+    else if(step_timer_roll > 255 && step_timer_roll < 512)  {
+      h_ctl_roll_setpoint = -0.1;
+    }
+    else if(step_timer_roll > 511)  {
+      h_ctl_roll_setpoint = 0;
+    }
+    step_timer_roll = step_timer_roll + 1;
+  }
+  else if(radio_control.values[8] < 0) {
+    //normal flying
+    step_timer_roll = 0;
+  }
+#endif
+
   //calculate the attitude error
   float err = stateGetNedToBodyEulers_f()->phi - h_ctl_roll_setpoint;
 
@@ -452,7 +498,29 @@ inline static void h_ctl_roll_loop(void)
     FLOAT_RATES_ZERO(indi.u_in);
     FLOAT_RATES_ZERO(indi.udot);
     FLOAT_RATES_ZERO(indi.udotdot);
-    float cmd = h_ctl_roll_attitude_gain * err + h_ctl_roll_rate_gain * stateGetBodyRates_f()->p;
+    /* I term calculation */
+    roll_sum_err += err;
+    if (v_ctl_throttle_setpoint < 2500) { roll_sum_err = 0; }
+    float cmd = h_ctl_roll_attitude_gain * err + h_ctl_roll_rate_gain * stateGetBodyRates_f()->p + h_ctl_roll_i_gain * roll_sum_err;
+  #if STEP_INPUT_OPEN_LOOP_ROLL
+  #warning "Using step input on aileron!! Only for testing/experiment!!"
+    if((radio_control.values[8] > 0) && (step_timer_roll < 768)) {
+      if(step_timer_roll < 256) {
+        cmd = -1500;
+      }
+      else if(step_timer_roll > 255 && step_timer_roll < 512)  {
+        cmd = 0;
+      }
+      else if(step_timer_roll > 511)  {
+        cmd = 1500;
+      }
+      step_timer_roll = step_timer_roll + 1;
+    }
+    else if(radio_control.values[8] < 0) {
+      //normal flying
+      step_timer_roll = 0;
+    }
+  #endif
     h_ctl_aileron_setpoint = TRIM_PPRZ(cmd);
   }
   else {
@@ -503,6 +571,28 @@ inline static void h_ctl_pitch_loop(void)
     h_ctl_elevator_of_roll = 0.;
   }
   h_ctl_pitch_loop_setpoint =  h_ctl_pitch_setpoint + h_ctl_elevator_of_roll / h_ctl_pitch_pgain * fabs(att->phi);
+
+  #if STEP_INPUT_AUTO1_PITCH
+  #warning "Using step input on setpoint pitch!! Only for testing/experiment!!"
+    if((radio_control.values[7] > 0) && (step_timer_pitch < 768)) {
+      if(step_timer_pitch < 256) {
+        h_ctl_pitch_loop_setpoint = 0.1;
+      }
+      else if(step_timer_pitch > 255 && step_timer_pitch < 512)  {
+        h_ctl_pitch_loop_setpoint = -0.1;
+      }
+      else if(step_timer_pitch > 511)  {
+        h_ctl_pitch_loop_setpoint = 0;
+      }
+      step_timer_pitch = step_timer_pitch + 1;
+    }
+    else if(radio_control.values[7] < 0) {
+      //normal flying
+      step_timer_pitch = 0;
+      h_ctl_pitch_loop_setpoint =  h_ctl_pitch_setpoint + h_ctl_elevator_of_roll / h_ctl_pitch_pgain * fabs(att->phi);
+    }
+  #endif
+
   // This parameter should be bounded otherwise the INDI controller will make the airplane stall
   // At the moment only h_ctl_pitch_setpoint is bounded but not the combination of both
   // Bound(h_ctl_pitch_loop_setpoint, H_CTL_PITCH_MIN_SETPOINT, H_CTL_PITCH_MAX_SETPOINT);
@@ -560,7 +650,29 @@ inline static void h_ctl_pitch_loop(void)
     err =  att->theta - h_ctl_pitch_loop_setpoint;
     float d_err = err - last_err;
     last_err = err;
-    float cmd = -h_ctl_pitch_pgain * (err + h_ctl_pitch_dgain * d_err);
+    /* I term calculation */
+    pitch_sum_err += err;
+    if (v_ctl_throttle_setpoint < 2500) { pitch_sum_err = 0; }
+    float cmd = -h_ctl_pitch_pgain * (err + h_ctl_pitch_dgain * d_err) + h_ctl_pitch_igain * pitch_sum_err;
+  #if STEP_INPUT_OPEN_LOOP_PITCH
+  #warning "Using step input on elevator!! Only for testing/experiment!!"
+    if((radio_control.values[7] > 0) && (step_timer_pitch < 768)) {
+      if(step_timer_pitch < 256) {
+        cmd = -1500;
+      }
+      else if(step_timer_pitch > 255 && step_timer_pitch < 512)  {
+        cmd = 0;
+      }
+      else if(step_timer_pitch > 511)  {
+        cmd = 1500;
+      }
+      step_timer_pitch = step_timer_pitch + 1;
+    }
+    else if(radio_control.values[7] < 0) {
+      //normal flying
+      step_timer_pitch = 0;
+    }
+  #endif
     h_ctl_elevator_setpoint = TRIM_PPRZ(cmd);
   }
   else {
