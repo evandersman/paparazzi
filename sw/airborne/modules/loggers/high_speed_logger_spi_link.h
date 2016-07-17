@@ -58,115 +58,54 @@ struct PACKED high_speed_logger_spi_link_data {
 
   int32_t cmd_roll;*/
 
-/*  int32_t uact;
-  int32_t udelay;
-  int32_t potleft;
-  int32_t potright;*/
-/*
-  int32_t phi;          // 6
-  int32_t p;
+  int32_t phi;
+  int32_t theta;
+  int32_t psi;
+
+  /* Test 1 determine G matrix */
+  /*int32_t p;
   int32_t q;
   int32_t r;
-  int32_t cmd_roll;
-*/
-  /*int32_t pgain;        // 9
-  int32_t dgain;
-  int32_t ref_acc;
-  int32_t filt_acc;     // 12
-  int32_t command_t;
-  int32_t g;
-  int32_t u_p;
-  int32_t uin;*/
-
-/*
-  int32_t offset_pl;      // 5
-  int32_t offset_al;
-  int32_t offset_pr;
-  int32_t offset_ar;
-  int32_t pprobes;      // 9
-  int32_t pgain;
-  int32_t dgain;
-  int32_t probe_press_l;    // 12
-  int32_t probe_press_r;
-  int32_t command_roll;     // 14
-  int32_t command_turb_l;   // 15
-  int32_t command_turb_r;   // 16
-*/
-
-//logging for roll INDI loop control
-/*
-  int32_t phi;
-  int32_t p;
-  int32_t cmd_throttle;
-  int32_t cmd_roll;
-  int32_t cmd_indi;
-  int32_t pot_ail;
-  int32_t ref_acc_p;
-  int32_t filt_acc_p;
-  int32_t g_roll;
-  int32_t omega;
-  int32_t zeta;
-  int32_t u_p;
-  int32_t u_dyn_p;
-  int32_t probe_press_l;
-  int32_t airspeed_r;*/
-
-//logging for pitch INDI loop control
-
-  int32_t theta;
-  int32_t phi;
-  int32_t q;
-  int32_t cmd_throttle;
-  int32_t cmd_pitch;
-  int32_t cmd_indi;
-  int32_t ref_acc_q;
-  int32_t filt_acc_q;
-  int32_t g_pitch;
-  int32_t omega;
-  int32_t zeta;
-  int32_t u_q;
-  int32_t u_dyn_q;
   int32_t roll_setpoint;
   int32_t pitch_setpoint;
-
-//logging for outer loop control
-/*
-  int32_t phi;
-  int32_t theta;
-  int32_t psi;
   int32_t cmd_throttle;
   int32_t cmd_roll;
   int32_t cmd_pitch;
-  int32_t cmd_indi;
-  int32_t pot_elev;
-  int32_t alt_set;
-  int32_t climb_set;
-  int32_t pitch_set;
-  int32_t throttle_set;
-  int32_t roll_set;
-  int32_t probe_press_l;
-  int32_t airspeed_r;*/
+  int32_t cmd_yaw;
+  int32_t x;
+  int32_t y;
+  int32_t z;*/
 
-//logging for probe calibration
-/*  int32_t phi;
-  int32_t theta;
-  int32_t psi;
-
+  /* Test 2 INDI and PID reference tracking */
   int32_t p;
   int32_t q;
   int32_t r;
-
+  int32_t roll_setpoint;
+  int32_t pitch_setpoint;
   int32_t cmd_throttle;
   int32_t cmd_roll;
   int32_t cmd_pitch;
-  int32_t cmd_indi;
+  int32_t ref_acc_pdot;
+  int32_t filt_acc_pdot;
+  int32_t ref_acc_qdot;
+  int32_t filt_acc_qdot;
 
-  int32_t ax;
-  int32_t ay;
-  int32_t az;
+  /* Test 3 OUTER LOOP reference tracking */
+  /*int32_t altitude_setpoint;
+  int32_t altitude;
+  int32_t climb_setpoint;
+  int32_t EnuSpeedZ;
+  int32_t throttle_controlled;
+  int32_t pitch_setpoint;
+  int32_t course_setpoint;
+  int32_t des_x;
+  int32_t des_y;
+  int32_t x;
+  int32_t y;
+  int32_t roll_setpoint;*/
 
-  int32_t probe_press;
-  int32_t airspeed;*/
+
+
 };
 
 #endif /* HIGH_SPEED_LOGGER_SPI_LINK_H_ */
