@@ -6,10 +6,10 @@
 </header>
   <waypoints>
     <waypoint name="HOME" x="0.0" y="0.0"/>
-    <waypoint lat="51.9891798" lon="4.3761986" name="CLIMB"/>
-    <waypoint lat="51.9891798" lon="4.3761986" name="STDBY"/>
-    <waypoint lat="51.9891711" lon="4.3761985" name="TD"/>
-    <waypoint lat="51.9892273" lon="4.3762010" name="p1"/>
+    <waypoint lat="51.9891798" lon="4.3761986" name="TD"/>
+    <waypoint lat="51.9891747" lon="4.3761986" name="CLIMB"/>
+    <waypoint lat="51.9891711" lon="4.3761985" name="STDBY"/>
+    <waypoint lat="51.9892069" lon="4.3762003" name="p1"/>
     <waypoint lat="51.9892652" lon="4.3762012" name="p2"/>
     <waypoint lat="51.9891950" lon="4.3762231" name="FA1"/>
     <waypoint lat="51.9891557" lon="4.3762221" name="FA2"/>
@@ -44,6 +44,7 @@
     </block>
     <block name="Go to wp1">
       <go from="STDBY" wp="p1" hmode="route"/>
+      <while cond="GpsFixValid()"/>
     </block>
     <block name="flare">
       <go approaching_time="0" from="STDBY" hmode="route" throttle="0.0" vmode="throttle" wp="TD"/>

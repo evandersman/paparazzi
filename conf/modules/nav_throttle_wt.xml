@@ -1,0 +1,27 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="nav_throttle_wt" dir="nav">
+  <doc>
+    <description>
+      Control nominal throttle in wind tunnel
+    </description>
+  </doc>
+  <settings>
+    <dl_settings name="control">
+      <dl_settings name="nominal throttle">
+        <dl_setting max="0.01" min="0." step="0.001" module="nav/nav_throttle_wt" var="h_ctl_throttle_pgain" shortname="pgain" param="H_CTL_THROTTLE_PGAIN"/>
+        <dl_setting max="0.01" min="0." step="0.001" module="nav/nav_throttle_wt" var="h_ctl_throttle_dgain" shortname="dgain" param="H_CTL_THROTTLE_DGAIN"/>
+        <dl_setting max="0.01" min="0." step="0.001" module="nav/nav_throttle_wt" var="h_ctl_throttle_igain" shortname="igain" param="H_CTL_THROTTLE_IGAIN"/>
+      </dl_settings>
+    </dl_settings>
+  </settings>
+  <header>
+    <file name="nav_throttle_wt.h"/>
+  </header>
+  <init fun="nav_nom_throttle_init()"/>
+  <!-- calculate the nominal throttle required to stay in the tunnel -->
+  <periodic fun="nav_nom_throttle_calc()" autorun="TRUE"/>
+  <makefile target="ap|sim|nps">
+    <file name="nav_throttle_wt.c"/>
+  </makefile>
+</module>

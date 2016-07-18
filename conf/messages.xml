@@ -918,7 +918,10 @@
     <field name="servo" type="uint16[]"/>
   </message>
 
-  <!--112 is free -->
+  <message name="ADC_SERVO_SCALED" id="112">
+    <field name="potleft" type="float"/>
+    <field name="potright" type="float"/>
+  </message>
 
   <message name="MLX_SERIAL" id="113">
     <field name="serial0" type="uint32"/>
@@ -1939,7 +1942,10 @@
     <field name="g2_r" type="float"/>
   </message>
 
-  <!--217 is free -->
+  <message name="NOM_THROTTLE" id="217">
+    <field name="err_x" type="float"/>
+    <field name="cruise" type="float"/>
+  </message>
 
   <message name="BEBOP_ACTUATORS" id="218">
     <field name="cmd_thrust" type="int32"/>

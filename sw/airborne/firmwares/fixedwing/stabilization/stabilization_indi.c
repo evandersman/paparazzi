@@ -499,9 +499,10 @@ inline static void h_ctl_roll_loop(void)
     FLOAT_RATES_ZERO(indi.udot);
     FLOAT_RATES_ZERO(indi.udotdot);
     /* I term calculation */
-    roll_sum_err += err;
+    roll_sum_err += h_ctl_roll_i_gain *err;
     if (v_ctl_throttle_setpoint < 2500) { roll_sum_err = 0; }
-    float cmd = h_ctl_roll_attitude_gain * err + h_ctl_roll_rate_gain * stateGetBodyRates_f()->p + h_ctl_roll_i_gain * roll_sum_err;
+    Bound(roll_sum_err, -9600, 9600);
+    float cmd = h_ctl_roll_attitude_gain * err + h_ctl_roll_rate_gain * stateGetBodyRates_f()->p + roll_sum_err;
   #if STEP_INPUT_OPEN_LOOP_ROLL
   #warning "Using step input on aileron!! Only for testing/experiment!!"
     if((radio_control.values[8] > 0) && (step_timer_roll < 768)) {
@@ -651,9 +652,10 @@ inline static void h_ctl_pitch_loop(void)
     float d_err = err - last_err;
     last_err = err;
     /* I term calculation */
-    pitch_sum_err += err;
+    pitch_sum_err += h_ctl_pitch_igain * err;
     if (v_ctl_throttle_setpoint < 2500) { pitch_sum_err = 0; }
-    float cmd = -h_ctl_pitch_pgain * (err + h_ctl_pitch_dgain * d_err) + h_ctl_pitch_igain * pitch_sum_err;
+    Bound(pitch_sum_err, -9600, 9600);
+    float cmd = -h_ctl_pitch_pgain * (err + h_ctl_pitch_dgain * d_err) - pitch_sum_err;
   #if STEP_INPUT_OPEN_LOOP_PITCH
   #warning "Using step input on elevator!! Only for testing/experiment!!"
     if((radio_control.values[7] > 0) && (step_timer_pitch < 768)) {
