@@ -72,6 +72,7 @@ extern float  h_ctl_pitch_loop_setpoint;
 extern float  h_ctl_pitch_pgain;
 extern float  h_ctl_pitch_dgain;
 extern pprz_t h_ctl_elevator_setpoint;
+extern float  h_ctl_pitch_igain;
 
 /* inner yaw loop parameters */
 #if H_CTL_YAW_LOOP
@@ -109,5 +110,6 @@ extern void h_ctl_attitude_loop(void);
 
 extern float h_ctl_roll_attitude_gain;
 extern float h_ctl_roll_rate_gain;
+extern float h_ctl_roll_i_gain;
 
 #endif /* FW_H_CTL_H */

@@ -10,6 +10,7 @@
 
   <firmware name="fixedwing">
     <target name="ap" board="lisa_m_2.0">
+      <define name="LISA_M_OR_MX_21"/>
       <configure name="FLASH_MODE" value="SWD"/>
       <configure name="PERIODIC_FREQUENCY" value="512"/>
       <configure name="AHRS_PROPAGATE_FREQUENCY" value="512"/>
@@ -22,9 +23,7 @@
 
     <configure name="USE_MAGNETOMETER" value="FALSE"/>
 
-    <!--define name="AGR_CLIMB"/>
-    <define name="LOITER_TRIM"/-->
-    <!--define name="STRONG_WIND"/-->
+    <define name="STRONG_WIND"/>
     <!--define name="SERVO_DEBUG"/-->
     <define name="INDI_SERVO_CONTROL"/>
 
@@ -47,24 +46,22 @@
 
     <!-- Sensors -->
     <subsystem name="imu" type="aspirin_v2.1"/>
-    <subsystem name="gps" type="datalink"/>
+    <module name="gps" type="datalink"/>
 
     <subsystem name="ahrs" type="int_cmpl_quat">
       <define name="USE_GPS" value="1"/>
       <define name="AHRS_USE_GPS_HEADING" value="1"/>
       <define name="AHRS_GRAVITY_UPDATE_COORDINATED_TURN" value="1"/>
     </subsystem>
-    <subsystem name="control"/>
+    <subsystem name="control" type="indi"/>
     <subsystem name="navigation"/>
-    <subsystem name="ins" type="alt_float">
-      <define name="USE_BAROMETER" value="TRUE"/>
-    </subsystem>
+    <module name="ins" type="alt_float"/>
   </firmware>
 
   <modules main_freq="512">
     <!--load name="turbulence_adc.xml"/-->
     <load name="potentiometer_adc.xml"/>
-    <load name="logger_spi_link.xml"/>
+    <!--load name="logger_spi_link.xml"/-->
     <load name="servo_controller.xml"/>
   </modules>
 
@@ -91,8 +88,6 @@
     <axis name="ROLL" failsafe_value="0"/>
     <axis name="PITCH" failsafe_value="0"/>
     <axis name="YAW" failsafe_value="0"/>
-    <axis name="TURB_LEFT" failsafe_value="0"/>
-    <axis name="TURB_RIGHT" failsafe_value="0"/>
   </commands>
 
   <rc_commands>
@@ -131,8 +126,8 @@
     <define name="MAG_Z_SENS" value="4.41585354498" integer="16"/>
 
     <define name="BODY_TO_IMU_PHI" value="0." unit="deg"/>
-    <define name="BODY_TO_IMU_THETA" value="0." unit="deg"/>
-    <define name="BODY_TO_IMU_PSI" value="90." unit="deg"/>
+    <define name="BODY_TO_IMU_THETA" value="10." unit="deg"/>
+    <define name="BODY_TO_IMU_PSI" value="0." unit="deg"/>
   </section>
 
   <section name="INS" prefix="INS_">
@@ -162,8 +157,8 @@
     <define name="COURSE_DGAIN" value="0.3"/>
 
     <define name="ROLL_MAX_SETPOINT" value="35" unit="deg"/>
-    <define name="PITCH_MAX_SETPOINT" value="60" unit="deg"/>
-    <define name="PITCH_MIN_SETPOINT" value="-60" unit="deg"/>
+    <define name="PITCH_MAX_SETPOINT" value="20" unit="deg"/>
+    <define name="PITCH_MIN_SETPOINT" value="-10" unit="deg"/>
 
     <define name="PITCH_PGAIN" value="4500."/>
     <define name="PITCH_DGAIN" value="1.5"/>
@@ -178,18 +173,19 @@
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
-    <define name="G" value="0.019"/>
+    <define name="G_ROLL" value="0.019"/>
+    <define name="G_PITCH" value="0.013"/>
 
     <!-- reference acceleration for attitude control -->
     <define name="REF_ERR_P" value="420"/>
-    <define name="REF_ERR_Q" value="600.0"/>
+    <define name="REF_ERR_Q" value="420.0"/>
     <define name="REF_ERR_R" value="600.0"/>
     <define name="REF_RATE_P" value="20.0"/>
-    <define name="REF_RATE_Q" value="28.0"/>
+    <define name="REF_RATE_Q" value="20.0"/>
     <define name="REF_RATE_R" value="28.0"/>
 
     <!-- second order filter parameters -->
-    <define name="FILT_OMEGA" value="35.0"/>
+    <define name="FILT_OMEGA" value="20.0"/>
     <define name="FILT_ZETA" value="0.65"/>
 
     <!-- first order actuator dynamics -->
@@ -216,7 +212,7 @@
 
   <section name="AUTO1" prefix="AUTO1_">
     <define name="MAX_ROLL" value="60." unit="deg"/>
-    <define name="MAX_PITCH" value="60." unit="deg"/>
+    <define name="MAX_PITCH" value="80." unit="deg"/>
   </section>
 
   <section name="BAT">
@@ -244,8 +240,8 @@
     <define name="SERVO_DELAY" value="7"/>
     <!--define name="PROBES_FF_ANG_ACC" value="1"/-->
     <define name="COMMAND_PITCH_TRIM" value="0."/>
-    <define name="SERVO_PGAIN" value="6."/>
-    <define name="SERVO_DGAIN" value="25."/>
+    <define name="SERVO_PGAIN" value="3."/>
+    <define name="SERVO_DGAIN" value="0."/>
     <define name="SERVO_IGAIN" value="2."/>
     <define name="SERVO_SUM_ERR_MAX" value="3000"/>
     <!--define name="SERVO_PGAIN" value="10."/>

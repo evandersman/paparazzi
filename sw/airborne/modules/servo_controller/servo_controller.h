@@ -61,6 +61,7 @@ extern struct servo_data right_wing;
 
 extern float pot_left_wing_scaled;
 extern float pot_right_wing_scaled;
+extern float left_wing_motor_dyn_previous;
 
 extern float reference_rate_pgain;
 extern float tau_motor_dyn_p;

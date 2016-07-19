@@ -26,6 +26,8 @@
 #include "modules/sensors/potentiometer_adc.h"
 #include "modules/servo_controller/servo_controller.h"
 #include BOARD_CONFIG
+#include "pprzlink/messages.h"
+#include "subsystems/datalink/downlink.h"
 #include "generated/airframe.h"
 #include "state.h"
 #include <stdio.h>
@@ -42,6 +44,7 @@ uint16_t servo_count;
 
 float pot_left_wing_scaled;
 float pot_right_wing_scaled;
+float left_wing_motor_dyn_previous;
 
 float servo_indi_omega;
 float servo_indi_zeta;
@@ -80,6 +83,7 @@ void servo_controller_init(void)
   right_wing.cmd         = 0.;
 
   servo_count            = 0;
+  left_wing_motor_dyn_previous = 0.;
 
   left_wing.pgain       = SERVO_PGAIN;
   left_wing.dgain       = SERVO_DGAIN;
@@ -105,6 +109,9 @@ void servo_controller_update(void)
   // potentiometer value
   pot_left_wing_scaled = -(potentiometer_adc_raw_left - left_wing.offset) * left_wing.gain;
   pot_right_wing_scaled = -(potentiometer_adc_raw_right - right_wing.offset) * right_wing.gain;
+
+RunOnceEvery(100, DOWNLINK_SEND_ADC_SERVO_SCALED(DefaultChannel, DefaultDevice, &pot_left_wing_scaled, &pot_right_wing_scaled));
+  
 
 #ifdef SERVO_DEBUG
   if (servo_count < 250) {

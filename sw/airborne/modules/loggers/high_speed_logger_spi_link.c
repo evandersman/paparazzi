@@ -114,9 +114,9 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.cmd_pitch       = commands[2];
     high_speed_logger_spi_link_data.cmd_yaw         = commands[3];
     // position x,y,z
-    high_speed_logger_spi_link_data.x               = stateGetPositionEnu_f()->x;
-    high_speed_logger_spi_link_data.y               = stateGetPositionEnu_f()->y;
-    high_speed_logger_spi_link_data.z               = stateGetPositionEnu_f()->z;*/
+    high_speed_logger_spi_link_data.x               = POS_BFP_OF_REAL(stateGetPositionEnu_f()->x);
+    high_speed_logger_spi_link_data.y               = POS_BFP_OF_REAL(stateGetPositionEnu_f()->y);
+    high_speed_logger_spi_link_data.z               = POS_BFP_OF_REAL(stateGetPositionEnu_f()->z);*/
 
     /* Test 2 INDI and PID reference tracking */
     // rates
@@ -145,10 +145,10 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.throttle_controlled  = ANGLE_BFP_OF_REAL(v_ctl_throttle_setpoint);
     high_speed_logger_spi_link_data.pitch_setpoint       = ANGLE_BFP_OF_REAL(h_ctl_pitch_loop_setpoint);
     high_speed_logger_spi_link_data.course_setpoint      = ANGLE_BFP_OF_REAL(h_ctl_course_setpoint);
-    high_speed_logger_spi_link_data.des_x    		 = ANGLE_BFP_OF_REAL(desired_x);
-    high_speed_logger_spi_link_data.des_y    		 = ANGLE_BFP_OF_REAL(desired_y);
-    high_speed_logger_spi_link_data.x    		 = ANGLE_BFP_OF_REAL(stateGetPositionEnu_f()->x);
-    high_speed_logger_spi_link_data.y    		 = ANGLE_BFP_OF_REAL(stateGetPositionEnu_f()->y);
+    high_speed_logger_spi_link_data.des_x    		 = POS_BFP_OF_REAL(desired_x);
+    high_speed_logger_spi_link_data.des_y    		 = POS_BFP_OF_REAL(desired_y);
+    high_speed_logger_spi_link_data.x    		 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->x);
+    high_speed_logger_spi_link_data.y    		 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->y);
     high_speed_logger_spi_link_data.roll_setpoint        = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);*/
 
 
