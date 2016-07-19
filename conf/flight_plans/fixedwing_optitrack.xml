@@ -43,8 +43,8 @@
       <go from="CLIMB" wp="STDBY" hmode="route"/>
     </block>
     <block name="Go to wp1">
-      <go from="STDBY" wp="p1" hmode="route"/>
-      <while cond="GpsFixValid()"/>
+      <go wp="p1"/>
+      <deroute block="Go to wp1"/>
     </block>
     <block name="flare">
       <go approaching_time="0" from="STDBY" hmode="route" throttle="0.0" vmode="throttle" wp="TD"/>
