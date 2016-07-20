@@ -37,6 +37,7 @@
 #include CTRL_TYPE_H
 #include "firmwares/fixedwing/autopilot.h"
 #include "subsystems/radio_control.h"
+#include "subsystems/gps/gps_datalink.h"
 
 float G_ROLL;
 float G_PITCH;
@@ -293,17 +294,17 @@ void h_ctl_course_loop(void)
   static float last_err;
 
   // Ground path error
-  float err = stateGetHorizontalSpeedDir_f() - h_ctl_course_setpoint;
+  float err = atan2f(enu_speedf.x, enu_speedf.y) - h_ctl_course_setpoint;
   NormRadAngle(err);
 
 #ifdef STRONG_WIND
   // Usefull path speed
   const float reference_advance = NOMINAL_AIRSPEED;
-  float advance = cos(err) * stateGetHorizontalSpeedNorm_f() / reference_advance;
+  float advance = cos(err) * FLOAT_VECT2_NORM(enu_speedf) / reference_advance;
 
   if (
     (advance < 1.)  &&                          // Path speed is small
-    (stateGetHorizontalSpeedNorm_f() < reference_advance)  // Small path speed is due to wind (small groundspeed)
+    (FLOAT_VECT2_NORM(enu_speedf) < reference_advance)  // Small path speed is due to wind (small groundspeed)
   ) {
     /*
     // rough crabangle approximation
@@ -370,12 +371,12 @@ void h_ctl_course_loop(void)
   }
 #endif
 
-  float speed_depend_nav = stateGetHorizontalSpeedNorm_f() / NOMINAL_AIRSPEED;
+  float speed_depend_nav = FLOAT_VECT2_NORM(enu_speedf) / NOMINAL_AIRSPEED;
   Bound(speed_depend_nav, 0.66, 1.5);
 
   float cmd = -h_ctl_course_pgain * speed_depend_nav * (err + d_err * h_ctl_course_dgain);
 
-
+//RunOnceEvery(100, DOWNLINK_SEND_COURSE_LOOP(DefaultChannel, DefaultDevice, &advance, &err, &cmd));
 
 #if defined(AGR_CLIMB) && !USE_AIRSPEED
   /** limit navigation during extreme altitude changes */

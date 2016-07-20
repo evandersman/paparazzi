@@ -35,6 +35,7 @@
 #include "modules/servo_controller/servo_controller.h"
 #include "arch/stm32/subsystems/actuators/actuators_pwm_arch.h"
 #include "subsystems/radio_control.h"
+#include "subsystems/gps/gps_datalink.h"
 
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
@@ -96,9 +97,9 @@ void high_speed_logger_spi_link_periodic(void)
 
     /* Data which will be logged always */
 
-    high_speed_logger_spi_link_data.phi             = stateGetNedToBodyEulers_i()->phi;
+    /*high_speed_logger_spi_link_data.phi             = stateGetNedToBodyEulers_i()->phi;
     high_speed_logger_spi_link_data.theta           = stateGetNedToBodyEulers_i()->theta;
-    high_speed_logger_spi_link_data.psi             = stateGetNedToBodyEulers_i()->psi;
+    high_speed_logger_spi_link_data.psi             = stateGetNedToBodyEulers_i()->psi;*/
     
     /* Test 1 determine G matrix */
     // rates
@@ -120,7 +121,7 @@ void high_speed_logger_spi_link_periodic(void)
 
     /* Test 2 INDI and PID reference tracking */
     // rates
-    high_speed_logger_spi_link_data.p               = state.body_rates_i.p;
+    /*high_speed_logger_spi_link_data.p               = state.body_rates_i.p;
     high_speed_logger_spi_link_data.q               = state.body_rates_i.q;
     high_speed_logger_spi_link_data.r               = state.body_rates_i.r;
     // reference angles
@@ -134,22 +135,26 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.ref_acc_pdot    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);
     high_speed_logger_spi_link_data.filt_acc_pdot   = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.p);
     high_speed_logger_spi_link_data.ref_acc_qdot    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.q);
-    high_speed_logger_spi_link_data.filt_acc_qdot   = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.q);
+    high_speed_logger_spi_link_data.filt_acc_qdot   = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.q);*/
 
     /* Test 3 OUTER LOOP reference tracking */
     // altitude, course and inner loop setpoints
-    /*high_speed_logger_spi_link_data.altitude_setpoint    = ANGLE_BFP_OF_REAL(v_ctl_altitude_setpoint);  // the accuracy might be in meters check it!
-    high_speed_logger_spi_link_data.altitude    	 = ANGLE_BFP_OF_REAL(stateGetPositionUtm_f()->alt); // the accuracy might be in meters check it!
-    high_speed_logger_spi_link_data.climb_setpoint   	 = ANGLE_BFP_OF_REAL(v_ctl_climb_setpoint);
-    high_speed_logger_spi_link_data.EnuSpeedZ    	 = ANGLE_BFP_OF_REAL(stateGetSpeedEnu_f()->z);
+    high_speed_logger_spi_link_data.statex    		 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->x);
+    high_speed_logger_spi_link_data.statey    		 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->y);
+    high_speed_logger_spi_link_data.statealtitude    	 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->z);
+
+    high_speed_logger_spi_link_data.altitude_setpoint    = POS_BFP_OF_REAL(v_ctl_altitude_setpoint);  // the accuracy might be in meters check it!
+    high_speed_logger_spi_link_data.altitude    	 = POS_BFP_OF_REAL(enu_posf.z); // the accuracy might be in meters check it!
+    high_speed_logger_spi_link_data.climb_setpoint   	 = SPEED_BFP_OF_REAL(v_ctl_climb_setpoint);
+    high_speed_logger_spi_link_data.EnuSpeedZ    	 = SPEED_BFP_OF_REAL(enu_speedf.z);
     high_speed_logger_spi_link_data.throttle_controlled  = ANGLE_BFP_OF_REAL(v_ctl_throttle_setpoint);
     high_speed_logger_spi_link_data.pitch_setpoint       = ANGLE_BFP_OF_REAL(h_ctl_pitch_loop_setpoint);
     high_speed_logger_spi_link_data.course_setpoint      = ANGLE_BFP_OF_REAL(h_ctl_course_setpoint);
     high_speed_logger_spi_link_data.des_x    		 = POS_BFP_OF_REAL(desired_x);
     high_speed_logger_spi_link_data.des_y    		 = POS_BFP_OF_REAL(desired_y);
-    high_speed_logger_spi_link_data.x    		 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->x);
-    high_speed_logger_spi_link_data.y    		 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->y);
-    high_speed_logger_spi_link_data.roll_setpoint        = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);*/
+    high_speed_logger_spi_link_data.x    		 = POS_BFP_OF_REAL(enu_posf.x);
+    high_speed_logger_spi_link_data.y    		 = POS_BFP_OF_REAL(enu_posf.y);
+    high_speed_logger_spi_link_data.roll_setpoint        = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);
 
 
 /*
