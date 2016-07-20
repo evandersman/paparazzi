@@ -41,7 +41,7 @@ endif
 RADIO_CONTROL_LED  ?= 4
 BARO_LED           ?= none
 AHRS_ALIGNER_LED   ?= 2
-GPS_LED            ?= 3
+GPS_LED            ?= none
 SYS_TIME_LED       ?= 1
 
 
