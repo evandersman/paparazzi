@@ -33,7 +33,7 @@
 #include "subsystems/navigation/common_nav.h"
 #include "pprzlink/messages.h"
 #include "subsystems/datalink/downlink.h"
-
+#include "subsystems/gps/gps_datalink.h"
 
 float h_ctl_throttle_pgain = H_CTL_THROTTLE_PGAIN;
 float h_ctl_throttle_igain = H_CTL_THROTTLE_IGAIN;
@@ -51,7 +51,7 @@ void nav_nom_throttle_init(void)
 void nav_nom_throttle_calc(void)
 {
   /** distance to waypoint in x, error used for the P term */
-  float err_x = waypoints[WP_STDBY].y - stateGetPositionEnu_f()->y; // in the range of +/- 0.5m
+  float err_x = waypoints[WP_STDBY].y - enu_posf.y; // in the range of +/- 0.5m
   /* D term calculation */
   static float last_err;
   float d_err_x = err_x - last_err;

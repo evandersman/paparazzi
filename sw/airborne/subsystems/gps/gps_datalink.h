@@ -39,6 +39,7 @@
 #endif
 
 extern struct GpsState gps_datalink;
+extern struct EnuCoor_f enu_posf, enu_speedf;
 
 extern void gps_datalink_init(void);
 

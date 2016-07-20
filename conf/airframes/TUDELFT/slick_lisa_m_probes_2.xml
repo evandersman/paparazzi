@@ -37,7 +37,7 @@
     <!-- Communication -->
     <!-- WiFi module -->
     <subsystem name="telemetry" type="transparent">
-      <configure name="MODEM_BAUD" value="B115200"/>
+      <configure name="MODEM_BAUD" value="B230400"/>
     </subsystem>
     <!-- XBee -->
     <!--subsystem name="telemetry" type="xbee_api"/-->

@@ -356,20 +356,20 @@ bool nav_approaching_xy(float x, float y, float from_x, float from_y, float appr
 /**
  *  \brief Computes \a desired_x, \a desired_y and \a desired_course.
  */
+#include "subsystems/gps/gps_datalink.h"
 //static inline void fly_to_xy(float x, float y) {
 void fly_to_xy(float x, float y)
 {
-  struct EnuCoor_f *pos = stateGetPositionEnu_f();
   desired_x = x;
   desired_y = y;
   if (nav_mode == NAV_MODE_COURSE) {
-    h_ctl_course_setpoint = atan2f(x - pos->x, y - pos->y);
+    h_ctl_course_setpoint = atan2f(x - enu_posf.x, y - enu_posf.y);
     if (h_ctl_course_setpoint < 0.) {
       h_ctl_course_setpoint += 2 * M_PI;
     }
     lateral_mode = LATERAL_MODE_COURSE;
   } else {
-    float diff = atan2f(x - pos->x, y - pos->y) - stateGetHorizontalSpeedDir_f();
+    float diff = atan2f(x - enu_posf.x, y - enu_posf.y) - stateGetHorizontalSpeedDir_f();
     NormRadAngle(diff);
     BoundAbs(diff, M_PI / 2.);
     float s = sinf(diff);

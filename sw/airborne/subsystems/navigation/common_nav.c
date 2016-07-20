@@ -35,7 +35,7 @@ float dist2_to_wp;
 bool too_far_from_home;
 
 const uint8_t nb_waypoint = NB_WAYPOINT;
-struct point waypoints[NB_WAYPOINT] = WAYPOINTS_UTM;
+struct point waypoints[NB_WAYPOINT] = WAYPOINTS_ENU;
 
 float ground_alt;
 
@@ -123,7 +123,7 @@ unit_t nav_update_waypoints_alt(void)
 
 void common_nav_periodic_task_4Hz()
 {
-  RunOnceEvery(4, { stage_time++;  block_time++; });
+  RunOnceEvery(40, { stage_time++;  block_time++; });
 }
 
 /** Move a waypoint to given UTM coordinates.

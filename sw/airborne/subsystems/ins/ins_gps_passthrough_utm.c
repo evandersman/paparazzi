@@ -58,7 +58,6 @@ struct InsGpsPassthrough {
 };
 
 struct InsGpsPassthrough ins_gp;
-#include "led.h"
 
 static void gps_cb(uint8_t sender_id __attribute__((unused)),
                    uint32_t stamp __attribute__((unused)),
@@ -83,7 +82,7 @@ static void gps_cb(uint8_t sender_id __attribute__((unused)),
   INT32_VECT3_SCALE_2(ins_gp.ltp_speed, gps_speed_cm_s_ned,
                       INT32_SPEED_OF_CM_S_NUM, INT32_SPEED_OF_CM_S_DEN);
   stateSetSpeedNed_i(&ins_gp.ltp_speed);
-  LED_TOGGLE(3);
+
   /*struct UtmCoor_f utm = utm_float_from_gps(gps_s, nav_utm_zone0);
 
   // set position
@@ -113,7 +112,7 @@ void ins_gps_passthrough_init(void)
 
   ltp_def_from_ecef_i(&ins_gp.ltp_def, &ecef_nav0);
   ins_gp.ltp_def.hmsl = NAV_ALT0;
-  //stateSetLocalOrigin_i(&ins_gp.ltp_def);
+  stateSetLocalOrigin_i(&ins_gp.ltp_def);
 
   ins_gp.ltp_initialized = true;
 #else
@@ -136,7 +135,7 @@ void ins_reset_local_origin(void)
   ltp_def_from_ecef_i(&ins_gp.ltp_def, &gps.ecef_pos);
   ins_gp.ltp_def.lla.alt = gps.lla_pos.alt;
   ins_gp.ltp_def.hmsl = gps.hmsl;
-  //stateSetLocalOrigin_i(&ins_gp.ltp_def);
+  stateSetLocalOrigin_i(&ins_gp.ltp_def);
   ins_gp.ltp_initialized = true;
 
   struct UtmCoor_f utm = utm_float_from_gps(&gps, 0);

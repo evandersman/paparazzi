@@ -36,6 +36,7 @@
 struct LtpDef_i ltp_def;
 
 struct GpsState gps_datalink;
+struct EnuCoor_f enu_posf, enu_speedf;
 
 /** GPS initialization */
 void gps_datalink_init(void)
@@ -61,7 +62,6 @@ void gps_datalink_init(void)
 static void parse_gps_datalink_small(int16_t heading, uint32_t pos_xyz, uint32_t speed_xyz, uint32_t tow)
 {
   struct EnuCoor_i enu_pos, enu_speed;
-
   // Position in ENU coordinates
   enu_pos.x = (int32_t)((pos_xyz >> 21) & 0x7FF); // bits 31-21 x position in cm
   if (enu_pos.x & 0x400) {
@@ -93,6 +93,8 @@ static void parse_gps_datalink_small(int16_t heading, uint32_t pos_xyz, uint32_t
     enu_speed.z |= 0xFFFFFC00;  // sign extend for twos complements
   }
 
+  POSITIONS_FLOAT_OF_BFP(enu_posf, enu_pos);
+  SPEEDS_FLOAT_OF_BFP(enu_speedf, enu_speed);
   VECT3_NED_OF_ENU(gps_datalink.ned_vel, enu_speed);
   SetBit(gps_datalink.valid_fields, GPS_VALID_VEL_NED_BIT);
 
