@@ -221,11 +221,11 @@ bool nav_approaching_xy(float x, float y, float from_x, float from_y, float appr
 #define NavKillThrottle() { kill_throttle = 1; }
 
 /// Get current x (east) position in local coordinates
-#define GetPosX() (stateGetPositionEnu_f()->x)
+#define GetPosX() (enu_posf.x)
 /// Get current y (north) position in local coordinates
-#define GetPosY() (stateGetPositionEnu_f()->y)
+#define GetPosY() (enu_posf.y)
 /// Get current altitude above MSL
-#define GetPosAlt() (stateGetPositionUtm_f()->alt)
+#define GetPosAlt() (enu_posf.z)
 /**
  * Get current altitude reference for local coordinates.
  * This is the ground_alt from the flight plan at first,

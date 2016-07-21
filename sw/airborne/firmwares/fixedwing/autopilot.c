@@ -101,7 +101,7 @@ static void send_attitude(struct transport_tx *trans, struct link_device *dev)
 static void send_estimator(struct transport_tx *trans, struct link_device *dev)
 {
   pprz_msg_send_ESTIMATOR(trans, dev, AC_ID,
-                          &(stateGetPositionUtm_f()->alt), &(stateGetSpeedEnu_f()->z));
+                          &(enu_posf.z), &(enu_speedf.z));
 }
 
 static void send_bat(struct transport_tx *trans, struct link_device *dev)

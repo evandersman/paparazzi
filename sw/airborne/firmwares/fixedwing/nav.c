@@ -415,12 +415,12 @@ void nav_route_xy(float last_wp_x, float last_wp_y, float wp_x, float wp_y)
 
 static void nav_set_altitude(void)
 {
-  static float last_nav_altitude;
+  /*static float last_nav_altitude;
   if (fabs(nav_altitude - last_nav_altitude) > 1.) {
     flight_altitude = nav_altitude;
     last_nav_altitude = nav_altitude;
-  }
-  v_ctl_altitude_setpoint = flight_altitude;
+  }*/
+  v_ctl_altitude_setpoint = nav_altitude;
 }
 
 /** \brief Home mode navigation (circle around HOME) */

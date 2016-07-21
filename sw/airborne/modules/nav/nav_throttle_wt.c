@@ -38,6 +38,7 @@
 float h_ctl_throttle_pgain = H_CTL_THROTTLE_PGAIN;
 float h_ctl_throttle_igain = H_CTL_THROTTLE_IGAIN;
 float h_ctl_throttle_dgain = H_CTL_THROTTLE_DGAIN;
+float real_nominal_throttle = V_CTL_AUTO_THROTTLE_NOMINAL_CRUISE_THROTTLE;
 
 float  sum_err_x;
 
@@ -61,7 +62,7 @@ void nav_nom_throttle_calc(void)
   if (v_ctl_throttle_setpoint < 2500) { sum_err_x = 0; }
   Bound(sum_err_x, -0.05, 0.05);
   /* calculate the new nominal throttle */
-  float cruise = V_CTL_AUTO_THROTTLE_NOMINAL_CRUISE_THROTTLE + h_ctl_throttle_pgain * err_x + h_ctl_throttle_igain * sum_err_x + h_ctl_throttle_dgain * d_err_x;
+  float cruise = real_nominal_throttle + h_ctl_throttle_pgain * err_x + h_ctl_throttle_igain * sum_err_x + h_ctl_throttle_dgain * d_err_x;
   RunOnceEvery(100, DOWNLINK_SEND_NOM_THROTTLE(DefaultChannel, DefaultDevice, &err_x, &cruise));
   Bound(cruise, V_CTL_AUTO_THROTTLE_MIN_CRUISE_THROTTLE, V_CTL_AUTO_THROTTLE_MAX_CRUISE_THROTTLE);
   v_ctl_auto_throttle_cruise_throttle = cruise;

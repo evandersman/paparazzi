@@ -28,6 +28,7 @@
 extern float h_ctl_throttle_pgain;
 extern float h_ctl_throttle_igain;
 extern float h_ctl_throttle_dgain;
+extern float real_nominal_throttle;
 
 extern void nav_nom_throttle_init(void);
 extern void nav_nom_throttle_calc(void);

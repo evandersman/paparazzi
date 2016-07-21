@@ -143,8 +143,8 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.statey    		 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->y);
     high_speed_logger_spi_link_data.statealtitude    	 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->z);
 
-    high_speed_logger_spi_link_data.altitude_setpoint    = POS_BFP_OF_REAL(v_ctl_altitude_setpoint);  // the accuracy might be in meters check it!
-    high_speed_logger_spi_link_data.altitude    	 = POS_BFP_OF_REAL(enu_posf.z); // the accuracy might be in meters check it!
+    high_speed_logger_spi_link_data.altitude_setpoint    = POS_BFP_OF_REAL(v_ctl_altitude_setpoint);  
+    high_speed_logger_spi_link_data.altitude    	 = POS_BFP_OF_REAL(enu_posf.z);
     high_speed_logger_spi_link_data.climb_setpoint   	 = SPEED_BFP_OF_REAL(v_ctl_climb_setpoint);
     high_speed_logger_spi_link_data.EnuSpeedZ    	 = SPEED_BFP_OF_REAL(enu_speedf.z);
     high_speed_logger_spi_link_data.throttle_controlled  = ANGLE_BFP_OF_REAL(v_ctl_throttle_setpoint);
