@@ -58,9 +58,9 @@ struct PACKED high_speed_logger_spi_link_data {
 
   int32_t cmd_roll;*/
 
-  /*int32_t phi;
+  int32_t phi;
   int32_t theta;
-  int32_t psi;*/
+  int32_t psi;
 
   /* Test 1 determine G matrix */
   /*int32_t p;
@@ -77,21 +77,21 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t z;*/
 
   /* Test 2 INDI and PID reference tracking */
-  /*int32_t p;
+  int32_t p;
   int32_t q;
   int32_t r;
   int32_t roll_setpoint;
   int32_t pitch_setpoint;
-  int32_t cmd_throttle;
+  int32_t cmd_indi;
   int32_t cmd_roll;
   int32_t cmd_pitch;
   int32_t ref_acc_pdot;
   int32_t filt_acc_pdot;
   int32_t ref_acc_qdot;
-  int32_t filt_acc_qdot;*/
+  int32_t filt_acc_qdot;
 
   /* Test 3 OUTER LOOP reference tracking */
-  int32_t statex;
+  /*int32_t statex;
   int32_t statey;
   int32_t statealtitude;
   int32_t altitude_setpoint;
@@ -105,7 +105,7 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t des_y;
   int32_t x;
   int32_t y;
-  int32_t roll_setpoint;
+  int32_t roll_setpoint;*/
 
 
 

@@ -147,7 +147,9 @@
     <define name="AUTO_THROTTLE_CLIMB_THROTTLE_INCREMENT" value="0.04" unit="%/(m/s)"/>
     <define name="AUTO_THROTTLE_PGAIN" value="0.0"/>
     <define name="AUTO_THROTTLE_IGAIN" value="0.0"/>
-    <define name="AUTO_THROTTLE_PITCH_OF_VZ_PGAIN" value="0.1"/>
+    <define name="AUTO_THROTTLE_PITCH_OF_VZ_PGAIN" value="0.86"/>
+    <define name="AUTO_THROTTLE_PITCH_OF_VZ_DGAIN" value="-0.4"/>
+    <define name="AUTO_THROTTLE_PITCH_OF_VZ_IGAIN" value="0."/>
   </section>
 
   <section name="HORIZONTAL CONTROL" prefix="H_CTL_">
@@ -174,18 +176,19 @@
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
     <define name="G_ROLL" value="0.019"/>
-    <define name="G_PITCH" value="0.013"/>
+    <define name="G_PITCH" value="0.014"/>
 
     <!-- reference acceleration for attitude control -->
     <define name="REF_ERR_P" value="420.0"/>
-    <define name="REF_ERR_Q" value="420."/>
+    <define name="REF_ERR_Q" value="400.0"/>
     <define name="REF_ERR_R" value="600.0"/>
     <define name="REF_RATE_P" value="20.0"/>
-    <define name="REF_RATE_Q" value="20.0"/>
+    <define name="REF_RATE_Q" value="22.0"/>
     <define name="REF_RATE_R" value="28.0"/>
 
     <!-- second order filter parameters -->
-    <define name="FILT_OMEGA" value="20.0"/>
+    <define name="FILT_OMEGA_R" value="20.0"/>
+    <define name="FILT_OMEGA" value="10.0"/>
     <define name="FILT_ZETA" value="0.65"/>
 
     <!-- first order actuator dynamics -->

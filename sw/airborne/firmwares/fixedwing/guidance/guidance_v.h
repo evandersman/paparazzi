@@ -51,6 +51,7 @@ extern float v_ctl_auto_throttle_dgain;
 //extern float v_ctl_auto_throttle_sum_err; in common definition
 extern float v_ctl_auto_throttle_pitch_of_vz_pgain;
 extern float v_ctl_auto_throttle_pitch_of_vz_dgain;
+extern float v_ctl_auto_throttle_pitch_of_vz_igain;
 
 /* cruise pitch trim */
 extern float v_ctl_pitch_trim;

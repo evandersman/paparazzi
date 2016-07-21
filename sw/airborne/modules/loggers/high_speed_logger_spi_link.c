@@ -97,9 +97,9 @@ void high_speed_logger_spi_link_periodic(void)
 
     /* Data which will be logged always */
 
-    /*high_speed_logger_spi_link_data.phi             = stateGetNedToBodyEulers_i()->phi;
+    high_speed_logger_spi_link_data.phi             = stateGetNedToBodyEulers_i()->phi;
     high_speed_logger_spi_link_data.theta           = stateGetNedToBodyEulers_i()->theta;
-    high_speed_logger_spi_link_data.psi             = stateGetNedToBodyEulers_i()->psi;*/
+    high_speed_logger_spi_link_data.psi             = stateGetNedToBodyEulers_i()->psi;
     
     /* Test 1 determine G matrix */
     // rates
@@ -121,25 +121,25 @@ void high_speed_logger_spi_link_periodic(void)
 
     /* Test 2 INDI and PID reference tracking */
     // rates
-    /*high_speed_logger_spi_link_data.p               = state.body_rates_i.p;
+    high_speed_logger_spi_link_data.p               = state.body_rates_i.p;
     high_speed_logger_spi_link_data.q               = state.body_rates_i.q;
     high_speed_logger_spi_link_data.r               = state.body_rates_i.r;
     // reference angles
     high_speed_logger_spi_link_data.roll_setpoint   = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);
     high_speed_logger_spi_link_data.pitch_setpoint  = ANGLE_BFP_OF_REAL(h_ctl_pitch_loop_setpoint);
     // commands
-    high_speed_logger_spi_link_data.cmd_throttle    = commands[0];
+    high_speed_logger_spi_link_data.cmd_indi        = commands[6];
     high_speed_logger_spi_link_data.cmd_roll        = commands[1];
     high_speed_logger_spi_link_data.cmd_pitch       = commands[2];
     // accelerations
     high_speed_logger_spi_link_data.ref_acc_pdot    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);
     high_speed_logger_spi_link_data.filt_acc_pdot   = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.p);
     high_speed_logger_spi_link_data.ref_acc_qdot    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.q);
-    high_speed_logger_spi_link_data.filt_acc_qdot   = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.q);*/
+    high_speed_logger_spi_link_data.filt_acc_qdot   = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.q);
 
     /* Test 3 OUTER LOOP reference tracking */
     // altitude, course and inner loop setpoints
-    high_speed_logger_spi_link_data.statex    		 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->x);
+    /*high_speed_logger_spi_link_data.statex    		 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->x);
     high_speed_logger_spi_link_data.statey    		 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->y);
     high_speed_logger_spi_link_data.statealtitude    	 = POS_BFP_OF_REAL(stateGetPositionEnu_f()->z);
 
@@ -154,7 +154,7 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.des_y    		 = POS_BFP_OF_REAL(desired_y);
     high_speed_logger_spi_link_data.x    		 = POS_BFP_OF_REAL(enu_posf.x);
     high_speed_logger_spi_link_data.y    		 = POS_BFP_OF_REAL(enu_posf.y);
-    high_speed_logger_spi_link_data.roll_setpoint        = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);
+    high_speed_logger_spi_link_data.roll_setpoint        = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);*/
 
 
 /*

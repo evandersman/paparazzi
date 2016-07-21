@@ -9,7 +9,7 @@
     <waypoint lat="51.9891798" lon="4.3761986" name="TD"/>
     <waypoint lat="51.9891747" lon="4.3761986" name="CLIMB"/>
     <waypoint lat="51.9891711" lon="4.3761985" name="STDBY"/>
-    <waypoint lat="51.9892069" lon="4.3762003" name="p1"/>
+    <waypoint lat="51.989240" lon="4.376201" name="p1"/>
     <waypoint lat="51.9892652" lon="4.3762012" name="p2"/>
     <waypoint lat="51.9891950" lon="4.3762231" name="FA1"/>
     <waypoint lat="51.9891557" lon="4.3762221" name="FA2"/>
@@ -24,7 +24,7 @@
       <corner name="FA1"/>
     </sector>
   </sectors>
-<blocks>
+  <blocks>
     <block name="Wait GPS">
       <set value="1" var="kill_throttle"/>
       <while cond="!GpsFixValid()"/>
@@ -33,14 +33,14 @@
       <set value="1" var="kill_throttle"/>
       <attitude roll="0" throttle="0" vmode="throttle"/>
     </block>
-    <block key="t" name="Takeoff" strip_button="Takeoff (wp CLIMB)" strip_icon="takeoff.png" group="home">
+    <block group="home" key="t" name="Takeoff" strip_button="Takeoff (wp CLIMB)" strip_icon="takeoff.png">
       <exception cond="GetPosAlt() > GetAltRef()+25" deroute="Standby"/>
       <set value="0" var="kill_throttle"/>
       <set value="0" var="autopilot_flight_time"/>
-      <go from="HOME" throttle="1.0" vmode="throttle" wp="CLIMB" pitch="15"/>
+      <go from="HOME" pitch="15" throttle="1.0" vmode="throttle" wp="CLIMB"/>
     </block>
-    <block key="Ctrl+a" name="Standby" strip_button="Standby" strip_icon="home.png" group="home">
-      <go from="CLIMB" wp="STDBY" hmode="route"/>
+    <block group="home" key="Ctrl+a" name="Standby" strip_button="Standby" strip_icon="home.png">
+      <go from="CLIMB" hmode="route" wp="STDBY"/>
     </block>
     <block name="Go to wp1">
       <go wp="p1"/>

@@ -5,12 +5,13 @@
 <settings>
   <dl_settings>
     <dl_settings NAME="indi">
-        <dl_setting MAX="0.02" MIN="-0.02" STEP="0.001" VAR="G_ROLL" shortname="ctl_eff_roll"  param="STABILIZATION_INDI_G_ROLL" module="stabilization/stabilization_indi"/>
+        <dl_setting MAX="0.05" MIN="-0.02" STEP="0.001" VAR="G_ROLL" shortname="ctl_eff_roll"  param="STABILIZATION_INDI_G_ROLL" module="stabilization/stabilization_indi"/>
         <dl_setting MAX="0.02" MIN="-0.02" STEP="0.001" VAR="G_PITCH" shortname="ctl_eff_pitch"  param="STABILIZATION_INDI_G_PITCH" module="stabilization/stabilization_indi"/>
         <dl_setting MAX="2000" MIN="0" STEP="0.5" VAR="reference_acceleration.err_p" shortname="ref_pgain_roll"  param="STABILIZATION_INDI_REF_ERR_P" module="stabilization/stabilization_indi"/>
         <dl_setting MAX="200" MIN="0" STEP="1" VAR="reference_acceleration.rate_p" shortname="ref_rate_gain_roll"  param="STABILIZATION_INDI_REF_RATE_P" module="stabilization/stabilization_indi"/>
-        <dl_setting MAX="2000" MIN="0" STEP="0.5" VAR="reference_acceleration.err_p" shortname="ref_pgain_pitch"  param="STABILIZATION_INDI_REF_ERR_Q" module="stabilization/stabilization_indi"/>
-        <dl_setting MAX="200" MIN="0" STEP="1" VAR="reference_acceleration.rate_p" shortname="ref_rate_gain_pitch"  param="STABILIZATION_INDI_REF_RATE_Q" module="stabilization/stabilization_indi"/>
+        <dl_setting MAX="2000" MIN="0" STEP="0.5" VAR="reference_acceleration.err_q" shortname="ref_pgain_pitch"  param="STABILIZATION_INDI_REF_ERR_Q" module="stabilization/stabilization_indi"/>
+        <dl_setting MAX="200" MIN="0" STEP="1" VAR="reference_acceleration.rate_q" shortname="ref_rate_gain_pitch"  param="STABILIZATION_INDI_REF_RATE_Q" module="stabilization/stabilization_indi"/>
+        <dl_setting MAX="100" MIN="0" STEP="1" VAR="indi_omega_r" shortname="omega_roll"  param="STABILIZATION_INDI_FILT_OMEGA_R" module="stabilization/stabilization_indi"/>
         <dl_setting MAX="100" MIN="0" STEP="1" VAR="indi_omega" shortname="omega"  param="STABILIZATION_INDI_FILT_OMEGA" module="stabilization/stabilization_indi"/>
         <dl_setting MAX="1" MIN="0" STEP="0.01" VAR="indi_zeta" shortname="zeta"  param="STABILIZATION_INDI_FILT_ZETA" module="stabilization/stabilization_indi"/>
     </dl_settings>
