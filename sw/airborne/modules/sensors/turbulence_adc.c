@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include "std.h"
 #include "inter_mcu.h"
+#include "filters/high_pass_filter.h"
 
 #ifndef ADC_CHANNEL_TURBULENCE_NB_SAMPLES
 //#define ADC_CHANNEL_TURBULENCE_NB_SAMPLES DEFAULT_AV_NB_SAMPLE
@@ -68,6 +69,8 @@ struct TurbulenceAdc airspeed_left_adc;
 struct TurbulenceAdc pitch_left_adc;
 struct TurbulenceAdc airspeed_right_adc;
 struct TurbulenceAdc pitch_right_adc;
+
+static struct FourthOrderHighPass left_hp, right_hp;
 
 float pgain;
 float acc_gain;
@@ -111,6 +114,20 @@ void turbulence_adc_init(void)
   pitch_right_adc.filtered_ddx = 0;
   pitch_right_adc.scaled_dx = 0;
   pitch_right_adc.scaled_ddx = 0;
+  
+  // Init filters
+  float filt_a[4], filt_b[4];
+  filt_b[0] = 0.9177;
+  filt_b[1] = -2.7530;
+  filt_b[2] = 2.7530;
+  filt_b[3] = -0.9177;
+  filt_a[0] = 1;
+  filt_a[1] = -2.8282;
+  filt_a[2] = 2.6709;
+  filt_a[3] = -0.8421;
+
+  init_fourth_order_high_pass(&left_hp, filt_a, filt_b, 0);
+  init_fourth_order_high_pass(&right_hp, filt_a, filt_b, 0);
 }
 
 void turbulence_adc_update(void)
@@ -122,21 +139,24 @@ void turbulence_adc_update(void)
   pitch_right_adc.raw = buf_pitch_right.sum / buf_pitch_right.av_nb_sample;
 
   // 12 bit calibration offset
-  airspeed_left_adc.calibration = ANGLE_BFP_OF_REAL(ANGLE_FLOAT_OF_BFP(airspeed_left_adc.raw*3.3) - 1.5);
-  pitch_left_adc.calibration = ANGLE_BFP_OF_REAL(ANGLE_FLOAT_OF_BFP(pitch_left_adc.raw*3.3) - 1.5);
-  airspeed_right_adc.calibration = ANGLE_BFP_OF_REAL(ANGLE_FLOAT_OF_BFP(airspeed_right_adc.raw*3.3) - 1.5);
-  pitch_right_adc.calibration = ANGLE_BFP_OF_REAL(ANGLE_FLOAT_OF_BFP(pitch_right_adc.raw*3.3) - 1.5);
+  airspeed_left_adc.voltage = airspeed_left_adc.raw*3.3/2^12; // for no speed 1.65
+  pitch_left_adc.voltage = pitch_left_adc.raw*3.3/2^12;
+  airspeed_right_adc.voltage = airspeed_right_adc.raw*3.3/2^12;
+  pitch_right_adc.voltage = pitch_right_adc.raw*3.3/2^12;
   
   
   // pressure differential in millipascal first covert to voltage by using the scaling factor raw*3.3/2^12 and the convert to pressure by using formula in the datasheet
   // positive pressure diff means a gust is coming from above
-  airspeed_left_adc.scaled = (ANGLE_FLOAT_OF_BFP(airspeed_left_adc.raw*3.3)-ANGLE_FLOAT_OF_BFP(airspeed_left_adc.offset)-0.1*3.3)*7.6-10.0;
-  pitch_left_adc.scaled = (ANGLE_FLOAT_OF_BFP(pitch_left_adc.raw*3.3)-ANGLE_FLOAT_OF_BFP(pitch_left_adc.offset)-0.1*3.3)*7.6-10.0;
-  airspeed_right_adc.scaled = (ANGLE_FLOAT_OF_BFP(airspeed_right_adc.raw*3.3)-ANGLE_FLOAT_OF_BFP(airspeed_right_adc.offset)-0.1*3.3)*7.6-10.0;
-  pitch_right_adc.scaled = (ANGLE_FLOAT_OF_BFP(pitch_right_adc.raw*3.3)-ANGLE_FLOAT_OF_BFP(pitch_right_adc.offset)-0.1*3.3)*7.6-10.0;
+  airspeed_left_adc.scaled = (airspeed_left_adc.voltage-airspeed_left_adc.offset-0.1*3.3)*7.6-10.0;
+  pitch_left_adc.scaled = (pitch_left_adc.voltage-pitch_left_adc.offset-0.1*3.3)*7.6-10.0;
+  airspeed_right_adc.scaled = (airspeed_right_adc.voltage-airspeed_right_adc.offset-0.1*3.3)*7.6-10.0;
+  pitch_right_adc.scaled = (pitch_right_adc.voltage-pitch_right_adc.offset-0.1*3.3)*7.6-10.0;
 
   //high pass filter
-  pitch_left_adc.filtered = pitch_left_adc.filtered + pitch_left_adc.filtered_dx * 1.0 / MODULES_FREQUENCY;
+  pitch_left_adc.filtered = update_fourth_order_high_pass(&left_hp, pitch_left_adc.scaled);
+  pitch_right_adc.filtered = update_fourth_order_high_pass(&right_hp, pitch_right_adc.scaled);
+
+  /*pitch_left_adc.filtered = pitch_left_adc.filtered + pitch_left_adc.filtered_dx * 1.0 / MODULES_FREQUENCY;
   pitch_left_adc.filtered_dx = pitch_left_adc.filtered_dx + pitch_left_adc.filtered_ddx * 1.0 / MODULES_FREQUENCY;
 
   pitch_left_adc.scaled_dx = (pitch_left_adc.scaled - pitch_left_adc_previous) * MODULES_FREQUENCY;
@@ -156,7 +176,7 @@ void turbulence_adc_update(void)
   pitch_right_adc_previous_dx = pitch_right_adc.scaled_dx;
 
   pitch_left_adc.filtered_ddx = -pitch_left_adc.filtered_dx * 2 * pitch_zeta * pitch_omega + pitch_left_adc.scaled_ddx - pitch_left_adc.filtered * omega2;
-  pitch_right_adc.filtered_ddx = -pitch_right_adc.filtered_dx * 2 * pitch_zeta * pitch_omega + pitch_right_adc.scaled_ddx - pitch_right_adc.filtered * omega2;
+  pitch_right_adc.filtered_ddx = -pitch_right_adc.filtered_dx * 2 * pitch_zeta * pitch_omega + pitch_right_adc.scaled_ddx - pitch_right_adc.filtered * omega2;*/
   
   #if PROBES_FF_ANG_ACC
   // predict angular acceleration due to turbulence for indi controller
@@ -173,8 +193,8 @@ void turbulence_adc_update(void)
   ap_state->commands[COMMAND_TURB_RIGHT] = cmd_trimmed_right;
   #endif
 
-  RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &airspeed_left_adc.scaled, &pitch_left_adc.scaled, &airspeed_right_adc.scaled, &pitch_right_adc.scaled));
-  //DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.calibration, &pitch_left_adc.calibration, &airspeed_right_adc.calibration, &pitch_right_adc.calibration);
+  //RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &airspeed_left_adc.scaled, &pitch_left_adc.scaled, &airspeed_right_adc.scaled, &pitch_right_adc.scaled));
+  RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.voltage, &pitch_left_adc.voltage, &airspeed_right_adc.voltage, &pitch_right_adc.voltage));
   //DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &cmd_trimmed_left, &cmd_left, &cmd_trimmed_right, &cmd_right);
 
 }

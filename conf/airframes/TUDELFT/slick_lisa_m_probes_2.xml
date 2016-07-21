@@ -61,7 +61,7 @@
   </firmware>
 
   <modules main_freq="512">
-    <!--load name="turbulence_adc.xml"/-->
+    <load name="turbulence_adc.xml"/>
     <!--load name="potentiometer_adc.xml"/-->
     <load name="logger_spi_link.xml"/>
     <load name="nav_throttle_wt.xml">
@@ -104,11 +104,11 @@
     <set servo="THROTTLE" value="@THROTTLE"/>
     <set servo="ELEVATOR" value="@PITCH"/>
     <set servo="RUDDER" value="@YAW"/>
-    <set servo="AILERON_LEFT" value="@ROLL"/>
-    <set servo="AILERON_RIGHT" value="@ROLL"/>
+    <!--set servo="AILERON_LEFT" value="@ROLL"/-->
+    <!--set servo="AILERON_RIGHT" value="@ROLL"/-->
     <!--with turbulence feedforward-->
-    <!--set servo="AILERON_LEFT" value="@ROLL + @TURB_LEFT"/>
-    <set servo="AILERON_RIGHT" value="@ROLL - @TURB_RIGHT"/-->
+    <set servo="AILERON_LEFT" value="@ROLL + @TURB_LEFT"/>
+    <set servo="AILERON_RIGHT" value="@ROLL - @TURB_RIGHT"/>
   </command_laws>
 
   <section name="IMU" prefix="IMU_">
@@ -222,10 +222,10 @@
     <define name="CONTROL_FREQUENCY" value="512" unit="Hz"/>
     <define name="NAVIGATION_FREQUENCY" value="40" unit="Hz"/>
     <define name="DEFAULT_CIRCLE_RADIUS" value="40."/>  
-    <define name="AIRSPEED_LEFT_OFFSET" value="30"/>
-    <define name="PITCH_LEFT_OFFSET" value="24"/>
-    <define name="AIRSPEED_RIGHT_OFFSET" value="30"/>
-    <define name="PITCH_RIGHT_OFFSET" value="35"/>
+    <define name="AIRSPEED_LEFT_OFFSET" value="0"/>
+    <define name="PITCH_LEFT_OFFSET" value="0"/>
+    <define name="AIRSPEED_RIGHT_OFFSET" value="0"/>
+    <define name="PITCH_RIGHT_OFFSET" value="0"/>
     <define name="TURB_PGAIN" value="14000"/>
     <define name="TURB_ACC_GAIN" value="1"/>
     <define name="PITCH_OMEGA" value="0.5"/>

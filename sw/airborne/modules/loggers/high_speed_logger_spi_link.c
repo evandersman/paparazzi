@@ -128,7 +128,7 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.roll_setpoint   = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);
     high_speed_logger_spi_link_data.pitch_setpoint  = ANGLE_BFP_OF_REAL(h_ctl_pitch_loop_setpoint);
     // commands
-    high_speed_logger_spi_link_data.cmd_indi        = commands[6];
+    high_speed_logger_spi_link_data.cmd_indi        = radio_control.values[6];
     high_speed_logger_spi_link_data.cmd_roll        = commands[1];
     high_speed_logger_spi_link_data.cmd_pitch       = commands[2];
     // accelerations
