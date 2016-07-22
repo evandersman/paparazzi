@@ -223,10 +223,10 @@
     <define name="NAVIGATION_FREQUENCY" value="40" unit="Hz"/>
     <define name="DEFAULT_CIRCLE_RADIUS" value="40."/>  
     <define name="AIRSPEED_LEFT_OFFSET" value="0"/>
-    <define name="PITCH_LEFT_OFFSET" value="0"/>
+    <define name="PITCH_LEFT_OFFSET" value="1.653223"/>
     <define name="AIRSPEED_RIGHT_OFFSET" value="0"/>
-    <define name="PITCH_RIGHT_OFFSET" value="0"/>
-    <define name="TURB_PGAIN" value="14000"/>
+    <define name="PITCH_RIGHT_OFFSET" value="1.645166"/>
+    <define name="TURB_PGAIN" value="1"/>
     <define name="TURB_ACC_GAIN" value="1"/>
     <define name="PITCH_OMEGA" value="0.5"/>
     <define name="PITCH_ZETA" value="1"/>

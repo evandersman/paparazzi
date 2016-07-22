@@ -2050,6 +2050,8 @@
      <field name="pitch_left_scaled" type="float"/>
      <field name="airspeed_right_scaled" type="float"/>
      <field name="pitch_right_scaled" type="float"/>
+     <field name="cmd_left" type="float"/>
+     <field name="cmd_right" type="float"/>
    </message>
 
   <message name="ROTORCRAFT_STATUS" id="231">

@@ -25,8 +25,8 @@
 
 #ifndef TURBULENCE_ADC_H
 #define TURBULENCE_ADC_H
-
 #include <inttypes.h>
+#include "paparazzi.h"
 
 struct TurbulenceAdc {
   uint16_t raw;
@@ -49,6 +49,9 @@ extern float acc_gain;
 extern float probes_ang_acc;
 extern float pitch_omega;
 extern float pitch_zeta;
+
+extern pprz_t cmd_trimmed_left;
+extern pprz_t cmd_trimmed_right;
 
 void turbulence_adc_init(void);
 void turbulence_adc_update(void);

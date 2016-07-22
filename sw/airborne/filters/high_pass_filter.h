@@ -62,7 +62,7 @@ static inline void init_fourth_order_high_pass(struct FourthOrderHighPass *filte
   filter->b[1] = b[1];
   filter->b[2] = b[2];
   filter->b[3] = b[3];
-  filter->i[0] = filter->i[1] = filter->o[0] = filter->o[1] = value;
+  filter->i[0] = filter->i[1] = filter->i[2] = filter->i[3] = filter->o[0] = filter->o[1] = filter->o[2] = filter->o[3] = value;
 }
 
 /** Update fourth order high pass filter state with a new value.
