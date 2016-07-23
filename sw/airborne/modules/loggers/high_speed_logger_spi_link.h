@@ -93,7 +93,7 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t probe_cmd_r;*/
 
   /* Test 3 OUTER LOOP reference tracking */
-  int32_t cmd_indi;
+  /*int32_t cmd_indi;
   int32_t probe_cmd_l;
   int32_t probe_cmd_r;
   int32_t altitude_setpoint;
@@ -107,10 +107,25 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t des_y;
   int32_t x;
   int32_t y;
+  int32_t roll_setpoint;*/
+
+  int32_t airspeed_left_adc_scaled;
+  int32_t pitch_left_adc_scaled;
+  int32_t airspeed_right_adc_scaled;
+  int32_t pitch_right_adc_scaled;
+
+  int32_t airspeed_left_adc_raw;
+  int32_t pitch_left_adc_raw;
+  int32_t airspeed_right_adc_raw;
+  int32_t pitch_right_adc_raw;
+
+  int32_t cmd_indi;
+  int32_t course_setpoint;
+  int32_t des_x;
+  int32_t des_y;
+  int32_t x;
+  int32_t y;
   int32_t roll_setpoint;
-
-
-
 };
 
 #endif /* HIGH_SPEED_LOGGER_SPI_LINK_H_ */

@@ -147,10 +147,10 @@ void turbulence_adc_update(void)
   
   // pressure differential in millipascal first covert to voltage by using the scaling factor raw*3.3/2^12 and the convert to pressure by using formula in the datasheet
   // positive pressure diff means a gust is coming from above
-  airspeed_left_adc.scaled = (airspeed_left_adc.voltage-0.1*3.3)*7.6-10.0;
-  pitch_left_adc.scaled = (pitch_left_adc.voltage-0.1*3.3)*7.6-10.0;
-  airspeed_right_adc.scaled = (airspeed_right_adc.voltage-0.1*3.3)*7.6-10.0;
-  pitch_right_adc.scaled = -(pitch_right_adc.voltage-0.1*3.3)*7.6+10.0;
+  airspeed_left_adc.scaled = (airspeed_left_adc.voltage-0.1*3.3)*7.6-10.0;   // for the calibration is will be the airspeed: p1-pstatic (top of sensor is q and bottom om sensor is static)
+  pitch_left_adc.scaled = (pitch_left_adc.voltage-0.1*3.3)*7.6-10.0;         // for the calibration is will be the pitch: p2-p3 (top of sensor is top of probe and bottom of sensor is the bottom)
+  airspeed_right_adc.scaled = (airspeed_right_adc.voltage-0.1*3.3)*7.6-10.0; // for the calibration is will be the yaw: p4-p5 (top of sensor is right of probe and bottom of sensor is left of probe)
+  pitch_right_adc.scaled = (pitch_right_adc.voltage-0.1*3.3)*7.6-10.0;      // for the calibration is will be the cross reference: p1-p2 ( bottom of sensor is the speed and top is top of probe)
 
   //high pass filter
   pitch_left_adc.filtered = update_fourth_order_high_pass(&left_hp, pitch_left_adc.scaled);
@@ -188,8 +188,8 @@ void turbulence_adc_update(void)
   ap_state->commands[COMMAND_TURB_LEFT] = cmd_trimmed_left;
   ap_state->commands[COMMAND_TURB_RIGHT] = cmd_trimmed_right;
 
-  RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &pitch_left_adc.filtered, &pitch_left_adc.scaled, &pitch_right_adc.filtered, &pitch_right_adc.scaled, &cmd_left, &cmd_right));
-  //RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.voltage, &pitch_left_adc.voltage, &airspeed_right_adc.voltage, &pitch_right_adc.voltage));
+  RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &airspeed_left_adc.scaled, &pitch_left_adc.scaled, &airspeed_right_adc.scaled, &pitch_right_adc.scaled, &cmd_left, &cmd_right));
+  RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.voltage, &pitch_left_adc.voltage, &airspeed_right_adc.voltage, &pitch_right_adc.voltage));
   //RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &cmd_left, &cmd_right));
 
 }

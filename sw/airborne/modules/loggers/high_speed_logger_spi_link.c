@@ -147,7 +147,7 @@ void high_speed_logger_spi_link_periodic(void)
 
     /* Test 3 OUTER LOOP reference tracking */
     // altitude, course and inner loop setpoints
-    high_speed_logger_spi_link_data.cmd_indi            = radio_control.values[6];
+    /*high_speed_logger_spi_link_data.cmd_indi            = radio_control.values[6];
     high_speed_logger_spi_link_data.probe_cmd_l         = cmd_trimmed_left;
     high_speed_logger_spi_link_data.probe_cmd_r         = cmd_trimmed_right;
 
@@ -161,6 +161,28 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.des_x    		 = POS_BFP_OF_REAL(desired_x);
     high_speed_logger_spi_link_data.des_y    		 = POS_BFP_OF_REAL(desired_y);
     high_speed_logger_spi_link_data.x    		 = POS_BFP_OF_REAL(enu_posf.x);
+    high_speed_logger_spi_link_data.y    		 = POS_BFP_OF_REAL(enu_posf.y);
+    high_speed_logger_spi_link_data.roll_setpoint        = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);*/
+
+    /* Test 3 OUTER LOOP reference tracking */
+    // altitude, course and inner loop setpoints
+
+    high_speed_logger_spi_link_data.airspeed_left_adc_scaled       = ANGLE_BFP_OF_REAL(airspeed_left_adc.scaled);
+    high_speed_logger_spi_link_data.pitch_left_adc_scaled          = ANGLE_BFP_OF_REAL(pitch_left_adc.scaled);
+    high_speed_logger_spi_link_data.airspeed_right_adc_scaled      = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);  
+    high_speed_logger_spi_link_data.pitch_right_adc_scaled         = ANGLE_BFP_OF_REAL(pitch_right_adc.scaled);
+
+    high_speed_logger_spi_link_data.airspeed_left_adc_raw       = airspeed_left_adc.raw;
+    high_speed_logger_spi_link_data.pitch_left_adc_raw          = pitch_left_adc.raw;
+    high_speed_logger_spi_link_data.airspeed_right_adc_raw      = airspeed_right_adc.raw;  
+    high_speed_logger_spi_link_data.pitch_right_adc_raw         = pitch_right_adc.raw;
+
+    high_speed_logger_spi_link_data.cmd_indi            = radio_control.values[6];
+    high_speed_logger_spi_link_data.course_setpoint      = ANGLE_BFP_OF_REAL(h_ctl_course_setpoint);
+    high_speed_logger_spi_link_data.des_x    		 = POS_BFP_OF_REAL(desired_x);
+    high_speed_logger_spi_link_data.des_y    		 = POS_BFP_OF_REAL(desired_y);
+    high_speed_logger_spi_link_data.x    		 = POS_BFP_OF_REAL(enu_posf.x);
+
     high_speed_logger_spi_link_data.y    		 = POS_BFP_OF_REAL(enu_posf.y);
     high_speed_logger_spi_link_data.roll_setpoint        = ANGLE_BFP_OF_REAL(h_ctl_roll_setpoint);
 

@@ -36,11 +36,11 @@
 
     <!-- Communication -->
     <!-- WiFi module -->
-    <subsystem name="telemetry" type="transparent">
+    <!--subsystem name="telemetry" type="transparent">
       <configure name="MODEM_BAUD" value="B230400"/>
-    </subsystem>
+    </subsystem-->
     <!-- XBee -->
-    <!--subsystem name="telemetry" type="xbee_api"/-->
+    <subsystem name="telemetry" type="xbee_api"/>
 
     <!-- Sensors -->
     <subsystem name="imu" type="aspirin_v2.1"/>
@@ -222,10 +222,10 @@
     <define name="CONTROL_FREQUENCY" value="512" unit="Hz"/>
     <define name="NAVIGATION_FREQUENCY" value="40" unit="Hz"/>
     <define name="DEFAULT_CIRCLE_RADIUS" value="40."/>  
-    <define name="AIRSPEED_LEFT_OFFSET" value="0"/>
-    <define name="PITCH_LEFT_OFFSET" value="1.653223"/>
-    <define name="AIRSPEED_RIGHT_OFFSET" value="0"/>
-    <define name="PITCH_RIGHT_OFFSET" value="1.645166"/>
+    <define name="AIRSPEED_LEFT_OFFSET" value="1.65"/>
+    <define name="PITCH_LEFT_OFFSET" value="1.65"/>
+    <define name="AIRSPEED_RIGHT_OFFSET" value="1.65"/>
+    <define name="PITCH_RIGHT_OFFSET" value="1.65"/>
     <define name="TURB_PGAIN" value="1"/>
     <define name="TURB_ACC_GAIN" value="1"/>
     <define name="PITCH_OMEGA" value="0.5"/>
