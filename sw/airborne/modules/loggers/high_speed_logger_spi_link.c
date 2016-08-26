@@ -177,7 +177,8 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.airspeed_right_adc_raw      = airspeed_right_adc.raw;  
     high_speed_logger_spi_link_data.pitch_right_adc_raw         = pitch_right_adc.raw;
 
-    high_speed_logger_spi_link_data.cmd_indi            = radio_control.values[6];
+    // high_speed_logger_spi_link_data.cmd_indi            = radio_control.values[6];
+    high_speed_logger_spi_link_data.theta           	 = stateGetNedToBodyEulers_i()->theta;
     high_speed_logger_spi_link_data.course_setpoint      = ANGLE_BFP_OF_REAL(h_ctl_course_setpoint);
     high_speed_logger_spi_link_data.des_x    		 = POS_BFP_OF_REAL(desired_x);
     high_speed_logger_spi_link_data.des_y    		 = POS_BFP_OF_REAL(desired_y);

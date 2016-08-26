@@ -119,7 +119,8 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t airspeed_right_adc_raw;
   int32_t pitch_right_adc_raw;
 
-  int32_t cmd_indi;
+  //int32_t cmd_indi;
+  int32_t theta;
   int32_t course_setpoint;
   int32_t des_x;
   int32_t des_y;
