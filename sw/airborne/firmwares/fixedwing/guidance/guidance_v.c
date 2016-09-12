@@ -31,7 +31,7 @@
 #include "generated/airframe.h"
 #include "firmwares/fixedwing/autopilot.h"
 #include "firmwares/fixedwing/stabilization/stabilization_attitude.h" //> allow for roll control during landing final flare
-#include "subsystems/gps/gps_datalink.h"
+//#include "subsystems/gps/gps_datalink.h"
 
 /* mode */
 uint8_t v_ctl_mode;
@@ -283,7 +283,8 @@ void v_ctl_altitude_loop(void)
   }
 #endif
 
-  v_ctl_altitude_error = v_ctl_altitude_setpoint - enu_posf.z;
+  //v_ctl_altitude_error = v_ctl_altitude_setpoint - enu_posf.z;
+  v_ctl_altitude_error = v_ctl_altitude_setpoint - stateGetPositionUtm_f()->alt;
   v_ctl_climb_setpoint = altitude_pgain_boost * v_ctl_altitude_pgain * v_ctl_altitude_error
                          + v_ctl_altitude_pre_climb * v_ctl_altitude_pre_climb_correction;
   BoundAbs(v_ctl_climb_setpoint, v_ctl_altitude_max_climb);
@@ -375,7 +376,8 @@ inline static void v_ctl_climb_auto_throttle_loop(void)
   static float last_err;
 
   float f_throttle = 0;
-  float err  = enu_speedf.z - v_ctl_climb_setpoint;
+  //float err  = enu_speedf.z - v_ctl_climb_setpoint;
+  float err  = stateGetSpeedEnu_f()->z - v_ctl_climb_setpoint;
 
   float d_err = err - last_err;
   last_err = err;

@@ -22,7 +22,7 @@
     </target>
 
     <configure name="USE_MAGNETOMETER" value="FALSE"/>
-    <define name="USE_LED_3" value="TRUE"/>
+    <!--define name="USE_LED_3" value="TRUE"/-->
 
     <define name="STRONG_WIND"/>
 
@@ -42,33 +42,36 @@
     <!-- XBee -->
     <subsystem name="telemetry" type="xbee_api"/>
 
-    <!-- Sensors remember to change aspirin back to 2.1 when using the one on the wing -->
-    <subsystem name="imu" type="aspirin_v2.2"/>
+    <!-- Sensors remember to change aspirin back to 2.1 when using the one on the wing, 2.2 for calibrating probe setup -->
+    <subsystem name="imu" type="aspirin_v2.1"/>
     <!-- for optitrack with Wifi module -->
-    <module name="gps" type="optitrack"/>
+    <!--module name="gps" type="optitrack"/-->
     <!-- for outdoor flight -->
-    <!--subsystem name="gps" type="ublox"/-->
+    <module name="gps" type="ublox"/>
 
     <subsystem name="ahrs" type="int_cmpl_quat">
-      <define name="USE_GPS" value="1"/>
-      <define name="AHRS_USE_GPS_HEADING" value="1"/>
+      <!--define name="USE_GPS" value="1"/>
+      <define name="AHRS_USE_GPS_HEADING" value="1"/-->
       <define name="AHRS_GRAVITY_UPDATE_COORDINATED_TURN" value="1"/>
     </subsystem>
     <subsystem name="control" type="indi"/>
     <subsystem name="navigation"/>
-    <module name="ins" type="gps_passthrough">
+    <!-- for optitrack -->
+    <!--module name="ins" type="gps_passthrough"-->
+    <!-- for outdoor flight -->
+    <module name="ins" type="alt_float">
     </module>
   </firmware>
 
   <modules main_freq="512">
-    <load name="turbulence_adc.xml"/>
+    <!--load name="turbulence_adc.xml"/-->
     <!--load name="potentiometer_adc.xml"/-->
     <load name="logger_spi_link.xml"/>
-    <load name="nav_throttle_wt.xml">
+    <!--load name="nav_throttle_wt.xml">
       <define name="H_CTL_THROTTLE_PGAIN" value="0.05"/>
       <define name="H_CTL_THROTTLE_IGAIN" value="0."/>
       <define name="H_CTL_THROTTLE_DGAIN" value="0."/>
-    </load>
+    </load-->
     <!--load name="gps_ubx_ucenter.xml"/-->
   </modules>
 
@@ -104,11 +107,11 @@
     <set servo="THROTTLE" value="@THROTTLE"/>
     <set servo="ELEVATOR" value="@PITCH"/>
     <set servo="RUDDER" value="@YAW"/>
-    <!--set servo="AILERON_LEFT" value="@ROLL"/-->
-    <!--set servo="AILERON_RIGHT" value="@ROLL"/-->
+    <set servo="AILERON_LEFT" value="@ROLL"/>
+    <set servo="AILERON_RIGHT" value="@ROLL"/>
     <!--with turbulence feedforward-->
-    <set servo="AILERON_LEFT" value="@ROLL + @TURB_LEFT"/>
-    <set servo="AILERON_RIGHT" value="@ROLL - @TURB_RIGHT"/>
+    <!--set servo="AILERON_LEFT" value="@ROLL + @TURB_LEFT"/>
+    <set servo="AILERON_RIGHT" value="@ROLL - @TURB_RIGHT"/-->
   </command_laws>
 
   <section name="IMU" prefix="IMU_">
@@ -123,7 +126,7 @@
     <define name="MAG_Z_SENS" value="4.41585354498" integer="16"/>
 
     <define name="BODY_TO_IMU_PHI" value="0." unit="deg"/>
-    <define name="BODY_TO_IMU_THETA" value="0." unit="deg"/>
+    <define name="BODY_TO_IMU_THETA" value="10." unit="deg"/>
     <define name="BODY_TO_IMU_PSI" value="0." unit="deg"/>
   </section>
 
@@ -236,8 +239,8 @@
     <define name="OUTBACK_CHALLENGE_DANGEROUS_RULE_RC_LOST_NO_AP" value="TRUE"/>
     <define name="STEP_INPUT_OPEN_LOOP_ROLL" value="FALSE"/>
     <define name="STEP_INPUT_OPEN_LOOP_PITCH" value="FALSE"/>
-    <define name="STEP_INPUT_AUTO1_ROLL" value="FALSE"/>
-    <define name="STEP_INPUT_AUTO1_PITCH" value="FALSE"/>
+    <define name="STEP_INPUT_AUTO1_ROLL" value="TRUE"/>
+    <define name="STEP_INPUT_AUTO1_PITCH" value="TRUE"/>
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">

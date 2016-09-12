@@ -360,16 +360,19 @@ bool nav_approaching_xy(float x, float y, float from_x, float from_y, float appr
 //static inline void fly_to_xy(float x, float y) {
 void fly_to_xy(float x, float y)
 {
+  struct EnuCoor_f *pos = stateGetPositionEnu_f();
   desired_x = x;
   desired_y = y;
   if (nav_mode == NAV_MODE_COURSE) {
-    h_ctl_course_setpoint = atan2f(x - enu_posf.x, y - enu_posf.y);
+    h_ctl_course_setpoint = atan2f(x - pos->x, y - pos->y);
+    //h_ctl_course_setpoint = atan2f(x - enu_posf.x, y - enu_posf.y);
     if (h_ctl_course_setpoint < 0.) {
       h_ctl_course_setpoint += 2 * M_PI;
     }
     lateral_mode = LATERAL_MODE_COURSE;
   } else {
-    float diff = atan2f(x - enu_posf.x, y - enu_posf.y) - stateGetHorizontalSpeedDir_f();
+    float diff = atan2f(x - pos->x, y - pos->y) - stateGetHorizontalSpeedDir_f();
+    //float diff = atan2f(x - enu_posf.x, y - enu_posf.y) - stateGetHorizontalSpeedDir_f();
     NormRadAngle(diff);
     BoundAbs(diff, M_PI / 2.);
     float s = sinf(diff);
@@ -415,12 +418,13 @@ void nav_route_xy(float last_wp_x, float last_wp_y, float wp_x, float wp_y)
 
 static void nav_set_altitude(void)
 {
-  /*static float last_nav_altitude;
+  static float last_nav_altitude;
   if (fabs(nav_altitude - last_nav_altitude) > 1.) {
     flight_altitude = nav_altitude;
     last_nav_altitude = nav_altitude;
-  }*/
-  v_ctl_altitude_setpoint = nav_altitude;
+  }
+  v_ctl_altitude_setpoint = flight_altitude;
+  //v_ctl_altitude_setpoint = nav_altitude;
 }
 
 /** \brief Home mode navigation (circle around HOME) */

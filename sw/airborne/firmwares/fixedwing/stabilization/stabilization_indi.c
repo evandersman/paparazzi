@@ -293,17 +293,21 @@ void h_ctl_course_loop(void)
   static float last_err;
 
   // Ground path error
-  float err = atan2f(enu_speedf.x, enu_speedf.y) - h_ctl_course_setpoint;
+  float err = stateGetHorizontalSpeedDir_f() - h_ctl_course_setpoint;
+  //float err = atan2f(enu_speedf.x, enu_speedf.y) - h_ctl_course_setpoint;
   NormRadAngle(err);
 
 #ifdef STRONG_WIND
   // Usefull path speed
-  const float reference_advance = NOMINAL_AIRSPEED;
-  float advance = cos(err) * FLOAT_VECT2_NORM(enu_speedf) / reference_advance;
+  //const float reference_advance = NOMINAL_AIRSPEED;
+  //float advance = cos(err) * FLOAT_VECT2_NORM(enu_speedf) / reference_advance;
+  const float reference_advance = (NOMINAL_AIRSPEED / 2.);
+  float advance = cos(err) * stateGetHorizontalSpeedNorm_f() / reference_advance;
 
   if (
     (advance < 1.)  &&                          // Path speed is small
-    (FLOAT_VECT2_NORM(enu_speedf) < reference_advance)  // Small path speed is due to wind (small groundspeed)
+    //(FLOAT_VECT2_NORM(enu_speedf) < reference_advance)  // Small path speed is due to wind (small groundspeed)
+    (stateGetHorizontalSpeedNorm_f() < reference_advance)  // Small path speed is due to wind (small groundspeed)
   ) {
     /*
     // rough crabangle approximation
@@ -369,8 +373,8 @@ void h_ctl_course_loop(void)
     }
   }
 #endif
-
-  float speed_depend_nav = FLOAT_VECT2_NORM(enu_speedf) / NOMINAL_AIRSPEED;
+  float speed_depend_nav = stateGetHorizontalSpeedNorm_f() / NOMINAL_AIRSPEED;
+  //float speed_depend_nav = FLOAT_VECT2_NORM(enu_speedf) / NOMINAL_AIRSPEED;
   Bound(speed_depend_nav, 0.66, 1.5);
 
   float cmd = -h_ctl_course_pgain * speed_depend_nav * (err + d_err * h_ctl_course_dgain);
@@ -577,10 +581,10 @@ inline static void h_ctl_pitch_loop(void)
   #warning "Using step input on setpoint pitch!! Only for testing/experiment!!"
     if((radio_control.values[7] > 0) && (step_timer_pitch < 768)) {
       if(step_timer_pitch < 256) {
-        h_ctl_pitch_loop_setpoint = 0.1;
+        h_ctl_pitch_loop_setpoint = 0.3;
       }
       else if(step_timer_pitch > 255 && step_timer_pitch < 512)  {
-        h_ctl_pitch_loop_setpoint = -0.1;
+        h_ctl_pitch_loop_setpoint = -0.3;
       }
       else if(step_timer_pitch > 511)  {
         h_ctl_pitch_loop_setpoint = 0;

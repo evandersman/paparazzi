@@ -161,8 +161,8 @@ extern void nav_route_xy(float last_wp_x, float last_wp_y, float wp_x, float wp_
   nav_route_xy(waypoints[_start].x, waypoints[_start].y, waypoints[_end].x, waypoints[_end].y)
 
 bool nav_approaching_xy(float x, float y, float from_x, float from_y, float approaching_time);
-//#define NavApproaching(wp, time) nav_approaching_xy(waypoints[wp].x, waypoints[wp].y, last_x, last_y, time)
-#define NavApproaching(wp, time) false
+#define NavApproaching(wp, time) nav_approaching_xy(waypoints[wp].x, waypoints[wp].y, last_x, last_y, time)
+//#define NavApproaching(wp, time) false
 #define NavApproachingFrom(wp, from, time) nav_approaching_xy(waypoints[wp].x, waypoints[wp].y, waypoints[from].x, waypoints[from].y, time)
 
 
@@ -221,11 +221,14 @@ bool nav_approaching_xy(float x, float y, float from_x, float from_y, float appr
 #define NavKillThrottle() { kill_throttle = 1; }
 
 /// Get current x (east) position in local coordinates
-#define GetPosX() (enu_posf.x)
+//#define GetPosX() (enu_posf.x)
+#define GetPosX() (stateGetPositionEnu_f()->x)
 /// Get current y (north) position in local coordinates
-#define GetPosY() (enu_posf.y)
+//#define GetPosY() (enu_posf.y)
+#define GetPosY() (stateGetPositionEnu_f()->y)
 /// Get current altitude above MSL
-#define GetPosAlt() (enu_posf.z)
+//#define GetPosAlt() (enu_posf.z)
+#define GetPosAlt() (stateGetPositionUtm_f()->alt)
 /**
  * Get current altitude reference for local coordinates.
  * This is the ground_alt from the flight plan at first,
