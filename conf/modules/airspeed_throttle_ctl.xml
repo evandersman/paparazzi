@@ -1,0 +1,22 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="turbulence_adc" dir="sensors">
+  <doc>
+    <description>module for controlling airspeed based on pressure probe sensor data</description>
+  </doc>
+  <settings>
+    <dl_settings>
+      <dl_settings NAME="THROTTLE_CTL_AIRSPEED">
+        <dl_setting MAX="20000" MIN="0" STEP="1" VAR="throttle_ctl_airspeed_pgain" shortname="pgain" module="modules/sensors/airspeed_throttle_ctl" param="PGAIN"/>
+        <dl_setting MAX="20000" MIN="0" STEP="1" VAR="throttle_ctl_airspeed_igain" shortname="igain" module="modules/sensors/airspeed_throttle_ctl" param="IGAIN"/>
+      </dl_settings>
+    </dl_settings>
+  </settings>
+  <header>
+    <file name="airspeed_throttle_ctl.h"/>
+  </header>
+  <init fun="airspeed_throttle_ctl_init()"/>
+  <makefile target="ap">
+    <file name="airspeed_throttle_ctl.c"/>
+  </makefile>
+</module>

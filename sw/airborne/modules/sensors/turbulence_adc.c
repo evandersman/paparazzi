@@ -35,6 +35,7 @@
 #include "std.h"
 #include "inter_mcu.h"
 #include "filters/high_pass_filter.h"
+#include "subsystems/abi.h"
 
 #ifndef ADC_CHANNEL_TURBULENCE_NB_SAMPLES
 //#define ADC_CHANNEL_TURBULENCE_NB_SAMPLES DEFAULT_AV_NB_SAMPLE
@@ -151,6 +152,9 @@ void turbulence_adc_update(void)
   pitch_left_adc.scaled = (pitch_left_adc.voltage-0.1*3.3)*7.57576-10.0;         // for the calibration is will be the pitch: p2-p3 (top of sensor is top of probe and bottom of sensor is the bottom)
   airspeed_right_adc.scaled = (airspeed_right_adc.voltage-0.1*3.3)*7.57576-10.0; // for the calibration is will be the yaw: p4-p5 (top of sensor is right of probe and bottom of sensor is left of probe)
   pitch_right_adc.scaled = (pitch_right_adc.voltage-0.1*3.3)*7.57576-10.0;      // for the calibration is will be the cross reference: p1-p2 ( bottom of sensor is the speed and top is top of probe)
+
+  // Send differential pressure via ABI
+  AbiSendMsgBARO_DIFF(PPROBE_SENDER_ID, airspeed_left_adc.scaled);
 
   //high pass filter
   pitch_left_adc.filtered = update_fourth_order_high_pass(&left_hp, pitch_left_adc.scaled);

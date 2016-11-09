@@ -4,7 +4,7 @@
   <process name="Ap">
     <mode name="default">
       <message name="AUTOPILOT_VERSION"   period="11.1"/>
-      <message name="AIRSPEED"            period="2"/>
+      <message name="AIRSPEED"            period="3"/>
       <message name="ALIVE"               period="5"/>
       <message name="GPS"                 period="0.1"/>
       <message name="NAVIGATION"          period="1."/>
@@ -32,7 +32,7 @@
       <message name="CAM_POINT"           period="1.0"/>
       <message name="COMMANDS"            period="5.1"/>
       <message name="FBW_STATUS"          period="2"/>
-      <message name="AIR_DATA"            period="2.3"/>
+      <message name="AIR_DATA"            period="0.1"/>
       <message name="VECTORNAV_INFO"      period="0.5"/>
     </mode>
     <mode name="minimal">

@@ -64,7 +64,12 @@
   </firmware>
 
   <modules main_freq="512">
-    <!--load name="turbulence_adc.xml"/-->
+    <load name="turbulence_adc.xml"/>
+    <load name="air_data.xml"/>
+    <load name="airspeed_throttle_ctl.xml">
+      <define name="THROTTLE_CTL_AIRSPEED_PGAIN" value="0.01"/>
+      <define name="THROTTLE_CTL_AIRSPEED_IGAIN" value="0."/>
+    </load>
     <!--load name="potentiometer_adc.xml"/-->
     <load name="logger_spi_link.xml"/>
     <!--load name="nav_throttle_wt.xml">
@@ -166,6 +171,10 @@
     <define name="PITCH_PGAIN" value="4500."/>
     <define name="PITCH_DGAIN" value="1.5"/>
     <define name="PITCH_IGAIN" value="1"/>
+
+    <!--define name="PITCH_PGAIN" value="16000."/>
+    <define name="PITCH_DGAIN" value="1.5"/>
+    <define name="PITCH_IGAIN" value="40"/-->
 
     <define name="ELEVATOR_OF_ROLL" value="1250"/>
 

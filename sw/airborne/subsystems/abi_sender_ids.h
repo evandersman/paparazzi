@@ -88,6 +88,10 @@
 #define MS45XX_SENDER_ID 40
 #endif
 
+#ifndef PPROBE_SENDER_ID
+#define PPROBE_SENDER_ID 41
+#endif
+
 /*
  * IDs of AGL measurment modules that can be loaded (sonars,...)
  */

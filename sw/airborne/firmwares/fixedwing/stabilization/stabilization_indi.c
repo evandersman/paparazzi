@@ -430,10 +430,10 @@ inline static void h_ctl_roll_loop(void)
 #warning "Using step input on setpoint roll!! Only for testing/experiment!!"
   if((radio_control.values[8] > 0) && (step_timer_roll < 768)) {
     if(step_timer_roll < 256) {
-      h_ctl_roll_setpoint = 0.1;
+      h_ctl_roll_setpoint = 0.4;
     }
     else if(step_timer_roll > 255 && step_timer_roll < 512)  {
-      h_ctl_roll_setpoint = -0.1;
+      h_ctl_roll_setpoint = -0.4;
     }
     else if(step_timer_roll > 511)  {
       h_ctl_roll_setpoint = 0;
@@ -579,14 +579,14 @@ inline static void h_ctl_pitch_loop(void)
 
   #if STEP_INPUT_AUTO1_PITCH
   #warning "Using step input on setpoint pitch!! Only for testing/experiment!!"
-    if((radio_control.values[7] > 0) && (step_timer_pitch < 768)) {
-      if(step_timer_pitch < 256) {
-        h_ctl_pitch_loop_setpoint = 0.3;
+    if((radio_control.values[7] > 0) && (step_timer_pitch < 1536)) {
+      if(step_timer_pitch < 511) {
+        h_ctl_pitch_loop_setpoint = 0.2;
       }
-      else if(step_timer_pitch > 255 && step_timer_pitch < 512)  {
-        h_ctl_pitch_loop_setpoint = -0.3;
+      else if(step_timer_pitch > 512 && step_timer_pitch < 1023)  {
+        h_ctl_pitch_loop_setpoint = -0.2;
       }
-      else if(step_timer_pitch > 511)  {
+      else if(step_timer_pitch > 1024)  {
         h_ctl_pitch_loop_setpoint = 0;
       }
       step_timer_pitch = step_timer_pitch + 1;
@@ -594,7 +594,6 @@ inline static void h_ctl_pitch_loop(void)
     else if(radio_control.values[7] < 0) {
       //normal flying
       step_timer_pitch = 0;
-      h_ctl_pitch_loop_setpoint =  h_ctl_pitch_setpoint + h_ctl_elevator_of_roll / h_ctl_pitch_pgain * fabs(att->phi);
     }
   #endif
 

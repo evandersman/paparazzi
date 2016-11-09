@@ -434,7 +434,12 @@ static inline void telecommand_task(void)
   /** In AUTO1, throttle comes from RADIO_THROTTLE
       In MANUAL, the value is copied to get it in the telemetry */
   if (pprz_mode == PPRZ_MODE_MANUAL || pprz_mode == PPRZ_MODE_AUTO1) {
-    v_ctl_throttle_setpoint = imcu_get_radio(RADIO_THROTTLE);
+    if(radio_control.values[7] > 0) {
+      v_ctl_throttle_setpoint = throttle_controller();
+    }
+    else {
+      v_ctl_throttle_setpoint = imcu_get_radio(RADIO_THROTTLE);
+    }
   }
   /** else asynchronously set by v_ctl_climb_loop(); */
 
