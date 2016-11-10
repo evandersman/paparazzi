@@ -73,6 +73,7 @@ struct TurbulenceAdc pitch_right_adc;
 
 static struct FourthOrderHighPass left_hp, right_hp;
 
+float mean_airspeed;
 float pgain;
 float acc_gain;
 float probes_ang_acc;
@@ -146,15 +147,17 @@ void turbulence_adc_update(void)
   pitch_right_adc.voltage = pitch_right_adc.raw*3.3/(1<<12)+(1.65-pitch_right_adc.offset);
   
   
-  // pressure differential in millipascal first covert to voltage by using the scaling factor raw*3.3/2^12 and the convert to pressure by using formula in the datasheet
+  // pressure differential in Pascal: first covert to voltage by using the scaling factor raw*3.3/2^12 and then convert to pressure by using formula in the datasheet
   // positive pressure diff means a gust is coming from above
-  airspeed_left_adc.scaled = (airspeed_left_adc.voltage-0.1*3.3)*7.57576-10.0;   // for the calibration is will be the airspeed: p1-pstatic (top of sensor is q and bottom om sensor is static)
-  pitch_left_adc.scaled = (pitch_left_adc.voltage-0.1*3.3)*7.57576-10.0;         // for the calibration is will be the pitch: p2-p3 (top of sensor is top of probe and bottom of sensor is the bottom)
-  airspeed_right_adc.scaled = (airspeed_right_adc.voltage-0.1*3.3)*7.57576-10.0; // for the calibration is will be the yaw: p4-p5 (top of sensor is right of probe and bottom of sensor is left of probe)
-  pitch_right_adc.scaled = (pitch_right_adc.voltage-0.1*3.3)*7.57576-10.0;      // for the calibration is will be the cross reference: p1-p2 ( bottom of sensor is the speed and top is top of probe)
+  airspeed_left_adc.scaled = -((airspeed_left_adc.voltage-0.1*3.3)*7.57576-10.0)*100;   // for the calibration is will be the airspeed: p1-pstatic (top of sensor is q and bottom om sensor is static)
+  pitch_left_adc.scaled = -((pitch_left_adc.voltage-0.1*3.3)*7.57576-10.0)*100;          // for the calibration is will be the pitch: p2-p3 (top of sensor is top of probe and bottom of sensor is the bottom)
+  airspeed_right_adc.scaled = -((airspeed_right_adc.voltage-0.1*3.3)*7.57576-10.0)*100; // for the calibration is will be the yaw: p4-p5 (top of sensor is right of probe and bottom of sensor is left of probe)
+  pitch_right_adc.scaled = ((pitch_right_adc.voltage-0.1*3.3)*7.57576-10.0)*100;      // for the calibration is will be the cross reference: p1-p2 ( bottom of sensor is the speed and top is top of probe)
 
+
+  mean_airspeed = (airspeed_left_adc.scaled+airspeed_right_adc.scaled)/2;
   // Send differential pressure via ABI
-  AbiSendMsgBARO_DIFF(PPROBE_SENDER_ID, airspeed_left_adc.scaled);
+  AbiSendMsgBARO_DIFF(PPROBE_SENDER_ID, mean_airspeed);
 
   //high pass filter
   pitch_left_adc.filtered = update_fourth_order_high_pass(&left_hp, pitch_left_adc.scaled);

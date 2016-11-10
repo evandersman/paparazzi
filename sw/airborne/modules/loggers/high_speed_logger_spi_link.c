@@ -105,7 +105,7 @@ void high_speed_logger_spi_link_periodic(void)
 
     high_speed_logger_spi_link_data.phi             = stateGetNedToBodyEulers_i()->phi;
     high_speed_logger_spi_link_data.theta           = stateGetNedToBodyEulers_i()->theta;
-    high_speed_logger_spi_link_data.psi             = stateGetNedToBodyEulers_i()->psi;
+    //high_speed_logger_spi_link_data.psi             = stateGetNedToBodyEulers_i()->psi;
     
     /* Test 1 determine G matrix */
     // rates
@@ -137,13 +137,18 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.cmd_indi        = radio_control.values[6];
     high_speed_logger_spi_link_data.cmd_roll        = commands[1];
     high_speed_logger_spi_link_data.cmd_pitch       = commands[2];
+    high_speed_logger_spi_link_data.cmd_throttle    = commands[0];
+
+    high_speed_logger_spi_link_data.airspeed_left   = ANGLE_BFP_OF_REAL(airspeed_left_adc.scaled);
+    high_speed_logger_spi_link_data.pitch_left      = ANGLE_BFP_OF_REAL(pitch_left_adc.scaled);
+    high_speed_logger_spi_link_data.airspeed_right  = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);
+    high_speed_logger_spi_link_data.pitch_right     = ANGLE_BFP_OF_REAL(pitch_right_adc.scaled);
+
     // accelerations
-    high_speed_logger_spi_link_data.ref_acc_pdot    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);
+    /*high_speed_logger_spi_link_data.ref_acc_pdot    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);
     high_speed_logger_spi_link_data.filt_acc_pdot   = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.p);
     high_speed_logger_spi_link_data.ref_acc_qdot    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.q);
-    high_speed_logger_spi_link_data.filt_acc_qdot   = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.q);
-    //high_speed_logger_spi_link_data.probe_cmd_l     = cmd_trimmed_left;
-    //high_speed_logger_spi_link_data.probe_cmd_r     = cmd_trimmed_right;
+    high_speed_logger_spi_link_data.filt_acc_qdot   = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.q);*/
 
     /* Test 3 OUTER LOOP reference tracking */
     // altitude, course and inner loop setpoints

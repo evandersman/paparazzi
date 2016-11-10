@@ -439,6 +439,7 @@ static inline void telecommand_task(void)
     }
     else {
       v_ctl_throttle_setpoint = imcu_get_radio(RADIO_THROTTLE);
+      throttle_ctl_airspeed_sum_err = 0;
     }
   }
   /** else asynchronously set by v_ctl_climb_loop(); */

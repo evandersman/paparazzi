@@ -41,6 +41,7 @@ float nominal_airspeed_setpoint = NOMINAL_AIRSPEED;
 float throttle_ctl_airspeed_pgain = THROTTLE_CTL_AIRSPEED_PGAIN;
 float throttle_ctl_airspeed_igain = THROTTLE_CTL_AIRSPEED_IGAIN;
 float throttle_ctl_airspeed_sum_err;
+float nominal_cruise_throttle = V_CTL_AUTO_THROTTLE_NOMINAL_CRUISE_THROTTLE;
 float throttle_command;
 
 void airspeed_throttle_ctl_init(void){
@@ -51,10 +52,11 @@ void airspeed_throttle_ctl_init(void){
 float throttle_controller(void)
 {
   // calculate throttle value
-  float err_airspeed = (nominal_airspeed_setpoint - air_data.airspeed);
-  throttle_ctl_airspeed_sum_err += err_airspeed;
-  BoundAbs(throttle_ctl_airspeed_sum_err, 5000);
-  throttle_command = (err_airspeed + throttle_ctl_airspeed_sum_err * throttle_ctl_airspeed_igain) * throttle_ctl_airspeed_pgain;
+  float err_airspeed = nominal_airspeed_setpoint - air_data.airspeed; // test with constant error 0.3
+  throttle_ctl_airspeed_sum_err += err_airspeed * throttle_ctl_airspeed_igain / CONTROL_FREQUENCY;
+  Bound(throttle_ctl_airspeed_sum_err, -nominal_cruise_throttle, 1-nominal_cruise_throttle);
+  throttle_command = err_airspeed * throttle_ctl_airspeed_pgain + TRIM_UPPRZ((throttle_ctl_airspeed_sum_err + nominal_cruise_throttle) * MAX_PPRZ);
+  Bound(throttle_command, TRIM_UPPRZ(V_CTL_AUTO_THROTTLE_MIN_CRUISE_THROTTLE * MAX_PPRZ), TRIM_UPPRZ(V_CTL_AUTO_THROTTLE_MAX_CRUISE_THROTTLE * MAX_PPRZ));
   return throttle_command;
 }
 

@@ -33,6 +33,7 @@ extern float nominal_airspeed_setpoint;
 extern float throttle_ctl_airspeed_pgain;
 extern float throttle_ctl_airspeed_igain;
 extern float throttle_ctl_airspeed_sum_err;
+extern float nominal_cruise_throttle;
 extern float throttle_command;
 
 extern void airspeed_throttle_ctl_init(void);

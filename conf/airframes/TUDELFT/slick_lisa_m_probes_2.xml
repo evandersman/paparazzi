@@ -67,8 +67,8 @@
     <load name="turbulence_adc.xml"/>
     <load name="air_data.xml"/>
     <load name="airspeed_throttle_ctl.xml">
-      <define name="THROTTLE_CTL_AIRSPEED_PGAIN" value="0.01"/>
-      <define name="THROTTLE_CTL_AIRSPEED_IGAIN" value="0."/>
+      <define name="THROTTLE_CTL_AIRSPEED_PGAIN" value="1000"/>
+      <define name="THROTTLE_CTL_AIRSPEED_IGAIN" value="0.2"/>
     </load>
     <!--load name="potentiometer_adc.xml"/-->
     <load name="logger_spi_link.xml"/>
@@ -150,8 +150,8 @@
 
     <!-- auto throttle inner loop -->
     <define name="AUTO_THROTTLE_NOMINAL_CRUISE_THROTTLE" value="0.53"/>
-    <define name="AUTO_THROTTLE_MIN_CRUISE_THROTTLE" value="0.30"/>
-    <define name="AUTO_THROTTLE_MAX_CRUISE_THROTTLE" value="0.80"/>
+    <define name="AUTO_THROTTLE_MIN_CRUISE_THROTTLE" value="0.35"/>
+    <define name="AUTO_THROTTLE_MAX_CRUISE_THROTTLE" value="0.95"/>
     <define name="AUTO_THROTTLE_CLIMB_THROTTLE_INCREMENT" value="0.04" unit="%/(m/s)"/>
     <define name="AUTO_THROTTLE_PGAIN" value="0.0"/>
     <define name="AUTO_THROTTLE_IGAIN" value="0.0"/>
@@ -168,13 +168,14 @@
     <define name="PITCH_MAX_SETPOINT" value="20" unit="deg"/>
     <define name="PITCH_MIN_SETPOINT" value="-10" unit="deg"/>
 
-    <define name="PITCH_PGAIN" value="4500."/>
+    <!--define name="PITCH_PGAIN" value="4500."/>
     <define name="PITCH_DGAIN" value="1.5"/>
-    <define name="PITCH_IGAIN" value="1"/>
+    <define name="PITCH_IGAIN" value="1"/-->
 
-    <!--define name="PITCH_PGAIN" value="16000."/>
+    <!-- same type of response as INDI -->
+    <define name="PITCH_PGAIN" value="16000."/>
     <define name="PITCH_DGAIN" value="1.5"/>
-    <define name="PITCH_IGAIN" value="40"/-->
+    <define name="PITCH_IGAIN" value="30"/>
 
     <define name="ELEVATOR_OF_ROLL" value="1250"/>
 
@@ -187,8 +188,11 @@
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- control effectiveness -->
-    <define name="G_ROLL" value="0.019"/>
-    <define name="G_PITCH" value="0.014"/>
+    <define name="G_ROLL" value="0.027"/>
+    <define name="G_PITCH" value="0.008"/>
+    <!-- the previous estimation -->
+    <!--define name="G_ROLL" value="0.019"/>
+    <define name="G_PITCH" value="0.014"/-->
 
     <!-- reference acceleration for attitude control -->
     <define name="REF_ERR_P" value="420.0"/>
@@ -234,11 +238,11 @@
     <define name="CONTROL_FREQUENCY" value="512" unit="Hz"/>
     <define name="NAVIGATION_FREQUENCY" value="40" unit="Hz"/>
     <define name="DEFAULT_CIRCLE_RADIUS" value="40."/>  
-    <define name="AIRSPEED_LEFT_OFFSET" value="1.654"/>
-    <define name="PITCH_LEFT_OFFSET" value="1.653"/>
-    <define name="AIRSPEED_RIGHT_OFFSET" value="1.645"/>
-    <define name="PITCH_RIGHT_OFFSET" value="1.6556"/>
-    <define name="TURB_PGAIN" value="1"/>
+    <define name="AIRSPEED_LEFT_OFFSET" value="1.657"/>
+    <define name="PITCH_LEFT_OFFSET" value="1.655"/>
+    <define name="AIRSPEED_RIGHT_OFFSET" value="1.644"/>
+    <define name="PITCH_RIGHT_OFFSET" value="1.652"/>
+    <define name="TURB_PGAIN" value="140"/>
     <define name="TURB_ACC_GAIN" value="1"/>
     <define name="PITCH_OMEGA" value="0.5"/>
     <define name="PITCH_ZETA" value="1"/>
@@ -248,8 +252,8 @@
     <define name="OUTBACK_CHALLENGE_DANGEROUS_RULE_RC_LOST_NO_AP" value="TRUE"/>
     <define name="STEP_INPUT_OPEN_LOOP_ROLL" value="FALSE"/>
     <define name="STEP_INPUT_OPEN_LOOP_PITCH" value="FALSE"/>
-    <define name="STEP_INPUT_AUTO1_ROLL" value="TRUE"/>
-    <define name="STEP_INPUT_AUTO1_PITCH" value="TRUE"/>
+    <define name="STEP_INPUT_AUTO1_ROLL" value="FALSE"/>
+    <define name="STEP_INPUT_AUTO1_PITCH" value="FALSE"/>
   </section>
 
   <section name="SIMULATOR" prefix="NPS_">
