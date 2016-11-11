@@ -112,11 +112,11 @@
     <set servo="THROTTLE" value="@THROTTLE"/>
     <set servo="ELEVATOR" value="@PITCH"/>
     <set servo="RUDDER" value="@YAW"/>
-    <set servo="AILERON_LEFT" value="@ROLL"/>
-    <set servo="AILERON_RIGHT" value="@ROLL"/>
+    <!--set servo="AILERON_LEFT" value="@ROLL"/>
+    <set servo="AILERON_RIGHT" value="@ROLL"/-->
     <!--with turbulence feedforward-->
-    <!--set servo="AILERON_LEFT" value="@ROLL + @TURB_LEFT"/>
-    <set servo="AILERON_RIGHT" value="@ROLL - @TURB_RIGHT"/-->
+    <set servo="AILERON_LEFT" value="@ROLL + @TURB_LEFT"/>
+    <set servo="AILERON_RIGHT" value="@ROLL - @TURB_RIGHT"/>
   </command_laws>
 
   <section name="IMU" prefix="IMU_">
@@ -252,7 +252,7 @@
     <define name="OUTBACK_CHALLENGE_DANGEROUS_RULE_RC_LOST_NO_AP" value="TRUE"/>
     <define name="STEP_INPUT_OPEN_LOOP_ROLL" value="FALSE"/>
     <define name="STEP_INPUT_OPEN_LOOP_PITCH" value="FALSE"/>
-    <define name="STEP_INPUT_AUTO1_ROLL" value="FALSE"/>
+    <define name="STEP_INPUT_AUTO1_ROLL" value="TRUE"/>
     <define name="STEP_INPUT_AUTO1_PITCH" value="FALSE"/>
   </section>
 

@@ -9,6 +9,7 @@
       <dl_settings NAME="throttle_ctl_airspeed">
         <dl_setting MAX="6000" MIN="0" STEP="1" VAR="throttle_ctl_airspeed_pgain" shortname="pgain" module="modules/sensors/airspeed_throttle_ctl" param="PGAIN"/>
         <dl_setting MAX="1" MIN="0" STEP="0.01" VAR="throttle_ctl_airspeed_igain" shortname="igain" module="modules/sensors/airspeed_throttle_ctl" param="IGAIN"/>
+        <dl_setting MAX="15" MIN="5" STEP="0.5" VAR="nominal_airspeed_setpoint" shortname="nom airspeed" module="modules/sensors/airspeed_throttle_ctl" param="NOMINAL_AIRSPEED"/>
       </dl_settings>
     </dl_settings>
   </settings>

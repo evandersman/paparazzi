@@ -112,6 +112,14 @@ bool h_ctl_auto1_rate;
 #error auto1 and open loop tests are not compatible: test reference tracking and open loop behaviour separately
 #endif
 
+#if STEP_INPUT_AUTO1_ROLL && STEP_INPUT_AUTO1_PITCH
+#error roll and pitch tests are not compatible: test step responses separately
+#endif
+
+#if STEP_INPUT_OPEN_LOOP_ROLL && STEP_INPUT_OPEN_LOOP_PITCH
+#error roll and pitch tests are not compatible: test step responses separately
+#endif
+
 /* inner roll loop parameters */
 float  h_ctl_roll_setpoint;
 float  h_ctl_roll_pgain;
@@ -428,14 +436,17 @@ inline static void h_ctl_roll_loop(void)
 {
 #if STEP_INPUT_AUTO1_ROLL
 #warning "Using step input on setpoint roll!! Only for testing/experiment!!"
-  if((radio_control.values[8] > 0) && (step_timer_roll < 768)) {
+  if((radio_control.values[8] > 0) && (step_timer_roll < 1024)) {
     if(step_timer_roll < 256) {
+      h_ctl_roll_setpoint = 0;
+    }
+    else if(step_timer_roll >= 256 && step_timer_roll < 512)  {
       h_ctl_roll_setpoint = 0.4;
     }
-    else if(step_timer_roll > 255 && step_timer_roll < 512)  {
+    else if(step_timer_roll >= 512 && step_timer_roll < 768)  {
       h_ctl_roll_setpoint = -0.4;
     }
-    else if(step_timer_roll > 511)  {
+    else if(step_timer_roll >= 768)  {
       h_ctl_roll_setpoint = 0;
     }
     step_timer_roll = step_timer_roll + 1;
@@ -579,19 +590,22 @@ inline static void h_ctl_pitch_loop(void)
 
   #if STEP_INPUT_AUTO1_PITCH
   #warning "Using step input on setpoint pitch!! Only for testing/experiment!!"
-    if((radio_control.values[7] > 0) && (step_timer_pitch < 1536)) {
-      if(step_timer_pitch < 511) {
+    if((radio_control.values[8] > 0) && (step_timer_pitch < 2048)) {
+      if(step_timer_pitch < 512) {
+        h_ctl_pitch_loop_setpoint = 0;
+      }
+      else if(step_timer_pitch >= 512 && step_timer_pitch < 1024)  {
         h_ctl_pitch_loop_setpoint = 0.2;
       }
-      else if(step_timer_pitch > 512 && step_timer_pitch < 1023)  {
+      else if(step_timer_pitch >= 1024 && step_timer_pitch < 1536)  {
         h_ctl_pitch_loop_setpoint = -0.2;
       }
-      else if(step_timer_pitch > 1024)  {
+      else if(step_timer_pitch >= 1536)  {
         h_ctl_pitch_loop_setpoint = 0;
       }
       step_timer_pitch = step_timer_pitch + 1;
     }
-    else if(radio_control.values[7] < 0) {
+    else if(radio_control.values[8] < 0) {
       //normal flying
       step_timer_pitch = 0;
     }
@@ -661,7 +675,7 @@ inline static void h_ctl_pitch_loop(void)
     float cmd = -h_ctl_pitch_pgain * (err + h_ctl_pitch_dgain * d_err) - pitch_sum_err;
   #if STEP_INPUT_OPEN_LOOP_PITCH
   #warning "Using step input on elevator!! Only for testing/experiment!!"
-    if((radio_control.values[7] > 0) && (step_timer_pitch < 768)) {
+    if((radio_control.values[8] > 0) && (step_timer_pitch < 768)) {
       if(step_timer_pitch < 256) {
         cmd = -1500;
       }
@@ -673,7 +687,7 @@ inline static void h_ctl_pitch_loop(void)
       }
       step_timer_pitch = step_timer_pitch + 1;
     }
-    else if(radio_control.values[7] < 0) {
+    else if(radio_control.values[8] < 0) {
       //normal flying
       step_timer_pitch = 0;
     }
