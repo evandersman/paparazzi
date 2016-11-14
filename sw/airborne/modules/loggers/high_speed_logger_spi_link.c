@@ -140,9 +140,11 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.cmd_throttle    = commands[0];
 
     high_speed_logger_spi_link_data.airspeed_left   = ANGLE_BFP_OF_REAL(airspeed_left_adc.scaled);
-    high_speed_logger_spi_link_data.pitch_left      = ANGLE_BFP_OF_REAL(pitch_left_adc.scaled);
+    //high_speed_logger_spi_link_data.pitch_left      = ANGLE_BFP_OF_REAL(pitch_left_adc.scaled);
     high_speed_logger_spi_link_data.airspeed_right  = ANGLE_BFP_OF_REAL(airspeed_right_adc.scaled);
-    high_speed_logger_spi_link_data.pitch_right     = ANGLE_BFP_OF_REAL(pitch_right_adc.scaled);
+    //high_speed_logger_spi_link_data.pitch_right     = ANGLE_BFP_OF_REAL(pitch_right_adc.scaled);
+    high_speed_logger_spi_link_data.ref_acc_pdot    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);
+    high_speed_logger_spi_link_data.filt_acc_pdot   = ANGLE_BFP_OF_REAL(indi.filtered_rate_deriv.p);
 
     // accelerations
     /*high_speed_logger_spi_link_data.ref_acc_pdot    = ANGLE_BFP_OF_REAL(indi.angular_accel_ref.p);

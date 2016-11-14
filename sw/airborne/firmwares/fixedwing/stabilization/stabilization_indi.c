@@ -481,7 +481,7 @@ inline static void h_ctl_roll_loop(void)
   indi.u_in.p = indi.u.p + indi.du.p;
 
   // Bound the total control input
-  Bound(indi.u_in.p, -4500, 4500);
+  Bound(indi.u_in.p, -9600, 9600);
 
   servo_input[delay_p].p = indi.u_in.p;
 
@@ -633,7 +633,7 @@ inline static void h_ctl_pitch_loop(void)
   indi.u_in.q = indi.u.q + indi.du.q;
 
   // Bound the total control input
-  Bound(indi.u_in.q, -7500, 7500);
+  Bound(indi.u_in.q, -9600, 9600);
 
   servo_input[delay_q].q = indi.u_in.q;
 
