@@ -11,8 +11,8 @@
         <dl_setting MAX="100" MIN="0" STEP="0.5" VAR="reference_acceleration.rate_p" shortname="dgain_roll"  param="STABILIZATION_INDI_REF_RATE_P" module="stabilization/stabilization_indi"/>
         <dl_setting MAX="1000" MIN="0" STEP="1" VAR="reference_acceleration.err_q" shortname="pgain_pitch"  param="STABILIZATION_INDI_REF_ERR_Q" module="stabilization/stabilization_indi"/>
         <dl_setting MAX="100" MIN="0" STEP="0.5" VAR="reference_acceleration.rate_q" shortname="dgain_pitch"  param="STABILIZATION_INDI_REF_RATE_Q" module="stabilization/stabilization_indi"/>
-        <dl_setting MAX="50" MIN="0" STEP="1" VAR="indi_omega_r" shortname="omega_roll"  param="STABILIZATION_INDI_FILT_OMEGA_R" module="stabilization/stabilization_indi"/>
-        <dl_setting MAX="50" MIN="0" STEP="1" VAR="indi_omega" shortname="omega_pitch"  param="STABILIZATION_INDI_FILT_OMEGA" module="stabilization/stabilization_indi"/>
+        <dl_setting MAX="250" MIN="0" STEP="1" VAR="indi_omega_r" shortname="omega_roll"  param="STABILIZATION_INDI_FILT_OMEGA_R" module="stabilization/stabilization_indi"/>
+        <dl_setting MAX="250" MIN="0" STEP="1" VAR="indi_omega" shortname="omega_pitch"  param="STABILIZATION_INDI_FILT_OMEGA" module="stabilization/stabilization_indi"/>
         <dl_setting MAX="1" MIN="0" STEP="0.01" VAR="indi_zeta" shortname="zeta"  param="STABILIZATION_INDI_FILT_ZETA" module="stabilization/stabilization_indi"/>
     </dl_settings>
   </dl_settings>
