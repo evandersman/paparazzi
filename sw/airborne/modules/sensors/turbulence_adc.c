@@ -197,6 +197,6 @@ void turbulence_adc_update(void)
 
   RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_SCALED(DefaultChannel, DefaultDevice, &airspeed_left_adc.scaled, &pitch_left_adc.scaled, &airspeed_right_adc.scaled, &pitch_right_adc.scaled, &cmd_left, &cmd_right));
   //RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE_RAW(DefaultChannel, DefaultDevice, &airspeed_left_adc.voltage, &pitch_left_adc.voltage, &airspeed_right_adc.voltage, &pitch_right_adc.voltage));
-  //RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &cmd_left, &cmd_right));
+  RunOnceEvery(50, DOWNLINK_SEND_ADC_TURBULENCE(DefaultChannel, DefaultDevice, &cmd_left, &cmd_right));
 
 }

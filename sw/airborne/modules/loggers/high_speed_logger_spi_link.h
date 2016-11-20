@@ -90,8 +90,10 @@ struct PACKED high_speed_logger_spi_link_data {
   //int32_t pitch_left;
   int32_t airspeed_right;
   //int32_t pitch_right;
-  int32_t ref_acc_pdot;
-  int32_t filt_acc_pdot;
+  int32_t probe_cmd_l;
+  int32_t probe_cmd_r;
+  //int32_t ref_acc_pdot;
+  //int32_t filt_acc_pdot;
 
   /* Test 3 OUTER LOOP reference tracking */
   /*int32_t cmd_indi;
